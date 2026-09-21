@@ -147,6 +147,25 @@ export interface Profile {
   avatar_url?: string;
   organization: string;
   phone?: string;
+  nickname?: string;
+  role_title?: string;
+}
+
+export interface TeamMemberDetails {
+  id: string;
+  name: string;
+  nickname?: string;
+  roleTitle: string;
+  teamCategory: 'CORE_PM' | 'ADVISORY_LEGAL' | 'ADVISORY_PRIVATE' | 'ADVISORY_HRD';
+  teamCategoryName: string;
+  organization: string;
+  email?: string;
+  avatarUrl?: string;
+  expertise?: string;
+  strategicFit?: string;
+  mainResponsibilities: string[];
+  specificConsultingTopics?: string[];
+  deliverableLinks?: string[];
 }
 
 export interface Project {

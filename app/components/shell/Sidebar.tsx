@@ -12,7 +12,6 @@ import {
   AlertTriangle,
   BookOpen,
   FileBarChart,
-  ShieldAlert,
   Building2,
 } from 'lucide-react';
 import { cn } from '~/lib/utils';
@@ -30,7 +29,7 @@ const navigationItems = [
   { name: 'RAID & Decisions', path: '/raid', icon: AlertTriangle },
   { name: 'Knowledge & Learning', path: '/knowledge', icon: BookOpen },
   { name: 'Reports', path: '/reports', icon: FileBarChart },
-  { name: 'Team & RBAC', path: '/team', icon: Users2 },
+  { name: 'Team & RBAC (3 ทีม)', path: '/team', icon: Users2 },
 ];
 
 export function Sidebar() {
@@ -104,7 +103,7 @@ export function Sidebar() {
             </div>
             <div className="text-[10px] text-blue-400 font-mono flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              project_admin
+              {mockCurrentUser.role_title?.split('(')[1]?.replace(')', '') || 'PM Lead'}
             </div>
           </div>
         </div>
