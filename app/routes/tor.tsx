@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { json, type LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { mockDeliverables } from '~/lib/mock-data';
@@ -14,8 +13,8 @@ import {
 } from 'lucide-react';
 import { formatThaiDate } from '~/lib/utils';
 
-export const loader: LoaderFunction = async () => {
-  return json<{ deliverables: Deliverable[] }>({ deliverables: mockDeliverables });
+export const clientLoader = async () => {
+  return { deliverables: mockDeliverables };
 };
 
 export default function TorRoute() {

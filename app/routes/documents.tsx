@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { json, type LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { DocumentVersionModal } from '~/components/documents/DocumentVersionModal';
@@ -35,8 +34,8 @@ import {
 } from 'lucide-react';
 import { formatThaiDate } from '~/lib/utils';
 
-export const loader: LoaderFunction = async () => {
-  return json<{ documents: DocumentItem[] }>({ documents: mockDocuments });
+export const clientLoader = async () => {
+  return { documents: mockDocuments };
 };
 
 export default function DocumentsRoute() {

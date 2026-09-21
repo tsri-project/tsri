@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { json, type LoaderFunction } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { RoleWorkspaceView, WorkspaceType } from '~/components/dashboard/RoleWorkspaceView';
@@ -8,8 +7,8 @@ import { ExecutiveDashboardData, DOCUMENT_STATUS_BADGES } from '~/types';
 import { FileText, ArrowRight, Plus } from 'lucide-react';
 import { formatThaiDate } from '~/lib/utils';
 
-export const loader: LoaderFunction = async () => {
-  return json<ExecutiveDashboardData>(mockDashboardData);
+export const clientLoader = async () => {
+  return mockDashboardData;
 };
 
 export default function DashboardRoute() {

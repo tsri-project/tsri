@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { json, type LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { mockMeetings } from '~/lib/mock-data';
@@ -17,8 +16,8 @@ import {
 } from 'lucide-react';
 import { formatThaiDate, formatThaiDateTime } from '~/lib/utils';
 
-export const loader: LoaderFunction = async () => {
-  return json<{ meetings: MeetingItem[] }>({ meetings: mockMeetings });
+export const clientLoader = async () => {
+  return { meetings: mockMeetings };
 };
 
 export default function CalendarRoute() {

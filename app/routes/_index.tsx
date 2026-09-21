@@ -1,5 +1,10 @@
-import { redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/react";
 
-export const loader = async () => {
+export const clientLoader = async () => {
   return redirect("/dashboard");
 };
+
+export default function IndexRoute() {
+  return null;
+}
+

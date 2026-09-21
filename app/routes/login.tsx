@@ -1,38 +1,25 @@
 import { useState } from 'react';
-import { json, redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node';
-import { Form, useActionData, useNavigate, Link } from '@remix-run/react';
+import { useNavigate, Link } from '@remix-run/react';
 import { Building2, ShieldCheck, Lock, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
 
-export const loader: LoaderFunction = async () => {
-  return json({});
-};
-
-export const action: ActionFunction = async ({ request }) => {
-  const formData = await request.formData();
-  const email = formData.get('email')?.toString();
-  const password = formData.get('password')?.toString();
-
-  if (!email || !password) {
-    return json({ error: 'กรุณากรอกอีเมลและรหัสผ่าน' }, { status: 400 });
-  }
-
-  // Super Admin Validation
-  if (email === 'dencapvision@gmail.com' && password === 'den2235919') {
-    return redirect('/dashboard');
-  }
-
-  // Demo fallback
-  if (password.length >= 6) {
-    return redirect('/dashboard');
-  }
-
-  return json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }, { status: 401 });
-};
-
 export default function LoginRoute() {
-  const actionData = useActionData<{ error?: string }>();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('dencapvision@gmail.com');
   const [password, setPassword] = useState('den2235919');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('กรุณากรอกอีเมลและรหัสผ่าน');
+      return;
+    }
+    if ((email === 'dencapvision@gmail.com' && password === 'den2235919') || password.length >= 6) {
+      navigate('/dashboard');
+    } else {
+      setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-slate-950 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans">
@@ -66,14 +53,14 @@ export default function LoginRoute() {
         </div>
 
         {/* Error Alert */}
-        {actionData?.error && (
+        {error && (
           <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl mb-4 text-xs text-rose-400 text-center">
-            {actionData.error}
+            {error}
           </div>
         )}
 
         {/* Login Form */}
-        <Form method="post" className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
               อีเมลผู้ใช้งาน (Email)
@@ -117,7 +104,7 @@ export default function LoginRoute() {
             <span>เข้าสู่ระบบ Control Center</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </button>
-        </Form>
+        </form>
 
         {/* Footer */}
         <div className="mt-6 pt-4 border-t border-slate-800/80 text-center text-[11px] text-slate-500">
