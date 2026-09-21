@@ -13,8 +13,25 @@ import {
   ChevronDown,
   ShieldCheck,
   Building2,
+  Settings,
 } from 'lucide-react';
 import { Link } from '@remix-run/react';
+
+const mobileMenuItems = [
+  { id: '01', name: '01 ภาพรวมโครงการ', path: '/dashboard' },
+  { id: '02', name: '02 TOR & ผลส่งมอบ', path: '/tor' },
+  { id: '03', name: '03 งานของโครงการ', path: '/tasks' },
+  { id: '04', name: '04 ศูนย์เอกสาร', path: '/documents' },
+  { id: '05', name: '05 กฎหมายและระเบียบ', path: '/legal-inventory' },
+  { id: '06', name: '06 Traceability', path: '/traceability' },
+  { id: '07', name: '07 ปฏิทินโครงการ', path: '/calendar' },
+  { id: '08', name: '08 การประชุม', path: '/meetings' },
+  { id: '09', name: '09 Review Center', path: '/reviews' },
+  { id: '10', name: '10 Risk / Issue / Decision', path: '/raid' },
+  { id: '11', name: '11 Knowledge & Learning', path: '/knowledge' },
+  { id: '12', name: '12 รายงาน', path: '/reports' },
+  { id: '13', name: '13 ทีมงานและสิทธิ์', path: '/team' },
+];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -23,7 +40,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen w-full bg-slate-950 text-slate-100 overflow-hidden font-sans">
       {/* Desktop Sidebar */}
-      <Sidebar />
+      <Sidebar onOpenSearch={() => setIsSearchOpen(true)} />
 
       {/* Main App Container */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
@@ -48,7 +65,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </span>
               </div>
               <div className="text-[11px] text-slate-400 truncate hidden sm:block">
-                {mockProject.organization} • One Link for All
+                {mockProject.organization} • One Project One Link
               </div>
             </div>
           </div>
@@ -62,10 +79,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => setIsSearchOpen(true)}
               className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-xs text-slate-300 transition shadow-inner"
-              title="สืบค้นด่วน (Ctrl+K)"
+              title="ค้นหาทั้งระบบ (Ctrl+K)"
             >
               <Search className="w-3.5 h-3.5 text-blue-400" />
-              <span className="hidden md:inline">ค้นหาด่วน...</span>
+              <span className="hidden md:inline">ค้นหาทั้งระบบ 🔍</span>
               <kbd className="hidden md:inline px-1.5 py-0.2 bg-slate-900 text-[10px] text-slate-400 rounded border border-slate-700 font-mono">
                 ⌘K
               </kbd>
@@ -97,7 +114,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between p-4 border-b border-slate-800">
             <div className="flex items-center gap-2">
               <Building2 className="w-6 h-6 text-blue-400" />
-              <div className="font-bold text-white text-base">TSRI Main Modules</div>
+              <div className="font-bold text-white text-base font-mono">TSRI ONE LINK</div>
             </div>
             <button
               onClick={() => setIsMobileDrawerOpen(false)}
@@ -106,91 +123,37 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <X className="w-6 h-6" />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            <Link
-              to="/dashboard"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              1. Executive Dashboard
-            </Link>
-            <Link
-              to="/tor"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              2. TOR & Deliverables
-            </Link>
-            <Link
-              to="/tasks"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              3. Project Tasks
-            </Link>
-            <Link
-              to="/documents"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              4. Document Center & Versions
-            </Link>
-            <Link
-              to="/legal-inventory"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              5. Legal Inventory
-            </Link>
-            <Link
-              to="/traceability"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              6. Traceability Explorer
-            </Link>
-            <Link
-              to="/calendar"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              7-8. Calendar & Meeting Center
-            </Link>
-            <Link
-              to="/reviews"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              9. Review Center
-            </Link>
-            <Link
-              to="/raid"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              10. RAID & Decision Log
-            </Link>
-            <Link
-              to="/knowledge"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              11. Knowledge & Learning
-            </Link>
-            <Link
-              to="/reports"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              12. Reports
-            </Link>
-            <Link
-              to="/team"
-              onClick={() => setIsMobileDrawerOpen(false)}
-              className="block p-3 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium"
-            >
-              13. Team & RBAC
-            </Link>
+          <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
+            {mobileMenuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="block p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 hover:text-white font-medium text-xs hover:bg-slate-800 transition"
+              >
+                {item.name}
+              </Link>
+            ))}
+
+            <div className="pt-3 border-t border-slate-800 my-2 space-y-2">
+              <button
+                onClick={() => {
+                  setIsMobileDrawerOpen(false);
+                  setIsSearchOpen(true);
+                }}
+                className="w-full text-left p-3 rounded-xl bg-blue-900/20 border border-blue-500/30 text-blue-300 font-semibold text-xs flex items-center gap-2"
+              >
+                <Search className="w-4 h-4" />
+                ค้นหาทั้งระบบ 🔍
+              </button>
+              <Link
+                to="/settings"
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="block p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white font-medium text-xs"
+              >
+                ตั้งค่า
+              </Link>
+            </div>
           </div>
         </div>
       )}
