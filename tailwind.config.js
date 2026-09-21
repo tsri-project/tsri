@@ -5,25 +5,21 @@ export default {
     extend: {
       colors: {
         tsri: {
-          50: '#f0f6fe',
-          100: '#ddecfc',
-          200: '#c2dffa',
-          300: '#98caf6',
-          400: '#67aaf0',
-          500: '#4389e8',
-          600: '#2d6ddc',
-          700: '#1d55c7',
-          800: '#1f47a1',
-          900: '#1e3e7f',
-          950: '#13264f',
+          navy: '#062B63',      // Deep Corporate Navy (Main Header, Sidebar, Title)
+          navyDark: '#031738',  // Deep Dark Background
+          blue: '#1356A3',      // Primary Blue (Panels, Process, Icons)
+          blueLight: '#2C73C7', // Bright Active Blue
+          teal: '#168A91',      // Teal (Learning, Knowledge, System)
+          tealLight: '#20B2AA', // Bright Teal
+          orange: '#F36C21',    // Strategic Orange Accent (Attention, Badges, Highlights)
+          orangeHover: '#D95813',
+          ice: '#F0F5FA',       // Light Ice Blue Panel Background
+          slate: '#E2EEF8',     // Border & Card Accent
         },
-        gold: {
-          500: '#e5a93c',
-          600: '#cb8b28',
-        }
       },
       fontFamily: {
-        sans: ['Sarabun', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Noto Sans Thai"', '"IBM Plex Sans Thai"', 'Sarabun', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
     },
   },

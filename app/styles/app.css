@@ -3,13 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --color-primary: 221 83% 53%;
-    --color-primary-dark: 224 76% 36%;
-  }
-
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    @apply bg-slate-950 text-slate-100 font-sans antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
@@ -21,20 +16,28 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #062b63;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #1356a3;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #f36c21;
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(6, 43, 99, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(19, 86, 163, 0.4);
+}
+
+.tsri-gradient-header {
+  background: linear-gradient(135deg, #062b63 0%, #1356a3 100%);
+}
+
+.tsri-gradient-card {
+  background: linear-gradient(180deg, rgba(6, 43, 99, 0.85) 0%, rgba(3, 23, 56, 0.95) 100%);
 }
