@@ -8,21 +8,22 @@ export interface LineFlexMessageOptions {
   actionUrl: string;
 }
 
-export async function sendLineBroadcastNotification(
+export async function sendLineDirectNotification(
   message: string,
   options?: LineFlexMessageOptions
 ): Promise<{ success: boolean; error?: string }> {
   const lineToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  const targetUserId = process.env.LINE_user_ID || process.env.LINE_USER_ID;
 
   if (!lineToken || lineToken === 'your-line-channel-token') {
-    // Graceful fallback for local development or mock mode
-    console.log('[LINE OA Broadcast Simulation]:', message, options);
+    console.log('[LINE OA Direct Notification Simulation]:', message, options);
     return { success: true };
   }
 
   try {
     const payload = options
       ? {
+          to: targetUserId,
           messages: [
             {
               type: 'flex',
@@ -91,6 +92,7 @@ export async function sendLineBroadcastNotification(
           ],
         }
       : {
+          to: targetUserId,
           messages: [
             {
               type: 'text',
@@ -99,7 +101,11 @@ export async function sendLineBroadcastNotification(
           ],
         };
 
-    const response = await fetch('https://api.line.me/v2/bot/message/broadcast', {
+    const endpoint = targetUserId
+      ? 'https://api.line.me/v2/bot/message/push'
+      : 'https://api.line.me/v2/bot/message/broadcast';
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
