@@ -10,17 +10,42 @@ import {
 } from '~/types';
 
 export const mockCurrentUser: Profile = {
-  id: 'user-002',
-  email: 'den.learning@tsri-project.org',
+  id: 'usr-super-admin-01',
+  email: 'dencapvision@gmail.com',
   full_name: 'นายอนุสรณ์ หนองนา (เด่น)',
   nickname: 'เด่น',
-  role_title: 'ผู้จัดการโครงการ (PM & Learning Architect Lead)',
+  role_title: 'Super Admin / ผู้จัดการโครงการ (PM & Learning Architect Lead)',
   organization: 'สำนักงานคณะกรรมการส่งเสริมวิทยาศาสตร์ วิจัยและนวัตกรรม (สกสว.)',
   avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
 };
 
 export const mockTeamMembers: TeamMemberDetails[] = [
   // 1. ทีมบริหารโครงการ (Project Management Core Team)
+  {
+    id: 'pm-02',
+    name: 'นายอนุสรณ์ หนองนา',
+    nickname: 'เด่น',
+    roleTitle: 'Super Admin / ผู้จัดการโครงการ (PM & Learning Architect Lead)',
+    teamCategory: 'CORE_PM',
+    teamCategoryName: '1. ทีมบริหารโครงการ (Project Management Core Team)',
+    organization: 'ทีมบริหารโครงการ สกสว.',
+    email: 'dencapvision@gmail.com',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    expertise: 'Super Admin, Project Cadence, Knowledge Translation, Learning Architecture, Master Facilitation',
+    strategicFit: 'Super Admin และผู้นำการขับเคลื่อนกระบวนการทำงาน การแปลงองค์ความรู้กฎหมายสู่สื่อการเรียนรู้ และกระบวนการประชุมแบบมีส่วนร่วม',
+    mainResponsibilities: [
+      'ผู้ดูแลระบบระดับสูงสุด (Super Admin) ควบคุมความปลอดภัยและสิทธิ์เข้าถึงทั้งหมด',
+      'บริหารโครงการภาพรวม (Project Execution & Cadence)',
+      'แปลงองค์ความรู้สู่นวัตกรรมการเรียนรู้ (Knowledge Translation)',
+      'อำนวยการประชุม (Master Facilitator)',
+      'บูรณาการข้อคิดเห็นของที่ปรึกษาทุกท่าน สู่การจัดทำรายละเอียดชิ้นงานตาม TOR',
+    ],
+    specificConsultingTopics: [
+      'การออกแบบระบบ Knowledge Management และ Platform สกสว.',
+      'การวางสถาปัตยกรรมการเรียนรู้ Legal Competency',
+    ],
+    deliverableLinks: ['DEL-01', 'DEL-02', 'DEL-03', 'DEL-04'],
+  },
   {
     id: 'pm-01',
     name: 'คุณไกรพุฒิ อินทรโยธา',
@@ -41,30 +66,6 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     specificConsultingTopics: [
       'Strategic Alignment กับผู้บริหารระดับสูง สกสว.',
       'การบริหารจัดการความเสี่ยงของสัญญาและผลผลิต',
-    ],
-    deliverableLinks: ['DEL-01', 'DEL-02', 'DEL-03', 'DEL-04'],
-  },
-  {
-    id: 'pm-02',
-    name: 'นายอนุสรณ์ หนองนา',
-    nickname: 'เด่น',
-    roleTitle: 'ผู้จัดการโครงการ (PM & Learning Architect Lead)',
-    teamCategory: 'CORE_PM',
-    teamCategoryName: '1. ทีมบริหารโครงการ (Project Management Core Team)',
-    organization: 'ทีมบริหารโครงการ สกสว.',
-    email: 'den.learning@tsri-project.org',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-    expertise: 'Project Cadence, Knowledge Translation, Learning Architecture, Master Facilitation',
-    strategicFit: 'ผู้นำการขับเคลื่อนกระบวนการทำงาน การแปลงองค์ความรู้กฎหมายสู่สื่อการเรียนรู้ และกระบวนการประชุมแบบมีส่วนร่วม',
-    mainResponsibilities: [
-      'บริหารโครงการภาพรวม (Project Execution & Cadence)',
-      'แปลงองค์ความรู้สู่นวัตกรรมการเรียนรู้ (Knowledge Translation)',
-      'อำนวยการประชุม (Master Facilitator)',
-      'บูรณาการข้อคิดเห็นของที่ปรึกษาทุกท่าน สู่การจัดทำรายละเอียดชิ้นงานตาม TOR',
-    ],
-    specificConsultingTopics: [
-      'การออกแบบระบบ Knowledge Management และ Platform สกสว.',
-      'การวางสถาปัตยกรรมการเรียนรู้ Legal Competency',
     ],
     deliverableLinks: ['DEL-01', 'DEL-02', 'DEL-03', 'DEL-04'],
   },
@@ -208,7 +209,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     deliverableLinks: ['DEL-01', 'DEL-02', 'DEL-03', 'DEL-04'],
   },
 
-  // 2. ทีมที่ปรึกษาโครงการ - กลุ่มที่ 2: ด้านกฎหมายธุรกิจ การเงินการคลัง และการลงทุนภาคเอกชน (Private Law & Investment)
+  // 2. ทีมที่ปรึกษาโครงการ - กลุ่มที่ 2: Private Law & Investment
   {
     id: 'adv-05',
     name: 'คุณธนา & คุณเอ๋',
@@ -231,7 +232,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     deliverableLinks: ['DEL-02', 'DEL-04'],
   },
 
-  // 2. ทีมที่ปรึกษาโครงการ - กลุ่มที่ 3: ด้านการออกแบบระบบการเรียนรู้และการพัฒนาบุคลากร (Learning Design, HRD & Executive Modules)
+  // 2. ทีมที่ปรึกษาโครงการ - กลุ่มที่ 3: Learning Design, HRD & Executive Modules
   {
     id: 'adv-06',
     name: 'คุณบัณฑิตา พละพงศ์',
@@ -282,7 +283,7 @@ export const mockProject: Project = {
   title: 'โครงการศึกษา วิเคราะห์ และพัฒนาองค์ความรู้ด้านกฎหมาย ระเบียบ และแนวปฏิบัติที่เกี่ยวข้องกับการดำเนินงานของ สกสว.',
   description: 'โครงการพัฒนาระบบบริหารความรู้และควบคุมการปฏิบัติตามกฎหมาย นโยบาย ววน. และระเบียบ สกสว. ครบวงจร',
   organization: 'สำนักงานคณะกรรมการส่งเสริมวิทยาศาสตร์ วิจัยและนวัตกรรม (สกสว.)',
-  current_gate: 'G2', // G2: Research Validation
+  current_gate: 'G1', // G1: Source Verification
   start_date: '2026-01-15',
   end_date: '2026-10-31',
   baseline_budget: 4500000,
@@ -545,12 +546,12 @@ export const mockActivities: ActivityLogItem[] = [
   {
     id: 'act-001',
     project_id: mockProject.id,
-    actor_name: 'นายอนุสรณ์ หนองนา (เด่น)',
-    action: 'UPDATE_TEAM',
-    entity_table: 'project_members',
-    entity_id: 'team-all',
-    description: 'อัปเดตโครงสร้างรายชื่อคณะทำงานและทีมที่ปรึกษาโครงการ 3 ทีมตามมติที่ประชุม Kick-off',
-    created_at: '2026-09-22T02:30:00Z',
+    actor_name: 'นายอนุสรณ์ หนองนา (เด่น) [Super Admin]',
+    action: 'SET_SUPER_ADMIN',
+    entity_table: 'profiles',
+    entity_id: 'usr-super-admin-01',
+    description: 'กำหนดสิทธิ์ Super Admin ให้แก่นายอนุสรณ์ หนองนา (dencapvision@gmail.com)',
+    created_at: '2026-09-22T02:42:00Z',
   },
   {
     id: 'act-002',
