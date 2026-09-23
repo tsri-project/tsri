@@ -1,6 +1,13 @@
 node_modules
 .env
-.env.local
+.env.*
+!.env.example
+*.bak
+*.temp*
+.temp
+supabase/.temp/
 build
 .cache
 .system_generated
+scratch/
+

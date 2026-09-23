@@ -1,14 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl =
-  (typeof window !== 'undefined' && (window as any).ENV?.SUPABASE_URL) ||
-  (typeof process !== 'undefined' && process.env?.SUPABASE_URL) ||
-  'https://aatlledgsftkjfunqsvh.supabase.co';
+// Enforce strict build-time environment variables with ZERO fallback to production
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabaseAnonKey =
-  (typeof window !== 'undefined' && (window as any).ENV?.SUPABASE_ANON_KEY) ||
-  (typeof process !== 'undefined' && process.env?.SUPABASE_ANON_KEY) ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhdGxsZWRnc2Z0a2pmdW5xc3ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMDQzOTAsImV4cCI6MjEwNTU4MDM5MH0.0j7Lc6-mbG0s0OT6cb9mjb5yi2W-7deEIqwmQFjscRo';
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'CRITICAL CONFIGURATION ERROR: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be provided at build-time. Fallback to production is strictly prohibited.'
+  );
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -17,3 +17,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
   },
 });
+

@@ -13,3 +13,8 @@ bucket_name = "tsri-documents-vault"
 ENVIRONMENT = "production"
 APP_NAME = "TSRI One Link for All Control Center"
 APP_URL = "https://tsri-onelink.pages.dev"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
+APP_NAME = "TSRI One Link Control Center (Preview/Staging)"
+APP_URL = "https://staging.tsri.pages.dev"
