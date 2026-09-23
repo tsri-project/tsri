@@ -62,19 +62,20 @@ import {
   Bookmark,
   RefreshCw,
   Database,
+  Crown,
 } from 'lucide-react';
 import { formatThaiDate, formatThaiDateTime, formatFileSize } from '~/lib/utils';
 
 export const clientLoader = async () => {
   return {
-    batches: mockReviewBatches,
-    items: mockReviewItems,
+    batches: [] as ReviewBatch[],
+    items: [] as ReviewItem[],
     team: mockTeamMembers,
   };
 };
 
 export default function ReviewsRoute() {
-  const { isLoading: isAuthLoading, isAuthenticated } = useRequireAuth('/login?returnTo=/reviews');
+  const { user, profile, role, isAdminOrPm, isLoading: isAuthLoading, isAuthenticated } = useRequireAuth('/login?returnTo=/reviews');
   const { batches: initialBatches, items: initialItems } = useLoaderData<typeof clientLoader>();
 
   const [batches, setBatches] = useState<ReviewBatch[]>(initialBatches);
@@ -112,9 +113,9 @@ export default function ReviewsRoute() {
     recommended_status: VerificationStatus;
     evidence_file_name: string;
   }>({
-    reviewer_id: 'adv-01',
-    reviewer_name: 'นพ.เฉลิมเกียรติ พรพฤฒิพันธุ์',
-    reviewer_role: 'ที่ปรึกษากฎหมายภาครัฐ',
+    reviewer_id: '',
+    reviewer_name: '',
+    reviewer_role: '',
     reviewer_team: 'PUBLIC_SECTOR',
     opinion_type: 'LEAD_FINDING',
     vi_code: '',
@@ -140,7 +141,7 @@ export default function ReviewsRoute() {
     pm_action_items: '',
   });
 
-  // Load live data from Supabase
+  // Load live data from Supabase (Strict: No mock fallback)
   const loadSupabaseData = useCallback(async () => {
     setIsLoadingData(true);
     setFetchError(null);
@@ -151,9 +152,14 @@ export default function ReviewsRoute() {
       if (result.batches.length > 0 && !result.batches.some((b) => b.id === selectedBatchId)) {
         setSelectedBatchId(result.batches[0].id);
       }
+      return result;
     } catch (err: any) {
       console.error('Failed to load reviews from Supabase:', err);
-      setFetchError('ไม่สามารถเชื่อมต่อฐานข้อมูล Supabase ได้ กำลังแสดงผลจากชุดข้อมูลสำรอง');
+      const errMsg = err.message || 'ไม่สามารถโหลดข้อมูลจาก Supabase ได้';
+      setFetchError(errMsg);
+      setBatches([]);
+      setReviewItems([]);
+      throw new Error(errMsg);
     } finally {
       setIsLoadingData(false);
     }
@@ -161,7 +167,9 @@ export default function ReviewsRoute() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadSupabaseData();
+      loadSupabaseData().catch((err) => {
+        console.warn('Initial data load warning:', err.message);
+      });
     }
   }, [isAuthenticated, loadSupabaseData]);
 
@@ -186,7 +194,7 @@ export default function ReviewsRoute() {
     );
   }
 
-  const activeBatch = batches.find((b) => b.id === selectedBatchId) || batches[0] || initialBatches[0];
+  const activeBatch = batches.find((b) => b.id === selectedBatchId) || batches[0];
 
   // Calculate Batch Statistics
   const batchItems = reviewItems.filter((item) => item.batch_id === activeBatch?.id || item.batch_id === 'batch-01');
@@ -216,9 +224,9 @@ export default function ReviewsRoute() {
     setActiveModalItem(item);
     setSubmitError(null);
     setEvidenceForm({
-      reviewer_id: item.assigned_expert_id || 'adv-01',
-      reviewer_name: item.assigned_expert_name || 'นพ.เฉลิมเกียรติ พรพฤฒิพันธุ์',
-      reviewer_role: item.assigned_category === 'ADVISORY_PRIVATE' ? 'ที่ปรึกษากฎหมายภาคเอกชน' : 'ที่ปรึกษากฎหมายภาครัฐ',
+      reviewer_id: user?.id || item.assigned_expert_id || '',
+      reviewer_name: profile?.full_name || user?.user_metadata?.full_name || user?.email || item.assigned_expert_name || 'ผู้เชี่ยวชาญ',
+      reviewer_role: profile?.organization || (item.assigned_category === 'ADVISORY_PRIVATE' ? 'ที่ปรึกษากฎหมายภาคเอกชน' : 'ที่ปรึกษากฎหมายภาครัฐ'),
       reviewer_team: item.lead_team || 'PUBLIC_SECTOR',
       opinion_type: defaultOpinion,
       vi_code: item.vi_code || item.item_code,
@@ -259,48 +267,31 @@ export default function ReviewsRoute() {
     setSubmitError(null);
 
     try {
-      const newRecord = await submitExpertEvidenceToSupabase(activeModalItem, evidenceForm);
+      await submitExpertEvidenceToSupabase(activeModalItem, {
+        ...evidenceForm,
+        reviewer_id: user?.id || evidenceForm.reviewer_id,
+        reviewer_name: profile?.full_name || user?.user_metadata?.full_name || evidenceForm.reviewer_name,
+      });
 
-      // ANTI AUTO-VALIDATION RULE:
-      // Expert responses NEVER automatically validate the item or the Gate/Deliverable.
-      setReviewItems((prev) =>
-        prev.map((item) => {
-          if (item.id === activeModalItem.id) {
-            const nextStatus =
-              evidenceForm.recommended_status === 'SOURCE_CONFLICT'
-                ? 'SOURCE_CONFLICT'
-                : item.status === 'VALIDATED'
-                ? 'VALIDATED'
-                : 'EXPERT_VALIDATION_REQUIRED';
+      // 1. Refetch live data first
+      await loadSupabaseData();
 
-            return {
-              ...item,
-              status: nextStatus,
-              article_section: evidenceForm.article_section,
-              page_number: Number(evidenceForm.page_number),
-              evidence_records: [newRecord, ...item.evidence_records],
-              co_experts_count: (item.co_experts_count || 0) + (item.assigned_expert_id !== evidenceForm.reviewer_id ? 1 : 0),
-              updated_at: newRecord.submitted_at,
-            };
-          }
-          return item;
-        })
-      );
-
+      // 2. Only close modal and show success notification AFTER refetch succeeds
+      setActiveModalItem(null);
       setFeedbackMessage({
         type: 'success',
         message: `บันทึกระเบียนถาวรข้อ ${activeModalItem.vi_code || activeModalItem.item_code} สำเร็จ และซิงก์ข้อมูลลงฐานข้อมูลเรียบร้อย`,
       });
-      setActiveModalItem(null);
     } catch (err: any) {
       console.error('Evidence submission error:', err);
       setSubmitError(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล Supabase');
+      // DO NOT show success or close modal
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Submit PM Disposition Handler
+  // Submit PM Disposition Handler (Atomic Transaction with Refetch-before-Success)
   const handleSubmitPmDisposition = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePmModalItem) return;
@@ -314,40 +305,27 @@ export default function ReviewsRoute() {
         .map((s) => s.trim())
         .filter(Boolean);
 
-      const { updatedStatus, consensusRecord } = await submitPmDispositionToSupabase(activePmModalItem, {
+      await submitPmDispositionToSupabase(activePmModalItem, {
         pm_disposition: pmForm.pm_disposition,
         pm_disposition_note: pmForm.pm_disposition_note,
         pm_action_items: actionItemsList,
-        pm_name: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร (PM)',
-        pm_id: 'pm-01',
+        pm_name: profile?.full_name || user?.user_metadata?.full_name || 'ผู้จัดการโครงการ (PM)',
+        pm_id: user?.id || '',
       });
 
-      setReviewItems((prev) =>
-        prev.map((i) =>
-          i.id === activePmModalItem.id
-            ? {
-                ...i,
-                status: updatedStatus,
-                pm_disposition: pmForm.pm_disposition,
-                pm_disposition_note: pmForm.pm_disposition_note,
-                pm_disposition_by: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร (PM)',
-                pm_disposition_at: consensusRecord.submitted_at,
-                pm_action_items: actionItemsList,
-                evidence_records: [consensusRecord, ...i.evidence_records],
-                updated_at: consensusRecord.submitted_at,
-              }
-            : i
-        )
-      );
+      // 1. Refetch live data first
+      await loadSupabaseData();
 
+      // 2. Only close modal and show success notification AFTER refetch succeeds
+      setActivePmModalItem(null);
       setFeedbackMessage({
         type: 'success',
         message: `บันทึกมติและการสั่งการ PM สำหรับข้อ ${activePmModalItem.vi_code || activePmModalItem.item_code} สำเร็จ`,
       });
-      setActivePmModalItem(null);
     } catch (err: any) {
       console.error('PM Disposition submission error:', err);
       setSubmitError(err.message || 'เกิดข้อผิดพลาดในการบันทึกมติ PM ลงฐานข้อมูล');
+      // DO NOT show success or close modal
     } finally {
       setIsSubmitting(false);
     }
@@ -1163,46 +1141,40 @@ export default function ReviewsRoute() {
                   </div>
                 </div>
 
-                {/* Reviewer Identity Selector */}
+                {/* Reviewer Identity (Bound to Authenticated Session) */}
                 <div>
                   <label className="block font-bold text-slate-800 mb-1">
-                    ผู้ให้ความเห็น / สังกัดทีม <span className="text-rose-500">*</span>
+                    ผู้ให้ความเห็นและสังกัดทีม (ผูกกับบัญชี Session จริง) <span className="text-rose-500">*</span>
                   </label>
-                  <select
-                    value={evidenceForm.reviewer_id}
-                    onChange={(e) => {
-                      const selected = allAdvisorsList.find((a) => a.id === e.target.value);
-                      if (selected) {
-                        setEvidenceForm({
-                          ...evidenceForm,
-                          reviewer_id: selected.id,
-                          reviewer_name: selected.name,
-                          reviewer_role: selected.role,
-                          reviewer_team: selected.team,
-                        });
-                      }
-                    }}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-bold focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
-                  >
-                    <optgroup label="🏛️ ทีมวิชาการและกฎหมายภาครัฐ (4 ท่าน)">
-                      {allAdvisorsList
-                        .filter((a) => a.team === 'PUBLIC_SECTOR')
-                        .map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.name} — {a.role}
-                          </option>
-                        ))}
-                    </optgroup>
-                    <optgroup label="🏢 ทีมกฎหมายภาคเอกชน & การลงทุน (2 ท่าน)">
-                      {allAdvisorsList
-                        .filter((a) => a.team === 'PRIVATE_SECTOR')
-                        .map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.name} — {a.role}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </select>
+                  <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-[#062B63] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        {profile?.full_name?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-900 block text-xs">
+                          {profile?.full_name || user?.user_metadata?.full_name || user?.email || 'ผู้เชี่ยวชาญ'}
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          {profile?.organization || 'สกสว.'} • User ID: <span className="font-mono font-bold text-slate-700">{user?.id?.slice(0, 12)}...</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                      <span className="text-[11px] font-bold text-slate-600">กลุ่มทีม:</span>
+                      <select
+                        value={evidenceForm.reviewer_team}
+                        onChange={(e) =>
+                          setEvidenceForm({ ...evidenceForm, reviewer_team: e.target.value as AdvisorTeamGroup })
+                        }
+                        className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold text-[#062B63] focus:ring-2 focus:ring-[#1356A3]"
+                      >
+                        <option value="PUBLIC_SECTOR">🏛️ ภาครัฐ (Public Sector)</option>
+                        <option value="PRIVATE_SECTOR">🏢 ภาคเอกชน (Private Sector)</option>
+                        <option value="PM_OFFICE">👑 สำนักงาน PM (PM Office)</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Opinion Type Selector */}
@@ -1463,6 +1435,19 @@ export default function ReviewsRoute() {
                   <div className="text-slate-600 text-xs">{activePmModalItem.issue_description}</div>
                   <div className="text-[11px] text-purple-800 font-mono pt-1">
                     VI-ID: <strong>{activePmModalItem.vi_code || activePmModalItem.item_code}</strong> • เจ้าภาพหลัก: {activePmModalItem.assigned_expert_name} ({activePmModalItem.lead_team === 'PRIVATE_SECTOR' ? 'ภาคเอกชน' : 'ภาครัฐ'})
+                  </div>
+                </div>
+
+                {/* PM Authenticated User Identity */}
+                <div className="p-3 bg-purple-100/60 border border-purple-200 rounded-xl flex items-center gap-2.5 text-xs text-purple-950">
+                  <Crown className="w-4 h-4 text-purple-700 shrink-0" />
+                  <div>
+                    <span className="font-bold block">
+                      ผู้ลงมติ: {profile?.full_name || user?.user_metadata?.full_name || user?.email || 'PM Admin'} (PM / ผู้ดูแลโครงการ)
+                    </span>
+                    <span className="text-[11px] text-purple-700 font-mono">
+                      Session UID: {user?.id}
+                    </span>
                   </div>
                 </div>
 
