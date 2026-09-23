@@ -407,17 +407,54 @@ export interface ReviewItem {
   updated_at: string;
 }
 
-export interface ExpertReviewSubmission {
-  review_item_id: string;
-  reviewer_id: string;
-  doc_id_ref: string;
-  article_section: string;
-  page_number: number;
-  edition_used: string;
-  rationale: string;
-  requirement_impact: string;
-  resulting_status: VerificationStatus;
-  evidence_file_name?: string;
-  storage_r2_key?: string;
+export interface TorClauseItem {
+  clause_id: string;
+  clause_number: string;
+  title: string;
+  scope_description: string;
+  status: 'COMPLETED' | 'IN_PROGRESS' | 'PENDING_REVIEW' | 'NOT_STARTED';
+  completion_percentage: number;
+  lead_role: string;
+  lead_expert?: string;
+  work_packages: {
+    code: string;
+    name: string;
+    version: string;
+    status: 'COMPLETED' | 'IN_REVIEW' | 'DRAFTING' | 'PLANNED';
+    period?: string;
+    output_file?: string;
+  }[];
+  related_deliverable_code: string;
+  gate_target: ProjectGate;
+  updated_at: string;
 }
+
+export interface WorkstreamItem {
+  code: string;
+  name: string;
+  name_en: string;
+  lead: string;
+  description: string;
+  current_focus: string;
+  completion_pct: number;
+  active_works: string[];
+}
+
+export interface ProjectTaskItem {
+  id: string;
+  code: string;
+  title: string;
+  category: 'TOR_4_3_1' | 'TOR_4_3_2' | 'TOR_4_3_3' | 'TOR_4_3_4' | 'TOR_4_3_5' | 'GOVERNANCE';
+  workstream: string;
+  assigned_to: string;
+  assigned_role: string;
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  status: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE';
+  due_date: string;
+  gate_milestone: ProjectGate;
+  deliverable_ref: string;
+  description: string;
+  progress_pct: number;
+}
+
 
