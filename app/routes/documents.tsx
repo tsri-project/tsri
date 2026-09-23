@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useLoaderData } from '@remix-run/react';
+import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { DocumentVersionModal } from '~/components/documents/DocumentVersionModal';
 import { mockDocuments } from '~/lib/mock-data';
@@ -31,8 +31,14 @@ import {
   CheckCircle2,
   FileCode,
   Lock,
+  Download,
+  ExternalLink,
+  ShieldCheck,
+  Cloud,
+  HardDrive,
+  X,
 } from 'lucide-react';
-import { formatThaiDate } from '~/lib/utils';
+import { formatThaiDate, formatFileSize } from '~/lib/utils';
 
 export const clientLoader = async () => {
   return { documents: mockDocuments };
@@ -77,12 +83,16 @@ export default function DocumentsRoute() {
         doc.document_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
         doc.category.toLowerCase().includes(searchQuery.toLowerCase());
 
+      const matchFolder =
+        selectedFolder === 'ALL' ||
+        doc.category.toLowerCase().includes(selectedFolder.toLowerCase());
+
       const matchType = selectedType === 'ALL' || doc.prefix_code === selectedType;
       const matchOrg = selectedOrg === 'ALL' || doc.document_code.includes(`-${selectedOrg}-`);
 
-      return matchQuery && matchType && matchOrg;
+      return matchQuery && matchFolder && matchType && matchOrg;
     });
-  }, [documents, searchQuery, selectedType, selectedOrg]);
+  }, [documents, searchQuery, selectedFolder, selectedType, selectedOrg]);
 
   const handleUploadVersion = (docId: string, versionData: Partial<DocumentVersionItem>) => {
     setDocuments((prev) =>
@@ -97,22 +107,17 @@ export default function DocumentsRoute() {
             file_size_bytes: versionData.file_size_bytes || 1024000,
             file_mime_type: 'application/pdf',
             storage_r2_key: `uploads/${versionData.file_name}`,
+            storage_url: `/documents/${versionData.file_name}`,
             change_summary: versionData.change_summary,
             status: 'UNDER_REVIEW',
             created_at: new Date().toISOString(),
           };
-
-          const updatedDoc: DocumentItem = {
+          return {
             ...doc,
-            latest_version_number: newVersion.version_number,
-            status: 'UNDER_REVIEW',
+            latest_version_number: versionData.version_number || doc.latest_version_number,
+            updated_at: new Date().toISOString(),
             versions: [newVersion, ...(doc.versions || [])],
           };
-
-          if (selectedDocForVersion?.id === docId) {
-            setSelectedDocForVersion(updatedDoc);
-          }
-          return updatedDoc;
         }
         return doc;
       })
@@ -121,21 +126,19 @@ export default function DocumentsRoute() {
 
   const handleCreateDocument = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formTitle) return;
-
-    const docId = `${formType}-${formOrg}-${formSeq.padStart(3, '0')}-${formYear}`;
-
+    const docCode = `${formType}-${formOrg}-${formSeq}-${formYear}`;
     const newDoc: DocumentItem = {
       id: `doc-${Date.now()}`,
       project_id: 'proj-tsri-2026-01',
       prefix_code: formType as DocumentPrefix,
-      document_code: docId,
+      document_code: docCode,
       title: formTitle,
       category: formCategory,
-      issuing_body: ORGANIZATION_DICTIONARY[formOrg],
-      status: 'VALIDATED',
+      issuing_body: ORGANIZATION_DICTIONARY[formOrg] || 'สกสว.',
+      effective_date: '2026-01-15',
+      status: 'RAW',
       latest_version_number: '1.0',
-      tags: [formType, formOrg, formStatus],
+      tags: [formType, formOrg, formYear],
       is_confidential: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -146,87 +149,103 @@ export default function DocumentsRoute() {
           project_id: 'proj-tsri-2026-01',
           version_number: '1.0',
           file_name: generatedFileName,
-          file_size_bytes: 2450000,
+          file_size_bytes: 1540000,
           file_mime_type: 'application/pdf',
-          storage_r2_key: `vault/${generatedFileName}`,
-          change_summary: `ลงทะเบียนตามมาตรฐาน RAG Naming: ${generatedFileName}`,
-          status: 'VALIDATED',
+          storage_r2_key: `documents/${generatedFileName}`,
+          storage_url: `/documents/${generatedFileName}`,
+          change_summary: 'ลงทะเบียนเอกสารใหม่เข้าระบบคลัง R2',
+          status: 'RAW',
           created_at: new Date().toISOString(),
         },
       ],
     };
 
-    setDocuments((prev) => [newDoc, ...prev]);
+    setDocuments([newDoc, ...documents]);
     setShowCreateModal(false);
   };
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#062b63] via-slate-900 to-slate-950 border border-[#1356a3]/40 p-5 md:p-6 rounded-2xl shadow-xl">
+      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans">
+        {/* Top Header Banner in Light Theme */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <div className="text-xs font-semibold text-[#f36c21] font-mono flex items-center gap-1.5">
-              <FolderKanban className="w-4 h-4" />
-              04 ศูนย์เอกสาร — ระบบสารบรรณโครงการ & RAG REGISTRY
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63] text-white rounded-lg">
+                MODULE 04
+              </span>
+              <span className="text-xs font-bold text-[#F36C21] uppercase tracking-wider font-mono">
+                CENTRAL DOCUMENT VAULT & R2 STORAGE
+              </span>
             </div>
-            <h1 className="text-xl md:text-2xl font-extrabold text-white mt-1">
-              ศูนย์จัดเก็บเอกสารและคลังข้อมูลสารบรรณ สกสว.
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
+              ศูนย์รวบรวมเอกสารและคลังข้อมูลกฎหมาย (Document Vault)
             </h1>
-            <p className="text-xs md:text-sm text-blue-200 mt-1">
-              มาตรฐานการตั้งชื่อไฟล์: <code className="text-[#f36c21] bg-black/40 px-2 py-0.5 rounded">[รหัสประเภท]-[หน่วยงาน]-[ลำดับ]-[ปี]_[ชื่อเรื่อง]-[สถานะ]</code>
+            <p className="text-xs md:text-sm text-slate-600 mt-1 max-w-3xl">
+              จัดเก็บเอกสารอย่างเป็นระบบ 13 โฟลเดอร์วงจรวิจัย พร้อมระบบตั้งชื่อมาตรฐาน (Standardized Filing Convention) และจัดเก็บบน Cloudflare R2
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#f36c21] hover:bg-[#d95813] text-white text-xs font-bold rounded-xl shadow-lg transition self-start sm:self-auto"
-          >
-            <Plus className="w-4 h-4" />
-            ลงทะเบียนเอกสารตามมาตรฐาน Naming
-          </button>
-        </div>
 
-        {/* Main Grid: Folder Tree Explorer + Document Table */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column: Research Lifecycle Folder Tree */}
-          <div className="lg:col-span-1 bg-gradient-to-b from-[#062b63]/80 to-slate-950 border border-[#1356a3]/30 rounded-2xl p-4 shadow-xl flex flex-col h-fit">
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#1356a3]/30">
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <FolderOpen className="w-4 h-4 text-[#f36c21]" />
-                โครงสร้างโฟลเดอร์โครงการ
-              </h3>
-              <span className="text-[10px] text-blue-300 font-mono">10 หมวด</span>
+          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
+            {/* R2 Cloudflare Sync Indicator */}
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 border border-blue-200 rounded-2xl text-xs font-bold text-[#062B63] shadow-xs">
+              <Cloud className="w-4 h-4 text-[#1356A3]" />
+              <span>R2 Bucket: tsri-documents-vault</span>
             </div>
 
-            <div className="space-y-1 text-xs max-h-[560px] overflow-y-auto pr-1">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-2xl shadow-xs transition"
+            >
+              <Plus className="w-4 h-4 text-[#F36C21]" />
+              ลงทะเบียนเอกสารใหม่
+            </button>
+          </div>
+        </div>
+
+        {/* Main Grid: Left Folder Explorer Tree vs Right Document List */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Column: 13 Lifecycle Folders Tree */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <FolderOpen className="w-4 h-4 text-[#1356A3]" />
+                โครงสร้าง 13 โฟลเดอร์วิจัย
+              </h2>
+              <span className="text-[10px] font-mono px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-bold">
+                {documents.length} ฉบับ
+              </span>
+            </div>
+
+            <div className="space-y-1 text-xs max-h-[600px] overflow-y-auto pr-1 scrollbar-none">
               <button
                 onClick={() => setSelectedFolder('ALL')}
                 className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
                   selectedFolder === 'ALL'
-                    ? 'bg-[#1356a3] text-white shadow'
-                    : 'text-slate-300 hover:text-white hover:bg-[#062b63]/50'
+                    ? 'bg-[#062B63] text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Folder className="w-3.5 h-3.5 text-[#f36c21]" />
-                <span>แสดงทุกโฟลเดอร์ (All)</span>
+                <Folder className="w-3.5 h-3.5 text-[#F36C21]" />
+                <span>แสดงทุกโฟลเดอร์ (ทั้งหมด)</span>
               </button>
 
               {RESEARCH_LIFECYCLE_FOLDERS.map((folder) => (
                 <div key={folder.code} className="space-y-0.5">
-                  <div className="px-2 py-1.5 text-[11px] font-bold text-blue-200 bg-slate-900/60 rounded-lg flex items-center gap-1.5 mt-1">
-                    <Folder className="w-3 h-3 text-[#168a91]" />
+                  <div className="px-2.5 py-1.5 text-[11px] font-bold text-slate-800 bg-slate-50 rounded-xl flex items-center gap-1.5 mt-1 border border-slate-100">
+                    <Folder className="w-3 h-3 text-[#1356A3]" />
                     <span className="truncate">{folder.name}</span>
                   </div>
                   {folder.subfolders && (
-                    <div className="pl-3 space-y-0.5 border-l border-[#1356a3]/20 ml-2">
+                    <div className="pl-3 space-y-0.5 border-l border-slate-200 ml-3">
                       {folder.subfolders.map((sub) => (
                         <button
                           key={sub.code}
                           onClick={() => setSelectedFolder(sub.name)}
-                          className={`w-full text-left px-2 py-1.5 rounded-lg text-[11px] transition truncate block ${
+                          className={`w-full text-left px-2 py-1 rounded-lg text-[11px] transition truncate block ${
                             selectedFolder === sub.name
-                              ? 'bg-[#168a91] text-white font-bold'
-                              : 'text-slate-400 hover:text-slate-200 hover:bg-[#062b63]/30'
+                              ? 'bg-blue-50 text-[#1356A3] font-extrabold border border-blue-200'
+                              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
                           }`}
                         >
                           {sub.name}
@@ -239,18 +258,18 @@ export default function DocumentsRoute() {
             </div>
           </div>
 
-          {/* Right Column: Search Filters & Document Table */}
+          {/* Right Column: Filters & Documents Table */}
           <div className="lg:col-span-3 space-y-4">
-            {/* Filter & Search Bar */}
-            <div className="bg-gradient-to-b from-[#062b63]/60 to-slate-950 border border-[#1356a3]/30 rounded-2xl p-4 shadow-xl flex flex-col md:flex-row gap-3 items-center justify-between">
-              <div className="relative w-full md:w-72">
-                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            {/* Filter Bar */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+              <div className="relative w-full md:w-80">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="ค้นหาตาม Document ID หรือชื่อเรื่อง..."
+                  placeholder="ค้นหาตาม Document Code หรือชื่อเอกสาร..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-950 border border-[#1356a3]/40 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#f36c21]"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-2xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1356A3]"
                 />
               </div>
 
@@ -258,7 +277,7 @@ export default function DocumentsRoute() {
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className="bg-slate-950 border border-[#1356a3]/40 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#f36c21]"
+                  className="bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-2xl px-3 py-2 focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
                 >
                   <option value="ALL">ทุกประเภทเอกสาร (Type)</option>
                   {Object.entries(DOCUMENT_TYPE_DICTIONARY).map(([code, info]) => (
@@ -271,7 +290,7 @@ export default function DocumentsRoute() {
                 <select
                   value={selectedOrg}
                   onChange={(e) => setSelectedOrg(e.target.value)}
-                  className="bg-slate-950 border border-[#1356a3]/40 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#f36c21]"
+                  className="bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold rounded-2xl px-3 py-2 focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
                 >
                   <option value="ALL">ทุกหน่วยงาน (Org)</option>
                   {Object.entries(ORGANIZATION_DICTIONARY).map(([code, name]) => (
@@ -280,56 +299,90 @@ export default function DocumentsRoute() {
                     </option>
                   ))}
                 </select>
+
+                {selectedFolder !== 'ALL' && (
+                  <button
+                    onClick={() => setSelectedFolder('ALL')}
+                    className="text-xs text-[#F36C21] font-bold hover:underline flex items-center gap-1 ml-1"
+                  >
+                    ล้างโฟลเดอร์ <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Document Table */}
-            <div className="bg-gradient-to-b from-[#062b63]/80 to-slate-950 border border-[#1356a3]/40 rounded-2xl overflow-hidden shadow-2xl">
+            {/* Document Table in Light Theme */}
+            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-300">
-                  <thead className="bg-[#062b63] text-blue-200 font-semibold border-b border-[#1356a3]/40">
+                <table className="w-full text-left text-xs text-slate-700">
+                  <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                     <tr>
-                      <th className="py-3.5 px-4">Document ID</th>
+                      <th className="py-3.5 px-4 rounded-l-xl">Document ID</th>
                       <th className="py-3.5 px-4">ชื่อเอกสาร / กฎหมาย</th>
-                      <th className="py-3.5 px-4">หน่วยงาน</th>
+                      <th className="py-3.5 px-4">หมวดหมู่ / โฟลเดอร์</th>
                       <th className="py-3.5 px-4">เวอร์ชัน</th>
                       <th className="py-3.5 px-4">สถานะ</th>
-                      <th className="py-3.5 px-4 text-right">การจัดการ</th>
+                      <th className="py-3.5 px-4 text-right rounded-r-xl">เปิดไฟล์ / R2</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1356a3]/20">
+                  <tbody className="divide-y divide-slate-100">
                     {filteredDocuments.map((doc) => {
                       const statusInfo = DOCUMENT_STATUS_BADGES[doc.status];
+                      const latestVer = doc.versions?.[0];
                       return (
-                        <tr key={doc.id} className="hover:bg-[#1356a3]/20 transition group">
-                          <td className="py-3.5 px-4 font-mono font-bold text-[#f36c21]">
+                        <tr key={doc.id} className="hover:bg-slate-50/80 transition group">
+                          <td className="py-3.5 px-4 font-mono font-bold text-[#1356A3]">
                             {doc.document_code}
                           </td>
-                          <td className="py-3.5 px-4 font-medium text-white max-w-sm">
-                            <div className="line-clamp-2">{doc.title}</div>
-                            <div className="text-[10px] text-blue-300/80 mt-0.5 font-mono">
-                              โฟลเดอร์: {doc.category}
+                          <td className="py-3.5 px-4 font-medium text-slate-900 max-w-sm">
+                            <div className="line-clamp-2 font-bold">{doc.title}</div>
+                            <div className="text-[11px] text-slate-400 mt-0.5">
+                              {doc.issuing_body || 'สกสว.'} • {formatThaiDate(doc.created_at)}
                             </div>
                           </td>
-                          <td className="py-3.5 px-4 text-slate-300">{doc.issuing_body || '-'}</td>
-                          <td className="py-3.5 px-4 font-mono text-slate-200 font-bold">
+                          <td className="py-3.5 px-4 text-slate-500 max-w-[200px] truncate">
+                            {doc.category}
+                          </td>
+                          <td className="py-3.5 px-4 font-mono text-slate-700 font-bold">
                             v{doc.latest_version_number}
                           </td>
                           <td className="py-3.5 px-4">
                             <span
-                              className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded border ${statusInfo.class}`}
+                              className={`inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-full border ${statusInfo.class}`}
                             >
-                              {statusInfo.label}
+                              ● {statusInfo.label}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-right">
-                            <button
-                              onClick={() => setSelectedDocForVersion(doc)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1356a3] hover:bg-[#f36c21] text-white rounded-lg transition text-xs font-semibold shadow"
-                            >
-                              <History className="w-3.5 h-3.5" />
-                              ประวัติ Version
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              {latestVer?.storage_url ? (
+                                <a
+                                  href={latestVer.storage_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-1.5 text-[#062B63] hover:text-white hover:bg-[#062B63] rounded-xl border border-slate-200 transition shadow-2xs"
+                                  title="เปิดดู / ดาวน์โหลดไฟล์"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </a>
+                              ) : (
+                                <button
+                                  onClick={() => setSelectedDocForVersion(doc)}
+                                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl border border-slate-200 transition"
+                                  title="ดูเวอร์ชัน"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              <button
+                                onClick={() => setSelectedDocForVersion(doc)}
+                                className="p-1.5 text-slate-600 hover:text-[#1356A3] hover:bg-blue-50 rounded-xl border border-slate-200 transition"
+                                title="ประวัติเวอร์ชัน (Version History)"
+                              >
+                                <History className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -337,176 +390,178 @@ export default function DocumentsRoute() {
                   </tbody>
                 </table>
               </div>
-
-              {filteredDocuments.length === 0 && (
-                <div className="py-12 text-center text-slate-400 text-xs">
-                  ไม่พบเอกสารที่ตรงกับเงื่อนไขการค้นหา
-                </div>
-              )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Version History Modal */}
-      <DocumentVersionModal
-        document={selectedDocForVersion}
-        onClose={() => setSelectedDocForVersion(null)}
-        onUploadNewVersion={handleUploadVersion}
-      />
+        {/* Modal: Document Version History */}
+        {selectedDocForVersion && (
+          <DocumentVersionModal
+            document={selectedDocForVersion}
+            onClose={() => setSelectedDocForVersion(null)}
+            onUploadNewVersion={handleUploadVersion}
+          />
+        )}
 
-      {/* Register Document Modal with Standard Naming Generator */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in font-sans">
-          <div className="w-full max-w-2xl bg-slate-900 border border-[#1356a3]/60 rounded-3xl shadow-2xl p-6 overflow-hidden">
-            <h2 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-              <FileCode className="w-5 h-5 text-[#f36c21]" />
-              ลงทะเบียนเอกสารตามระบบสารบรรณ & Naming Convention
-            </h2>
-            <p className="text-xs text-blue-200 mb-4">
-              ระบบจะสร้าง Document ID และชื่อไฟล์มาตรฐานภาษาไทยสำหรับ RAG Database อัตโนมัติ
-            </p>
-
-            <form onSubmit={handleCreateDocument} className="space-y-4">
-              {/* Generator Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#062b63]/40 p-3.5 rounded-2xl border border-[#1356a3]/40">
+        {/* Modal: Create Document Generator */}
+        {showCreateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
+            <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-[#062B63] to-[#1356A3] text-white flex items-center justify-between">
                 <div>
-                  <label className="block text-[11px] text-blue-200 font-semibold mb-1">
-                    1. รหัสประเภท
-                  </label>
-                  <select
-                    value={formType}
-                    onChange={(e) => setFormType(e.target.value as DocumentTypeCode)}
-                    className="w-full bg-slate-950 border border-[#1356a3]/40 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                  >
-                    {Object.keys(DOCUMENT_TYPE_DICTIONARY).map((k) => (
-                      <option key={k} value={k}>
-                        {k}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F36C21]">
+                    RAG DOCUMENT CONVENTION GENERATOR
+                  </div>
+                  <h3 className="text-base font-extrabold mt-0.5">
+                    ลงทะเบียนและสร้างรหัสเอกสารมาตรฐาน (Document Standard Filing)
+                  </h3>
                 </div>
-
-                <div>
-                  <label className="block text-[11px] text-blue-200 font-semibold mb-1">
-                    2. หน่วยงาน
-                  </label>
-                  <select
-                    value={formOrg}
-                    onChange={(e) => setFormOrg(e.target.value as OrganizationCode)}
-                    className="w-full bg-slate-950 border border-[#1356a3]/40 rounded-lg px-2.5 py-1.5 text-xs text-white"
-                  >
-                    {Object.keys(ORGANIZATION_DICTIONARY).map((k) => (
-                      <option key={k} value={k}>
-                        {k}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-blue-200 font-semibold mb-1">
-                    3. ลำดับ (Seq)
-                  </label>
-                  <input
-                    type="text"
-                    value={formSeq}
-                    onChange={(e) => setFormSeq(e.target.value)}
-                    placeholder="001"
-                    className="w-full bg-slate-950 border border-[#1356a3]/40 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-blue-200 font-semibold mb-1">
-                    4. ปี (พ.ศ.)
-                  </label>
-                  <input
-                    type="text"
-                    value={formYear}
-                    onChange={(e) => setFormYear(e.target.value)}
-                    placeholder="2562"
-                    className="w-full bg-slate-950 border border-[#1356a3]/40 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono"
-                  />
-                </div>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="p-1.5 text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">
-                  5. ชื่อเรื่องภาษาไทย *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="เช่น พระราชบัญญัติสภานโยบายการอุดมศึกษา"
-                  className="w-full bg-slate-950 border border-[#1356a3]/40 rounded-xl px-3 py-2 text-xs text-white focus:border-[#f36c21]"
-                />
-              </div>
+              <form onSubmit={handleCreateDocument} className="p-6 overflow-y-auto space-y-4 text-xs">
+                {/* Generated Preview Box */}
+                <div className="bg-blue-50/60 border border-blue-200 rounded-2xl p-4 space-y-1">
+                  <div className="text-[11px] font-bold text-[#062B63] flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-[#F36C21]" />
+                    ชื่อไฟล์มาตรฐานที่จะบันทึกบน Cloudflare R2:
+                  </div>
+                  <div className="font-mono text-xs font-bold text-[#1356A3] break-all">
+                    {generatedFileName}
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
+                {/* Grid: Type & Org */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">
+                      1. ประเภทเอกสาร (Doc Type) *
+                    </label>
+                    <select
+                      value={formType}
+                      onChange={(e) => setFormType(e.target.value as DocumentTypeCode)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-bold focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
+                    >
+                      {Object.entries(DOCUMENT_TYPE_DICTIONARY).map(([code, info]) => (
+                        <option key={code} value={code}>
+                          {code} — {info.thaiName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">
+                      2. หน่วยงานผู้ออก (Organization) *
+                    </label>
+                    <select
+                      value={formOrg}
+                      onChange={(e) => setFormOrg(e.target.value as OrganizationCode)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-bold focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
+                    >
+                      {Object.entries(ORGANIZATION_DICTIONARY).map(([code, name]) => (
+                        <option key={code} value={code}>
+                          {code} — {name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Grid: Seq & Year */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">
+                      3. ลำดับเอกสาร (Sequence 3 หลัก) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="001"
+                      value={formSeq}
+                      onChange={(e) => setFormSeq(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-mono font-bold focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">
+                      4. ปี พ.ศ. (Year 4 หลัก) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="2562"
+                      value={formYear}
+                      onChange={(e) => setFormYear(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-mono font-bold focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Title */}
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">
-                    6. สถานะเอกสาร
+                  <label className="block font-bold text-slate-800 mb-1">
+                    5. ชื่อเรื่องเอกสาร (Title) *
                   </label>
                   <input
                     type="text"
-                    value={formStatus}
-                    onChange={(e) => setFormStatus(e.target.value)}
-                    placeholder="ฉบับใช้บังคับ / ฉบับลงนาม"
-                    className="w-full bg-slate-950 border border-[#1356a3]/40 rounded-xl px-3 py-2 text-xs text-white"
+                    required
+                    placeholder="ระบุชื่อเอกสารหรือกฎหมายภาษาไทย..."
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-medium focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
                   />
                 </div>
 
+                {/* Category Folder Selection */}
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">
-                    7. โฟลเดอร์ปลายทาง
+                  <label className="block font-bold text-slate-800 mb-1">
+                    6. จัดเก็บในโฟลเดอร์วิจัย (Research Folder) *
                   </label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full bg-slate-950 border border-[#1356a3]/40 rounded-xl px-3 py-2 text-xs text-white"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 font-bold focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
                   >
-                    {RESEARCH_LIFECYCLE_FOLDERS.flatMap((f) => f.subfolders || []).map((sub) => (
-                      <option key={sub.code} value={sub.name}>
-                        {sub.name}
-                      </option>
-                    ))}
+                    <option value="00_บริหารและควบคุมโครงการ / 00.01_TOR-สัญญา">00_บริหารและควบคุมโครงการ / 00.01_TOR-สัญญา</option>
+                    <option value="01_กฎหมายแม่บท / 01.01_พระราชบัญญัติสภานโยบาย">01_กฎหมายแม่บท / 01.01_พระราชบัญญัติสภานโยบาย</option>
+                    <option value="01_กฎหมายแม่บท / 01.02_พระราชบัญญัติส่งเสริม-ววน">01_กฎหมายแม่บท / 01.02_พระราชบัญญัติส่งเสริม-ววน</option>
+                    <option value="02_กฎหมายลำดับรอง / 02.01_ระเบียบสภานโยบาย">02_กฎหมายลำดับรอง / 02.01_ระเบียบสภานโยบาย</option>
+                    <option value="02_กฎหมายลำดับรอง / 02.02_ระเบียบ-กสว">02_กฎหมายลำดับรอง / 02.02_ระเบียบ-กสว</option>
+                    <option value="02_กฎหมายลำดับรอง / 02.03_ประกาศ-กสว">02_กฎหมายลำดับรอง / 02.03_ประกาศ-กสว</option>
+                    <option value="02_กฎหมายลำดับรอง / 02.06_คำสั่ง">02_กฎหมายลำดับรอง / 02.06_คำสั่ง</option>
+                    <option value="06_งานวิเคราะห์และสังเคราะห์ / 06.01_Gap-Analysis">06_งานวิเคราะห์และสังเคราะห์ / 06.01_Gap-Analysis</option>
                   </select>
                 </div>
-              </div>
 
-              {/* Live Preview Banner */}
-              <div className="p-3.5 bg-slate-950 rounded-2xl border border-[#f36c21]/40 space-y-1">
-                <div className="text-[10px] uppercase font-mono font-bold text-[#f36c21] flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  RAG Standard File Name Preview
+                {/* Footer Buttons */}
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-[#062B63] hover:bg-[#1356A3] text-white font-bold rounded-xl shadow-xs transition flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-[#F36C21]" />
+                    <span>สร้างและบันทึกลงคลัง</span>
+                  </button>
                 </div>
-                <div className="font-mono text-xs font-bold text-white break-all select-all">
-                  {generatedFileName}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#1356a3]/30">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl hover:bg-slate-700 transition"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#f36c21] hover:bg-[#d95813] text-white text-xs font-bold rounded-xl shadow transition"
-                >
-                  บันทึกลงทะเบียนเอกสาร
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </AppLayout>
   );
 }

@@ -14,6 +14,7 @@ import {
   History,
   Download,
   Lock,
+  ExternalLink,
 } from 'lucide-react';
 import { formatThaiDateTime, formatFileSize } from '~/lib/utils';
 
@@ -55,46 +56,46 @@ export function DocumentVersionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-3xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
+      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 bg-slate-950/60 flex items-start justify-between gap-3">
+        <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-[#062B63] to-[#1356A3] text-white flex items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-white text-[#062B63] rounded-md shadow-xs">
                 {document.document_code}
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-blue-100">
                 {DOCUMENT_PREFIX_LABELS[document.prefix_code]}
               </span>
             </div>
-            <h2 className="text-lg font-bold text-white leading-snug">
+            <h2 className="text-lg font-extrabold text-white leading-snug">
               {document.title}
             </h2>
-            <div className="text-xs text-slate-400 mt-1">
+            <div className="text-xs text-blue-100 mt-1">
               หมวดหมู่: {document.category} • หน่วยงานผู้ออก: {document.issuing_body || 'สกสว.'}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+            className="p-1.5 text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-5 overflow-y-auto space-y-6 flex-1">
+        {/* Content Body in Light Theme */}
+        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
           {/* Action Header */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
-              <History className="w-4 h-4 text-blue-400" />
+            <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <History className="w-4 h-4 text-[#1356A3]" />
               ประวัติและสถานะเวอร์ชัน (Version History)
             </h3>
             {!showUploadForm && (
               <button
                 onClick={() => setShowUploadForm(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow transition"
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-xl shadow-xs transition"
               >
                 <Upload className="w-3.5 h-3.5" />
                 อัปโหลดเวอร์ชันใหม่ (New Version)
@@ -106,14 +107,14 @@ export function DocumentVersionModal({
           {showUploadForm && (
             <form
               onSubmit={handleUploadSubmit}
-              className="p-4 bg-slate-950 border border-blue-500/30 rounded-xl space-y-3 animate-fade-in"
+              className="p-5 bg-slate-50 border border-blue-200 rounded-2xl space-y-3 animate-fade-in"
             >
-              <div className="text-xs font-bold text-blue-300 uppercase tracking-wide">
+              <div className="text-xs font-bold text-[#062B63] uppercase tracking-wide">
                 เพิ่มไฟล์เวอร์ชันใหม่ (ห้ามเขียนทับเวอร์ชันที่ Validated แล้ว)
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
                     เลขเวอร์ชัน (เช่น 1.2, 2.0) *
                   </label>
                   <input
@@ -122,11 +123,11 @@ export function DocumentVersionModal({
                     placeholder="1.2"
                     value={versionNumber}
                     onChange={(e) => setVersionNumber(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-medium focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
                     ชื่อไฟล์เอกสาร (PDF/DOCX) *
                   </label>
                   <input
@@ -135,12 +136,12 @@ export function DocumentVersionModal({
                     placeholder="Document_v1.2.pdf"
                     value={fileName}
                     onChange={(e) => setFileName(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 mb-1">
                   สรุปรายละเอียดการแก้ไข (Change Summary) *
                 </label>
                 <textarea
@@ -149,20 +150,20 @@ export function DocumentVersionModal({
                   placeholder="ระบุจุดที่มีการแก้ไข หรือผลการตรวจทาน..."
                   value={changeSummary}
                   onChange={(e) => setChangeSummary(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900 font-medium focus:ring-2 focus:ring-[#1356A3] focus:outline-none"
                 ></textarea>
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setShowUploadForm(false)}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg transition"
+                  className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow transition"
+                  className="px-4 py-2 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-xl shadow-xs transition"
                 >
                   บันทึกเวอร์ชันใหม่
                 </button>
@@ -180,49 +181,66 @@ export function DocumentVersionModal({
                 return (
                   <div
                     key={ver.id}
-                    className={`p-4 rounded-xl border transition ${
+                    className={`p-4.5 rounded-2xl border transition ${
                       isValidated
-                        ? 'bg-slate-950/80 border-emerald-500/40'
-                        : 'bg-slate-950/50 border-slate-800'
+                        ? 'bg-emerald-50/40 border-emerald-300'
+                        : 'bg-slate-50 border-slate-200'
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold font-mono text-white bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700">
+                        <span className="text-xs font-bold font-mono text-slate-900 bg-white px-2.5 py-0.5 rounded-md border border-slate-200 shadow-2xs">
                           v{ver.version_number}
                         </span>
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${statusInfo.class}`}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusInfo.class}`}
                         >
-                          {statusInfo.label}
+                          ● {statusInfo.label}
                         </span>
                         {isValidated && (
-                          <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
-                            <Lock className="w-3 h-3" /> ล็อก (Validated)
+                          <span className="flex items-center gap-1 text-[11px] text-emerald-700 font-bold">
+                            <Lock className="w-3 h-3" /> รับรองแล้ว (Locked)
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-slate-400 font-mono">
+                      <span className="text-xs text-slate-500 font-mono">
                         {formatThaiDateTime(ver.created_at)}
                       </span>
                     </div>
 
-                    <div className="text-xs text-slate-300 mb-2">
-                      <span className="font-semibold text-slate-400">ชื่อไฟล์: </span>
-                      {ver.file_name} ({formatFileSize(ver.file_size_bytes)})
+                    <div className="text-xs text-slate-700 mb-2">
+                      <span className="font-bold text-slate-900">ชื่อไฟล์: </span>
+                      <span className="font-mono">{ver.file_name}</span> ({formatFileSize(ver.file_size_bytes)})
                     </div>
 
                     {ver.change_summary && (
-                      <div className="text-xs text-slate-400 bg-slate-900/80 p-2 rounded-lg border border-slate-800">
-                        <span className="font-semibold text-slate-300">รายละเอียดการเปลี่ยนแปลง: </span>
+                      <div className="text-xs text-slate-600 bg-white p-3 rounded-xl border border-slate-200/80">
+                        <span className="font-bold text-slate-900">รายละเอียดการเปลี่ยนแปลง: </span>
                         {ver.change_summary}
                       </div>
                     )}
 
-                    <div className="flex items-center justify-end gap-2 mt-3 pt-2 border-t border-slate-800/60">
-                      <button className="flex items-center gap-1 px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition">
-                        <Download className="w-3.5 h-3.5" /> ดาวน์โหลดไฟล์
-                      </button>
+                    <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-slate-200/60 text-[11px] text-slate-500">
+                      <span className="font-mono text-[10px] truncate max-w-xs text-slate-400">
+                        R2 Key: {ver.storage_r2_key}
+                      </span>
+                      {ver.storage_url ? (
+                        <a
+                          href={ver.storage_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-[#062B63] hover:bg-[#1356A3] text-white font-bold rounded-xl shadow-xs transition"
+                        >
+                          <Download className="w-3.5 h-3.5" /> เปิด/ดาวน์โหลด
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => alert(`เปิดดาวน์โหลดไฟล์ ${ver.file_name}`)}
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                        >
+                          <Download className="w-3.5 h-3.5" /> ดาวน์โหลดไฟล์
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
