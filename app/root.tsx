@@ -42,7 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="h-full min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased">
+      <body className="h-full min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans antialiased selection:bg-orange-500 selection:text-white">
         {children}
         <ScrollRestoration />
         <Scripts />

@@ -298,3 +298,126 @@ export interface ExecutiveDashboardData {
   recentDocuments: DocumentItem[];
   recentActivities: ActivityLogItem[];
 }
+
+// -----------------------------------------------------------------------------
+// EXPERT REVIEW CENTER TYPES (BATCH 1 & AUDITED VERIFICATION)
+// -----------------------------------------------------------------------------
+
+export type VerificationStatus =
+  | 'SOURCE_NOT_VERIFIED'
+  | 'SOURCE_CONFLICT'
+  | 'EXPERT_VALIDATION_REQUIRED'
+  | 'VALIDATED';
+
+export const VERIFICATION_STATUS_BADGES: Record<
+  VerificationStatus,
+  { label: string; class: string; bgLight: string; textDark: string; border: string; desc: string }
+> = {
+  SOURCE_NOT_VERIFIED: {
+    label: 'SOURCE NOT VERIFIED',
+    class: 'bg-slate-100 text-slate-700 border-slate-300',
+    bgLight: 'bg-slate-50',
+    textDark: 'text-slate-800',
+    border: 'border-slate-300',
+    desc: 'ยังไม่ได้ตรวจสอบเทียบตัวบทกฎหมาย/ระเบียบต้นทาง',
+  },
+  SOURCE_CONFLICT: {
+    label: 'SOURCE CONFLICT',
+    class: 'bg-rose-100 text-rose-800 border-rose-300',
+    bgLight: 'bg-rose-50',
+    textDark: 'text-rose-900',
+    border: 'border-rose-300',
+    desc: 'พบข้อขัดแย้งระหว่างตัวบทกฎหมายกับแนวปฏิบัติจริง หรือขัดแย้งระหว่างกฎหมายต่างลำดับศักดิ์',
+  },
+  EXPERT_VALIDATION_REQUIRED: {
+    label: 'EXPERT VALIDATION REQUIRED',
+    class: 'bg-amber-100 text-amber-800 border-amber-300',
+    bgLight: 'bg-amber-50',
+    textDark: 'text-amber-900',
+    border: 'border-amber-300',
+    desc: 'อยู่ระหว่างรอความเห็นทางวิชาการ/การตีความจากผู้เชี่ยวชาญ',
+  },
+  VALIDATED: {
+    label: 'VALIDATED',
+    class: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+    bgLight: 'bg-emerald-50',
+    textDark: 'text-emerald-900',
+    border: 'border-emerald-300',
+    desc: 'ผ่านการตรวจรับรองความถูกต้องครบถ้วนและมีหลักฐานอ้างอิงชัดเจน',
+  },
+};
+
+export interface ReviewBatch {
+  id: string;
+  project_id: string;
+  batch_number: string;
+  title: string;
+  description: string;
+  gate_target: ProjectGate;
+  status: 'OPEN' | 'IN_REVIEW' | 'COMPLETED' | 'ARCHIVED';
+  total_items: number;
+  validated_items: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReviewEvidenceRecord {
+  id: string;
+  review_item_id: string;
+  project_id: string;
+  reviewer_id: string;
+  reviewer_name: string;
+  reviewer_role?: string;
+  review_date: string;
+  doc_id_ref: string;
+  article_section: string;
+  page_number: number;
+  edition_used: string;
+  rationale: string;
+  requirement_impact: string;
+  storage_r2_key?: string;
+  evidence_file_name?: string;
+  evidence_file_size?: number;
+  resulting_status: VerificationStatus;
+  created_at: string;
+}
+
+export interface ReviewItem {
+  id: string;
+  batch_id: string;
+  project_id: string;
+  item_code: string;
+  title: string;
+  document_id?: string;
+  document_code?: string;
+  document_title?: string;
+  document_version_number?: string;
+  deliverable_code?: string;
+  article_section: string;
+  page_number: number;
+  issue_description: string;
+  assigned_expert_id: string;
+  assigned_expert_name: string;
+  assigned_category: 'ADVISORY_LEGAL' | 'ADVISORY_PRIVATE' | 'ADVISORY_HRD' | 'CORE_PM';
+  status: VerificationStatus;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  due_date: string;
+  evidence_records: ReviewEvidenceRecord[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ExpertReviewSubmission {
+  review_item_id: string;
+  reviewer_id: string;
+  doc_id_ref: string;
+  article_section: string;
+  page_number: number;
+  edition_used: string;
+  rationale: string;
+  requirement_impact: string;
+  resulting_status: VerificationStatus;
+  evidence_file_name?: string;
+  storage_r2_key?: string;
+}
+
