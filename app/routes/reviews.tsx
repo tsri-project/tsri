@@ -14,6 +14,7 @@ import {
   VerificationStatus,
   VERIFICATION_STATUS_BADGES,
 } from '~/types';
+import { useRequireAuth } from '~/lib/use-auth';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -37,6 +38,7 @@ import {
   Info,
   Layers,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { formatThaiDate, formatThaiDateTime, formatFileSize } from '~/lib/utils';
 
@@ -49,6 +51,7 @@ export const clientLoader = async () => {
 };
 
 export default function ReviewsRoute() {
+  const { isLoading, isAuthenticated } = useRequireAuth('/login?returnTo=/reviews');
   const { batches: initialBatches, items: initialItems } = useLoaderData<typeof clientLoader>();
 
   const [selectedBatchId, setSelectedBatchId] = useState<string>('batch-01');
@@ -57,6 +60,18 @@ export default function ReviewsRoute() {
 
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>(initialItems);
   const [activeModalItem, setActiveModalItem] = useState<ReviewItem | null>(null);
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-[#062B63] animate-spin" />
+          <div className="text-xs font-semibold text-slate-500">กำลังตรวจสอบสิทธิ์การเข้าใช้งาน Expert Review Center...</div>
+        </div>
+      </div>
+    );
+  }
+
 
   // Form State for Evidence Submission
   const [evidenceForm, setEvidenceForm] = useState({

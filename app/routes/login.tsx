@@ -1,34 +1,81 @@
-import { useState } from 'react';
-import { useNavigate, Link } from '@remix-run/react';
-import { Building2, ShieldCheck, Lock, Mail, ArrowRight, CheckCircle2, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from '@remix-run/react';
+import { supabase } from '~/lib/supabase.client';
+import { useAuth } from '~/lib/use-auth';
+import { Building2, Lock, Mail, ArrowRight, Shield, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function LoginRoute() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo') || '/dashboard';
+  const { session, isLoading: isAuthLoading } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // If user already has a valid session, redirect to returnTo or /dashboard
+  useEffect(() => {
+    if (!isAuthLoading && session) {
+      navigate(returnTo, { replace: true });
+    }
+  }, [session, isAuthLoading, navigate, returnTo]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
       setError('กรุณากรอกอีเมลและรหัสผ่าน');
       return;
     }
 
-    if (password.length < 6) {
-      setError('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
-      return;
-    }
+    setIsSubmitting(true);
 
-    setIsLoading(true);
-    // Standard auth flow / session redirection
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 400);
+    try {
+      // Real Supabase Authentication
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: password,
+      });
+
+      if (authError) {
+        if (authError.message.includes('Invalid login credentials')) {
+          setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง');
+        } else if (authError.message.includes('Email not confirmed')) {
+          setError('บัญชีนี้ยังไม่ได้ยืนยันอีเมลในระบบ Supabase');
+        } else {
+          setError(`การเข้าสู่ระบบไม่สำเร็จ: ${authError.message}`);
+        }
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (data.session) {
+        navigate(returnTo, { replace: true });
+      } else {
+        setError('ไม่สามารถสร้าง Session ได้ กรุณาลองใหม่อีกครั้ง');
+        setIsSubmitting(false);
+      }
+    } catch (err: any) {
+      console.error('Supabase Auth error:', err);
+      setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์ Supabase Auth');
+      setIsSubmitting(false);
+    }
   };
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-[#062B63] animate-spin" />
+          <div className="text-xs font-semibold text-slate-500">กำลังตรวจสอบสถานะการเข้าสู่ระบบ...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-slate-50 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans text-slate-800">
@@ -54,17 +101,18 @@ export default function LoginRoute() {
         <div className="p-3.5 bg-blue-50/80 border border-blue-200/80 rounded-2xl mb-6 flex items-start gap-2.5">
           <Shield className="w-4 h-4 text-[#062B63] shrink-0 mt-0.5" />
           <div className="text-xs text-slate-700 leading-relaxed">
-            <span className="font-bold text-[#062B63]">ระบบความปลอดภัยและควบคุมการเข้าถึง:</span>
+            <span className="font-bold text-[#062B63]">ระบบความปลอดภัย Supabase Auth:</span>
             <div className="text-[11px] text-slate-600 mt-0.5">
-              เข้าสู่ระบบด้วยบัญชีผู้ใช้งานที่ได้รับการอนุญาตตามบทบาท (Role-Based Access Control)
+              ระบบตรวจสอบตัวตนจริงผ่านฐานข้อมูล Supabase ด้วยนโยบายความปลอดภัย RLS
             </div>
           </div>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl mb-4 text-xs font-semibold text-rose-700 text-center">
-            {error}
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl mb-4 text-xs font-semibold text-rose-700 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -80,9 +128,10 @@ export default function LoginRoute() {
                 type="email"
                 name="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@organization.or.th"
+                placeholder="dencapvision@gmail.com"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
               />
             </div>
@@ -98,9 +147,10 @@ export default function LoginRoute() {
                 type="password"
                 name="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="กรอกรหัสผ่านของคุณ"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
               />
             </div>
@@ -108,11 +158,20 @@ export default function LoginRoute() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isSubmitting}
             className="w-full mt-2 py-3 bg-[#062B63] hover:bg-[#1356A3] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 group cursor-pointer"
           >
-            <span>{isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ Control Center'}</span>
-            {!isLoading && <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-orange-400" />}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
+                <span>กำลังเข้าสู่ระบบผ่าน Supabase...</span>
+              </>
+            ) : (
+              <>
+                <span>เข้าสู่ระบบ Control Center</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-orange-400" />
+              </>
+            )}
           </button>
         </form>
 

@@ -16,9 +16,12 @@ import {
   Search,
   Settings,
   MessagesSquare,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { mockCurrentUser } from '~/lib/mock-data';
+import { useAuth } from '~/lib/use-auth';
+
 
 interface SidebarProps {
   onOpenSearch?: () => void;
@@ -41,7 +44,10 @@ const mainNavigationItems = [
 ];
 
 export function Sidebar({ onOpenSearch }: SidebarProps) {
+  const { session, user, signOut } = useAuth();
+
   return (
+
     <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 text-slate-700 select-none shrink-0 h-full font-sans shadow-xs">
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-100 flex items-center gap-3 bg-gradient-to-r from-[#062B63] to-[#1356A3] text-white">
@@ -126,25 +132,36 @@ export function Sidebar({ onOpenSearch }: SidebarProps) {
         </NavLink>
       </div>
 
-      {/* Current User Card in Light Theme */}
+      {/* Current User Card with Supabase Session in Light Theme */}
       <div className="p-3 border-t border-slate-100 bg-slate-50/80">
-        <div className="flex items-center gap-2.5 p-2 rounded-2xl bg-white border border-slate-200 shadow-xs">
-          <img
-            src={mockCurrentUser.avatar_url}
-            alt={mockCurrentUser.full_name}
-            className="w-9 h-9 rounded-full object-cover border-2 border-[#F36C21] shrink-0"
-          />
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-extrabold text-slate-900 truncate">
-              {mockCurrentUser.full_name}
-            </div>
-            <div className="text-[10px] text-[#F36C21] font-mono font-bold flex items-center gap-1 truncate">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#F36C21] shrink-0 animate-pulse"></span>
-              Super Admin
+        <div className="flex items-center justify-between gap-2 p-2 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <img
+              src={mockCurrentUser.avatar_url}
+              alt={mockCurrentUser.full_name}
+              className="w-9 h-9 rounded-full object-cover border-2 border-[#F36C21] shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-extrabold text-slate-900 truncate">
+                {user?.email ? user.email.split('@')[0] : mockCurrentUser.full_name}
+              </div>
+              <div className="text-[10px] text-[#F36C21] font-mono font-bold flex items-center gap-1 truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                {session ? 'Supabase Auth' : 'Guest'}
+              </div>
             </div>
           </div>
+
+          <button
+            onClick={signOut}
+            title="ออกจากระบบ (Sign Out)"
+            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer shrink-0"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>
   );
 }
+
