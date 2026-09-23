@@ -347,6 +347,40 @@ export const VERIFICATION_STATUS_BADGES: Record<
   },
 };
 
+export type ReviewOpinionType =
+  | 'LEAD_FINDING'
+  | 'SUPPORTING'
+  | 'ALTERNATIVE_VIEW'
+  | 'CONSENSUS_NOTE';
+
+export const REVIEW_OPINION_BADGES: Record<
+  ReviewOpinionType,
+  { label: string; class: string; iconName: string }
+> = {
+  LEAD_FINDING: {
+    label: 'ความเห็นเจ้าภาพหลัก (Lead Finding)',
+    class: 'bg-blue-100 text-blue-800 border-blue-300 font-semibold',
+    iconName: 'Award',
+  },
+  SUPPORTING: {
+    label: 'ความเห็นสนับสนุน (Supporting)',
+    class: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+    iconName: 'ThumbsUp',
+  },
+  ALTERNATIVE_VIEW: {
+    label: 'ความเห็นต่าง/ข้อสังเกตเพิ่มเติม (Alternative View)',
+    class: 'bg-amber-100 text-amber-800 border-amber-300',
+    iconName: 'AlertCircle',
+  },
+  CONSENSUS_NOTE: {
+    label: 'มติที่ประชุม/ข้อสรุป PM (Consensus)',
+    class: 'bg-purple-100 text-purple-800 border-purple-300 font-semibold',
+    iconName: 'CheckCheck',
+  },
+};
+
+export type AdvisorTeamGroup = 'PUBLIC_SECTOR' | 'PRIVATE_SECTOR' | 'PM_OFFICE';
+
 export interface ReviewBatch {
   id: string;
   project_id: string;
@@ -368,6 +402,8 @@ export interface ReviewEvidenceRecord {
   reviewer_id: string;
   reviewer_name: string;
   reviewer_role?: string;
+  reviewer_team?: AdvisorTeamGroup;
+  opinion_type?: ReviewOpinionType;
   review_date: string;
   doc_id_ref: string;
   article_section: string;
@@ -399,6 +435,9 @@ export interface ReviewItem {
   assigned_expert_id: string;
   assigned_expert_name: string;
   assigned_category: 'ADVISORY_LEGAL' | 'ADVISORY_PRIVATE' | 'ADVISORY_HRD' | 'CORE_PM';
+  lead_team?: AdvisorTeamGroup;
+  co_expert_ids?: string[];
+  co_experts_count?: number;
   status: VerificationStatus;
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
   due_date: string;
