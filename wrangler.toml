@@ -11,10 +11,13 @@ bucket_name = "tsri-documents-vault"
 # Environment Variables (Non-sensitive)
 [vars]
 ENVIRONMENT = "production"
+BUILD_TARGET = "production"
 APP_NAME = "TSRI One Link for All Control Center"
 APP_URL = "https://tsri-onelink.pages.dev"
+SUPABASE_URL = "https://aatlledgsftkjfunqsvh.supabase.co"
 
 [env.preview.vars]
 ENVIRONMENT = "preview"
+BUILD_TARGET = "preview"
 APP_NAME = "TSRI One Link Control Center (Preview/Staging)"
 APP_URL = "https://staging.tsri.pages.dev"
