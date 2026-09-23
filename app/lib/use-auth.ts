@@ -3,61 +3,162 @@ import { useNavigate } from '@remix-run/react';
 import { supabase } from '~/lib/supabase.client';
 import type { Session, User } from '@supabase/supabase-js';
 
+export type UserRole =
+  | 'project_admin'
+  | 'pm'
+  | 'legal_advisor'
+  | 'researcher'
+  | 'hrd'
+  | 'stakeholder'
+  | 'viewer';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  organization: string;
+  avatar_url?: string;
+  phone?: string;
+}
+
 export interface AuthState {
   session: Session | null;
   user: User | null;
+  profile: UserProfile | null;
+  role: UserRole | null;
+  isAdminOrPm: boolean;
   isLoading: boolean;
+  refreshAuth: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const fetchProfileAndRole = useCallback(async (currentSession: Session | null) => {
+    if (!currentSession?.user) {
+      setProfile(null);
+      setRole(null);
+      return;
+    }
+
+    try {
+      const userId = currentSession.user.id;
+
+      // 1. Fetch Profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profileData) {
+        setProfile(profileData);
+      } else {
+        // Fallback to metadata
+        const meta = currentSession.user.user_metadata || {};
+        setProfile({
+          id: userId,
+          email: currentSession.user.email || '',
+          full_name: meta.full_name || currentSession.user.email || 'ผู้ใช้งานระบบ',
+          organization: meta.organization || 'สกสว.',
+        });
+      }
+
+      // 2. Fetch Project Member Role
+      const { data: memberData } = await supabase
+        .from('project_members')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (memberData?.role) {
+        setRole(memberData.role as UserRole);
+      } else {
+        const metaRole = currentSession.user.user_metadata?.role;
+        setRole((metaRole as UserRole) || null);
+      }
+    } catch (err) {
+      console.error('Error fetching profile and role:', err);
+    }
+  }, []);
+
+  const refreshAuth = useCallback(async () => {
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      await fetchProfileAndRole(currentSession);
+    } catch (err) {
+      console.error('Error refreshing auth state:', err);
+    }
+  }, [fetchProfileAndRole]);
 
   useEffect(() => {
     let isMounted = true;
 
-    // 1. Initial Session Check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (isMounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
+    // Initial session load
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      if (!isMounted) return;
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      if (currentSession) {
+        await fetchProfileAndRole(currentSession);
       }
+      if (isMounted) setIsLoading(false);
     }).catch((err) => {
-      console.error('Error fetching Supabase session:', err);
-      if (isMounted) {
-        setIsLoading(false);
-      }
+      console.error('Error getting initial session:', err);
+      if (isMounted) setIsLoading(false);
     });
 
-    // 2. Listen to Auth State Changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (isMounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
+    // Auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      if (!isMounted) return;
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      if (newSession) {
+        await fetchProfileAndRole(newSession);
+      } else {
+        setProfile(null);
+        setRole(null);
       }
+      if (isMounted) setIsLoading(false);
     });
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfileAndRole]);
 
   const signOut = useCallback(async () => {
     try {
       await supabase.auth.signOut();
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      setRole(null);
     } catch (err) {
       console.error('Error signing out:', err);
     }
   }, []);
 
-  return { session, user, isLoading, signOut };
+  const isAdminOrPm = role === 'project_admin' || role === 'pm';
+
+  return {
+    session,
+    user,
+    profile,
+    role,
+    isAdminOrPm,
+    isLoading,
+    refreshAuth,
+    signOut,
+  };
 }
 
 /**
@@ -66,13 +167,13 @@ export function useAuth(): AuthState {
  */
 export function useRequireAuth(redirectTo: string = '/login') {
   const navigate = useNavigate();
-  const { session, user, isLoading, signOut } = useAuth();
+  const auth = useAuth();
 
   useEffect(() => {
-    if (!isLoading && !session) {
+    if (!auth.isLoading && !auth.session) {
       navigate(redirectTo, { replace: true });
     }
-  }, [session, isLoading, navigate, redirectTo]);
+  }, [auth.session, auth.isLoading, navigate, redirectTo]);
 
-  return { session, user, isLoading, isAuthenticated: !!session, signOut };
+  return { ...auth, isAuthenticated: !!auth.session };
 }
