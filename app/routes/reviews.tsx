@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import {
@@ -20,6 +20,11 @@ import {
   PM_DISPOSITION_BADGES,
 } from '~/types';
 import { useRequireAuth } from '~/lib/use-auth';
+import {
+  fetchReviewsFromSupabase,
+  submitExpertEvidenceToSupabase,
+  submitPmDispositionToSupabase,
+} from '~/lib/reviews.supabase';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -55,6 +60,8 @@ import {
   History,
   FileCheck,
   Bookmark,
+  RefreshCw,
+  Database,
 } from 'lucide-react';
 import { formatThaiDate, formatThaiDateTime, formatFileSize } from '~/lib/utils';
 
@@ -67,15 +74,23 @@ export const clientLoader = async () => {
 };
 
 export default function ReviewsRoute() {
-  const { isLoading, isAuthenticated } = useRequireAuth('/login?returnTo=/reviews');
+  const { isLoading: isAuthLoading, isAuthenticated } = useRequireAuth('/login?returnTo=/reviews');
   const { batches: initialBatches, items: initialItems } = useLoaderData<typeof clientLoader>();
 
+  const [batches, setBatches] = useState<ReviewBatch[]>(initialBatches);
+  const [reviewItems, setReviewItems] = useState<ReviewItem[]>(initialItems);
   const [selectedBatchId, setSelectedBatchId] = useState<string>('batch-01');
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<'ALL' | 'PUBLIC_SECTOR' | 'PRIVATE_SECTOR'>('ALL');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('ALL'); // 'ALL' or expert ID
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL'); // 'ALL' or VerificationStatus
 
-  const [reviewItems, setReviewItems] = useState<ReviewItem[]>(initialItems);
+  // Loading, Submitting & Error States for Supabase
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   const [activeModalItem, setActiveModalItem] = useState<ReviewItem | null>(null);
   const [activePmModalItem, setActivePmModalItem] = useState<ReviewItem | null>(null);
 
@@ -125,7 +140,42 @@ export default function ReviewsRoute() {
     pm_action_items: '',
   });
 
-  if (isLoading || !isAuthenticated) {
+  // Load live data from Supabase
+  const loadSupabaseData = useCallback(async () => {
+    setIsLoadingData(true);
+    setFetchError(null);
+    try {
+      const result = await fetchReviewsFromSupabase();
+      setBatches(result.batches);
+      setReviewItems(result.items);
+      if (result.batches.length > 0 && !result.batches.some((b) => b.id === selectedBatchId)) {
+        setSelectedBatchId(result.batches[0].id);
+      }
+    } catch (err: any) {
+      console.error('Failed to load reviews from Supabase:', err);
+      setFetchError('ไม่สามารถเชื่อมต่อฐานข้อมูล Supabase ได้ กำลังแสดงผลจากชุดข้อมูลสำรอง');
+    } finally {
+      setIsLoadingData(false);
+    }
+  }, [selectedBatchId]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadSupabaseData();
+    }
+  }, [isAuthenticated, loadSupabaseData]);
+
+  // Auto-dismiss notification after 5 seconds
+  useEffect(() => {
+    if (feedbackMessage) {
+      const timer = setTimeout(() => {
+        setFeedbackMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedbackMessage]);
+
+  if (isAuthLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
@@ -136,10 +186,10 @@ export default function ReviewsRoute() {
     );
   }
 
-  const activeBatch = initialBatches.find((b) => b.id === selectedBatchId) || initialBatches[0];
+  const activeBatch = batches.find((b) => b.id === selectedBatchId) || batches[0] || initialBatches[0];
 
   // Calculate Batch Statistics
-  const batchItems = reviewItems.filter((item) => item.batch_id === activeBatch.id);
+  const batchItems = reviewItems.filter((item) => item.batch_id === activeBatch?.id || item.batch_id === 'batch-01');
   const validatedCount = batchItems.filter((item) => item.status === 'VALIDATED').length;
   const conflictCount = batchItems.filter((item) => item.status === 'SOURCE_CONFLICT').length;
   const pendingExpertCount = batchItems.filter((item) => item.status === 'EXPERT_VALIDATION_REQUIRED').length;
@@ -164,6 +214,7 @@ export default function ReviewsRoute() {
   // Open modal handler for Expert Permanent Audit Response
   const handleOpenReviewModal = (item: ReviewItem, defaultOpinion: ReviewOpinionType = 'SUPPORTING') => {
     setActiveModalItem(item);
+    setSubmitError(null);
     setEvidenceForm({
       reviewer_id: item.assigned_expert_id || 'adv-01',
       reviewer_name: item.assigned_expert_name || 'นพ.เฉลิมเกียรติ พรพฤฒิพันธุ์',
@@ -186,6 +237,7 @@ export default function ReviewsRoute() {
   // Open modal handler for PM Disposition
   const handleOpenPmModal = (item: ReviewItem) => {
     setActivePmModalItem(item);
+    setSubmitError(null);
     const actionItemsString = Array.isArray(item.pm_action_items)
       ? item.pm_action_items.join('\n')
       : typeof item.pm_action_items === 'string'
@@ -199,142 +251,106 @@ export default function ReviewsRoute() {
   };
 
   // Submit Evidence handler (Permanent Immutable Audit Trail - Anti Auto-Validate Rule)
-  const handleSubmitEvidence = (e: React.FormEvent) => {
+  const handleSubmitEvidence = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeModalItem) return;
 
-    const submittedTimestamp = new Date().toISOString();
-    const newRecord: ReviewEvidenceRecord = {
-      id: `evd-${Date.now()}`,
-      review_item_id: activeModalItem.id,
-      project_id: activeModalItem.project_id,
-      reviewer_id: evidenceForm.reviewer_id,
-      reviewer_name: evidenceForm.reviewer_name,
-      reviewer_role: evidenceForm.reviewer_role,
-      reviewer_team: evidenceForm.reviewer_team,
-      opinion_type: evidenceForm.opinion_type,
-      review_date: submittedTimestamp,
-      submitted_at: submittedTimestamp,
-      doc_id_ref: evidenceForm.doc_code_ref,
-      document_id: activeModalItem.document_id,
-      document_version_id: evidenceForm.document_version_id,
-      vi_code: evidenceForm.vi_code,
-      article_section: evidenceForm.article_section,
-      page_number: Number(evidenceForm.page_number),
-      edition_used: evidenceForm.edition_used,
-      rationale: evidenceForm.rationale,
-      requirement_impact: evidenceForm.requirement_impact,
-      storage_r2_key: `evidence/2026/09/${evidenceForm.evidence_file_name}`,
-      evidence_file_name: evidenceForm.evidence_file_name,
-      evidence_file_size: 1850000,
-      resulting_status: evidenceForm.recommended_status,
-      recommended_status: evidenceForm.recommended_status,
-      is_permanent_record: true,
-      created_at: submittedTimestamp,
-    };
+    setIsSubmitting(true);
+    setSubmitError(null);
 
-    // ANTI AUTO-VALIDATION RULE:
-    // Expert responses NEVER automatically validate the item or the Gate/Deliverable.
-    // If expert flags a conflict, item status updates to SOURCE_CONFLICT.
-    // Otherwise, it remains in EXPERT_VALIDATION_REQUIRED or keeps its current non-validated status until PM decides.
-    setReviewItems((prev) =>
-      prev.map((item) => {
-        if (item.id === activeModalItem.id) {
-          const nextStatus =
-            evidenceForm.recommended_status === 'SOURCE_CONFLICT'
-              ? 'SOURCE_CONFLICT'
-              : item.status === 'VALIDATED'
-              ? 'VALIDATED'
-              : 'EXPERT_VALIDATION_REQUIRED';
+    try {
+      const newRecord = await submitExpertEvidenceToSupabase(activeModalItem, evidenceForm);
 
-          return {
-            ...item,
-            status: nextStatus,
-            article_section: evidenceForm.article_section,
-            page_number: Number(evidenceForm.page_number),
-            evidence_records: [newRecord, ...item.evidence_records],
-            co_experts_count: (item.co_experts_count || 0) + (item.assigned_expert_id !== evidenceForm.reviewer_id ? 1 : 0),
-            updated_at: submittedTimestamp,
-          };
-        }
-        return item;
-      })
-    );
+      // ANTI AUTO-VALIDATION RULE:
+      // Expert responses NEVER automatically validate the item or the Gate/Deliverable.
+      setReviewItems((prev) =>
+        prev.map((item) => {
+          if (item.id === activeModalItem.id) {
+            const nextStatus =
+              evidenceForm.recommended_status === 'SOURCE_CONFLICT'
+                ? 'SOURCE_CONFLICT'
+                : item.status === 'VALIDATED'
+                ? 'VALIDATED'
+                : 'EXPERT_VALIDATION_REQUIRED';
 
-    setActiveModalItem(null);
+            return {
+              ...item,
+              status: nextStatus,
+              article_section: evidenceForm.article_section,
+              page_number: Number(evidenceForm.page_number),
+              evidence_records: [newRecord, ...item.evidence_records],
+              co_experts_count: (item.co_experts_count || 0) + (item.assigned_expert_id !== evidenceForm.reviewer_id ? 1 : 0),
+              updated_at: newRecord.submitted_at,
+            };
+          }
+          return item;
+        })
+      );
+
+      setFeedbackMessage({
+        type: 'success',
+        message: `บันทึกระเบียนถาวรข้อ ${activeModalItem.vi_code || activeModalItem.item_code} สำเร็จ และซิงก์ข้อมูลลงฐานข้อมูลเรียบร้อย`,
+      });
+      setActiveModalItem(null);
+    } catch (err: any) {
+      console.error('Evidence submission error:', err);
+      setSubmitError(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล Supabase');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Submit PM Disposition Handler
-  const handleSubmitPmDisposition = (e: React.FormEvent) => {
+  const handleSubmitPmDisposition = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePmModalItem) return;
 
-    const actionItemsList = pmForm.pm_action_items
-      .split('\n')
-      .map((s) => s.trim())
-      .filter(Boolean);
+    setIsSubmitting(true);
+    setSubmitError(null);
 
-    const isNowValidated = pmForm.pm_disposition === 'VALIDATED';
-    const isConflict = pmForm.pm_disposition === 'REVISION_REQUESTED';
-    const updatedStatus: VerificationStatus = isNowValidated
-      ? 'VALIDATED'
-      : isConflict
-      ? 'SOURCE_CONFLICT'
-      : activePmModalItem.status === 'VALIDATED'
-      ? 'EXPERT_VALIDATION_REQUIRED'
-      : activePmModalItem.status;
+    try {
+      const actionItemsList = pmForm.pm_action_items
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
 
-    const pmTimestamp = new Date().toISOString();
+      const { updatedStatus, consensusRecord } = await submitPmDispositionToSupabase(activePmModalItem, {
+        pm_disposition: pmForm.pm_disposition,
+        pm_disposition_note: pmForm.pm_disposition_note,
+        pm_action_items: actionItemsList,
+        pm_name: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร (PM)',
+        pm_id: 'pm-01',
+      });
 
-    const pmConsensusRecord: ReviewEvidenceRecord = {
-      id: `evd-pm-${Date.now()}`,
-      review_item_id: activePmModalItem.id,
-      project_id: activePmModalItem.project_id,
-      reviewer_id: 'pm-01',
-      reviewer_name: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร',
-      reviewer_role: 'ผู้จัดการโครงการ (PM) / หัวหน้าชุดวิจัย',
-      reviewer_team: 'PM_OFFICE',
-      opinion_type: 'CONSENSUS_NOTE',
-      review_date: pmTimestamp,
-      submitted_at: pmTimestamp,
-      doc_id_ref: `${activePmModalItem.document_code || 'DOC'} v${activePmModalItem.document_version_number || '1.0'}`,
-      document_id: activePmModalItem.document_id,
-      document_version_id: activePmModalItem.document_version_id,
-      vi_code: activePmModalItem.vi_code || activePmModalItem.item_code,
-      article_section: activePmModalItem.article_section,
-      page_number: activePmModalItem.page_number,
-      edition_used: 'มติที่ประชุมคณะที่ปรึกษาและผู้จัดการโครงการ',
-      rationale: `[PM Disposition: ${pmForm.pm_disposition}] ${pmForm.pm_disposition_note}`,
-      requirement_impact: isNowValidated
-        ? 'ผ่านการรับรองจาก PM บรรจุใน Inception Report (DEL-01)'
-        : 'ต้องปรับปรุงตามข้อสังเกตของคณะที่ปรึกษา',
-      evidence_file_name: `EVD_PM_Disposition_${activePmModalItem.item_code}.pdf`,
-      evidence_file_size: 1420000,
-      resulting_status: updatedStatus,
-      recommended_status: updatedStatus,
-      is_permanent_record: true,
-      created_at: pmTimestamp,
-    };
+      setReviewItems((prev) =>
+        prev.map((i) =>
+          i.id === activePmModalItem.id
+            ? {
+                ...i,
+                status: updatedStatus,
+                pm_disposition: pmForm.pm_disposition,
+                pm_disposition_note: pmForm.pm_disposition_note,
+                pm_disposition_by: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร (PM)',
+                pm_disposition_at: consensusRecord.submitted_at,
+                pm_action_items: actionItemsList,
+                evidence_records: [consensusRecord, ...i.evidence_records],
+                updated_at: consensusRecord.submitted_at,
+              }
+            : i
+        )
+      );
 
-    setReviewItems((prev) =>
-      prev.map((i) =>
-        i.id === activePmModalItem.id
-          ? {
-              ...i,
-              status: updatedStatus,
-              pm_disposition: pmForm.pm_disposition,
-              pm_disposition_note: pmForm.pm_disposition_note,
-              pm_disposition_by: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร (PM)',
-              pm_disposition_at: pmTimestamp,
-              pm_action_items: actionItemsList,
-              evidence_records: [pmConsensusRecord, ...i.evidence_records],
-              updated_at: pmTimestamp,
-            }
-          : i
-      )
-    );
-
-    setActivePmModalItem(null);
+      setFeedbackMessage({
+        type: 'success',
+        message: `บันทึกมติและการสั่งการ PM สำหรับข้อ ${activePmModalItem.vi_code || activePmModalItem.item_code} สำเร็จ`,
+      });
+      setActivePmModalItem(null);
+    } catch (err: any) {
+      console.error('PM Disposition submission error:', err);
+      setSubmitError(err.message || 'เกิดข้อผิดพลาดในการบันทึกมติ PM ลงฐานข้อมูล');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // 7 Advisors info for selection (Sections 13.2 & 13.3)
@@ -433,6 +449,69 @@ export default function ReviewsRoute() {
             </Link>
           </div>
         </div>
+
+        {/* Supabase Live DB Synchronized Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xs text-xs">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              SUPABASE DB
+            </div>
+            <span className="text-slate-300">
+              เชื่อมต่อระเบียนถาวร PostgreSQL ({reviewItems.length} ประเด็น • {reviewItems.reduce((acc, i) => acc + i.evidence_records.length, 0)} ระเบียนถาวร)
+            </span>
+          </div>
+          <button
+            onClick={() => loadSupabaseData()}
+            disabled={isLoadingData}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingData ? 'animate-spin text-[#F36C21]' : ''}`} />
+            <span>{isLoadingData ? 'กำลังซิงก์...' : 'โหลดข้อมูลล่าสุด'}</span>
+          </button>
+        </div>
+
+        {/* Global Toast / Feedback Notification */}
+        {feedbackMessage && (
+          <div
+            className={`p-4 rounded-2xl text-xs font-bold flex items-center justify-between gap-2 shadow-sm animate-fade-in ${
+              feedbackMessage.type === 'success'
+                ? 'bg-emerald-50 border border-emerald-300 text-emerald-900'
+                : 'bg-rose-50 border border-rose-300 text-rose-900'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {feedbackMessage.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              )}
+              <span>{feedbackMessage.message}</span>
+            </div>
+            <button
+              onClick={() => setFeedbackMessage(null)}
+              className="text-slate-400 hover:text-slate-700 p-1 rounded-lg"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Fetch Error Alert */}
+        {fetchError && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-medium flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{fetchError}</span>
+            </div>
+            <button
+              onClick={() => loadSupabaseData()}
+              className="px-3 py-1 bg-amber-600 text-white text-xs font-bold rounded-lg hover:bg-amber-700 transition"
+            >
+              ลองใหม่
+            </button>
+          </div>
+        )}
 
         {/* 13.4 Workflow Principle Banner */}
         <div className="bg-gradient-to-r from-[#062B63] via-[#1356A3] to-[#0A3D7C] text-white p-5 rounded-3xl shadow-sm space-y-3">
@@ -1290,6 +1369,14 @@ export default function ReviewsRoute() {
                   />
                 </div>
 
+                {/* Submit Error Message */}
+                {submitError && (
+                  <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{submitError}</span>
+                  </div>
+                )}
+
                 {/* Evidence File Attachment */}
                 <div>
                   <label className="block font-bold text-slate-800 mb-1">
@@ -1308,17 +1395,28 @@ export default function ReviewsRoute() {
                 <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2">
                   <button
                     type="button"
+                    disabled={isSubmitting}
                     onClick={() => setActiveModalItem(null)}
-                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition disabled:opacity-50"
                   >
                     ยกเลิก
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 bg-[#062B63] hover:bg-[#1356A3] text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"
+                    disabled={isSubmitting}
+                    className="px-5 py-2.5 bg-[#062B63] hover:bg-[#1356A3] disabled:opacity-60 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"
                   >
-                    <Send className="w-4 h-4 text-[#F36C21]" />
-                    <span>บันทึกระเบียนถาวรเข้าสู่ระบบ</span>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 text-[#F36C21] animate-spin" />
+                        <span>กำลังบันทึกลง Supabase...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4 text-[#F36C21]" />
+                        <span>บันทึกระเบียนถาวรเข้าสู่ระบบ</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
@@ -1351,6 +1449,14 @@ export default function ReviewsRoute() {
 
               {/* PM Modal Form Body */}
               <form onSubmit={handleSubmitPmDisposition} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+                {/* Submit Error in PM Modal */}
+                {submitError && (
+                  <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{submitError}</span>
+                  </div>
+                )}
+
                 {/* Item Info Summary Box */}
                 <div className="bg-purple-50/70 border border-purple-200 rounded-2xl p-4 space-y-1 text-purple-950 font-sans">
                   <div className="font-bold text-slate-900 text-sm">{activePmModalItem.title}</div>
@@ -1465,17 +1571,28 @@ export default function ReviewsRoute() {
                 <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2">
                   <button
                     type="button"
+                    disabled={isSubmitting}
                     onClick={() => setActivePmModalItem(null)}
-                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition disabled:opacity-50"
                   >
                     ยกเลิก
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 bg-purple-900 hover:bg-purple-800 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"
+                    disabled={isSubmitting}
+                    className="px-5 py-2.5 bg-purple-900 hover:bg-purple-800 disabled:opacity-60 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"
                   >
-                    <Gavel className="w-4 h-4 text-amber-400" />
-                    <span>บันทึกมติ PM ลงในระบบ</span>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
+                        <span>กำลังบันทึกลง Supabase...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Gavel className="w-4 h-4 text-amber-400" />
+                        <span>บันทึกมติ PM ลงในระบบ</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
