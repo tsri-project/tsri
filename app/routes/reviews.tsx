@@ -16,6 +16,8 @@ import {
   AdvisorTeamGroup,
   VerificationStatus,
   VERIFICATION_STATUS_BADGES,
+  PmDispositionType,
+  PM_DISPOSITION_BADGES,
 } from '~/types';
 import { useRequireAuth } from '~/lib/use-auth';
 import {
@@ -49,6 +51,10 @@ import {
   ThumbsUp,
   Award,
   CheckCheck,
+  Gavel,
+  History,
+  FileCheck,
+  Bookmark,
 } from 'lucide-react';
 import { formatThaiDate, formatThaiDateTime, formatFileSize } from '~/lib/utils';
 
@@ -71,20 +77,24 @@ export default function ReviewsRoute() {
 
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>(initialItems);
   const [activeModalItem, setActiveModalItem] = useState<ReviewItem | null>(null);
+  const [activePmModalItem, setActivePmModalItem] = useState<ReviewItem | null>(null);
 
-  // Form State for Collaborative Evidence Submission
+  // Form State for Permanent Expert Audit Response
   const [evidenceForm, setEvidenceForm] = useState<{
     reviewer_id: string;
     reviewer_name: string;
     reviewer_role: string;
     reviewer_team: AdvisorTeamGroup;
     opinion_type: ReviewOpinionType;
+    vi_code: string;
+    doc_code_ref: string;
+    document_version_id: string;
     article_section: string;
     page_number: number;
     edition_used: string;
     rationale: string;
     requirement_impact: string;
-    resulting_status: VerificationStatus;
+    recommended_status: VerificationStatus;
     evidence_file_name: string;
   }>({
     reviewer_id: 'adv-01',
@@ -92,13 +102,27 @@ export default function ReviewsRoute() {
     reviewer_role: 'ที่ปรึกษากฎหมายภาครัฐ',
     reviewer_team: 'PUBLIC_SECTOR',
     opinion_type: 'LEAD_FINDING',
+    vi_code: '',
+    doc_code_ref: '',
+    document_version_id: '',
     article_section: '',
     page_number: 1,
     edition_used: '',
     rationale: '',
     requirement_impact: '',
-    resulting_status: 'EXPERT_VALIDATION_REQUIRED',
+    recommended_status: 'EXPERT_VALIDATION_REQUIRED',
     evidence_file_name: '',
+  });
+
+  // Form State for PM Disposition
+  const [pmForm, setPmForm] = useState<{
+    pm_disposition: PmDispositionType;
+    pm_disposition_note: string;
+    pm_action_items: string;
+  }>({
+    pm_disposition: 'ACCEPTED_AS_IS',
+    pm_disposition_note: '',
+    pm_action_items: '',
   });
 
   if (isLoading || !isAuthenticated) {
@@ -137,7 +161,7 @@ export default function ReviewsRoute() {
     return matchTeam && matchRole && matchStatus;
   });
 
-  // Open modal handler
+  // Open modal handler for Expert Permanent Audit Response
   const handleOpenReviewModal = (item: ReviewItem, defaultOpinion: ReviewOpinionType = 'SUPPORTING') => {
     setActiveModalItem(item);
     setEvidenceForm({
@@ -146,21 +170,40 @@ export default function ReviewsRoute() {
       reviewer_role: item.assigned_category === 'ADVISORY_PRIVATE' ? 'ที่ปรึกษากฎหมายภาคเอกชน' : 'ที่ปรึกษากฎหมายภาครัฐ',
       reviewer_team: item.lead_team || 'PUBLIC_SECTOR',
       opinion_type: defaultOpinion,
+      vi_code: item.vi_code || item.item_code,
+      doc_code_ref: `${item.document_code || 'DOC'} v${item.document_version_number || '1.0'}`,
+      document_version_id: item.document_version_id || '00000000-0000-0000-0000-000000000001',
       article_section: item.article_section || '',
       page_number: item.page_number || 1,
       edition_used: 'ราชกิจจานุเบกษา / ระเบียบฉบับประกาศทางการ',
       rationale: '',
       requirement_impact: '',
-      resulting_status: item.status === 'VALIDATED' ? 'VALIDATED' : 'EXPERT_VALIDATION_REQUIRED',
+      recommended_status: item.status === 'VALIDATED' ? 'VALIDATED' : 'EXPERT_VALIDATION_REQUIRED',
       evidence_file_name: `EVD_${item.item_code}_${defaultOpinion}_Memo.pdf`,
     });
   };
 
-  // Submit Evidence handler
+  // Open modal handler for PM Disposition
+  const handleOpenPmModal = (item: ReviewItem) => {
+    setActivePmModalItem(item);
+    const actionItemsString = Array.isArray(item.pm_action_items)
+      ? item.pm_action_items.join('\n')
+      : typeof item.pm_action_items === 'string'
+      ? item.pm_action_items
+      : '';
+    setPmForm({
+      pm_disposition: item.pm_disposition || 'ACCEPTED_AS_IS',
+      pm_disposition_note: item.pm_disposition_note || '',
+      pm_action_items: actionItemsString,
+    });
+  };
+
+  // Submit Evidence handler (Permanent Immutable Audit Trail - Anti Auto-Validate Rule)
   const handleSubmitEvidence = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeModalItem) return;
 
+    const submittedTimestamp = new Date().toISOString();
     const newRecord: ReviewEvidenceRecord = {
       id: `evd-${Date.now()}`,
       review_item_id: activeModalItem.id,
@@ -170,8 +213,12 @@ export default function ReviewsRoute() {
       reviewer_role: evidenceForm.reviewer_role,
       reviewer_team: evidenceForm.reviewer_team,
       opinion_type: evidenceForm.opinion_type,
-      review_date: new Date().toISOString(),
-      doc_id_ref: `${activeModalItem.document_code || 'DOC'} v${activeModalItem.document_version_number || '1.0'}`,
+      review_date: submittedTimestamp,
+      submitted_at: submittedTimestamp,
+      doc_id_ref: evidenceForm.doc_code_ref,
+      document_id: activeModalItem.document_id,
+      document_version_id: evidenceForm.document_version_id,
+      vi_code: evidenceForm.vi_code,
       article_section: evidenceForm.article_section,
       page_number: Number(evidenceForm.page_number),
       edition_used: evidenceForm.edition_used,
@@ -180,23 +227,34 @@ export default function ReviewsRoute() {
       storage_r2_key: `evidence/2026/09/${evidenceForm.evidence_file_name}`,
       evidence_file_name: evidenceForm.evidence_file_name,
       evidence_file_size: 1850000,
-      resulting_status: evidenceForm.resulting_status,
-      created_at: new Date().toISOString(),
+      resulting_status: evidenceForm.recommended_status,
+      recommended_status: evidenceForm.recommended_status,
+      is_permanent_record: true,
+      created_at: submittedTimestamp,
     };
 
-    // Update item status and append evidence record
+    // ANTI AUTO-VALIDATION RULE:
+    // Expert responses NEVER automatically validate the item or the Gate/Deliverable.
+    // If expert flags a conflict, item status updates to SOURCE_CONFLICT.
+    // Otherwise, it remains in EXPERT_VALIDATION_REQUIRED or keeps its current non-validated status until PM decides.
     setReviewItems((prev) =>
       prev.map((item) => {
         if (item.id === activeModalItem.id) {
-          // If PM validated or opinion triggers status update
+          const nextStatus =
+            evidenceForm.recommended_status === 'SOURCE_CONFLICT'
+              ? 'SOURCE_CONFLICT'
+              : item.status === 'VALIDATED'
+              ? 'VALIDATED'
+              : 'EXPERT_VALIDATION_REQUIRED';
+
           return {
             ...item,
-            status: evidenceForm.resulting_status,
+            status: nextStatus,
             article_section: evidenceForm.article_section,
             page_number: Number(evidenceForm.page_number),
             evidence_records: [newRecord, ...item.evidence_records],
             co_experts_count: (item.co_experts_count || 0) + (item.assigned_expert_id !== evidenceForm.reviewer_id ? 1 : 0),
-            updated_at: new Date().toISOString(),
+            updated_at: submittedTimestamp,
           };
         }
         return item;
@@ -206,44 +264,77 @@ export default function ReviewsRoute() {
     setActiveModalItem(null);
   };
 
-  // PM Quick Validation Handler
-  const handleValidateItem = (item: ReviewItem) => {
-    if (confirm(`ยืนยันการอนุมัติรับรอง (VALIDATE) ข้อ ${item.item_code} จากผลฉันทามติที่ประชุม?`)) {
-      const pmRecord: ReviewEvidenceRecord = {
-        id: `evd-pm-${Date.now()}`,
-        review_item_id: item.id,
-        project_id: item.project_id,
-        reviewer_id: 'pm-01',
-        reviewer_name: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร',
-        reviewer_role: 'ผู้จัดการโครงการ (PM) / หัวหน้าชุดวิจัย',
-        reviewer_team: 'PM_OFFICE',
-        opinion_type: 'CONSENSUS_NOTE',
-        review_date: new Date().toISOString(),
-        doc_id_ref: `${item.document_code || 'DOC'} v${item.document_version_number || '1.0'}`,
-        article_section: item.article_section,
-        page_number: item.page_number,
-        edition_used: 'มติที่ประชุมคณะที่ปรึกษา ครั้งที่ 2 (25 ก.ย. 2569)',
-        rationale: 'คณะที่ปรึกษาทั้ง 4 ท่าน (ภาครัฐ) และ 2 ท่าน (ภาคเอกชน) ได้ข้อสรุปเห็นพ้องตรงกัน PM จึงอนุมัติรับรองเป็น VALIDATED เพื่อบรรจุใน Inception Report (DEL-01)',
-        requirement_impact: 'ผ่านเกณฑ์ Gate G2 และพร้อมส่งมอบตาม TOR ข้อ 4.3.1',
-        evidence_file_name: `EVD_PM_Consensus_Approval_${item.item_code}.pdf`,
-        evidence_file_size: 1200000,
-        resulting_status: 'VALIDATED',
-        created_at: new Date().toISOString(),
-      };
+  // Submit PM Disposition Handler
+  const handleSubmitPmDisposition = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activePmModalItem) return;
 
-      setReviewItems((prev) =>
-        prev.map((i) =>
-          i.id === item.id
-            ? {
-                ...i,
-                status: 'VALIDATED',
-                evidence_records: [pmRecord, ...i.evidence_records],
-                updated_at: new Date().toISOString(),
-              }
-            : i
-        )
-      );
-    }
+    const actionItemsList = pmForm.pm_action_items
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const isNowValidated = pmForm.pm_disposition === 'VALIDATED';
+    const isConflict = pmForm.pm_disposition === 'REVISION_REQUESTED';
+    const updatedStatus: VerificationStatus = isNowValidated
+      ? 'VALIDATED'
+      : isConflict
+      ? 'SOURCE_CONFLICT'
+      : activePmModalItem.status === 'VALIDATED'
+      ? 'EXPERT_VALIDATION_REQUIRED'
+      : activePmModalItem.status;
+
+    const pmTimestamp = new Date().toISOString();
+
+    const pmConsensusRecord: ReviewEvidenceRecord = {
+      id: `evd-pm-${Date.now()}`,
+      review_item_id: activePmModalItem.id,
+      project_id: activePmModalItem.project_id,
+      reviewer_id: 'pm-01',
+      reviewer_name: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร',
+      reviewer_role: 'ผู้จัดการโครงการ (PM) / หัวหน้าชุดวิจัย',
+      reviewer_team: 'PM_OFFICE',
+      opinion_type: 'CONSENSUS_NOTE',
+      review_date: pmTimestamp,
+      submitted_at: pmTimestamp,
+      doc_id_ref: `${activePmModalItem.document_code || 'DOC'} v${activePmModalItem.document_version_number || '1.0'}`,
+      document_id: activePmModalItem.document_id,
+      document_version_id: activePmModalItem.document_version_id,
+      vi_code: activePmModalItem.vi_code || activePmModalItem.item_code,
+      article_section: activePmModalItem.article_section,
+      page_number: activePmModalItem.page_number,
+      edition_used: 'มติที่ประชุมคณะที่ปรึกษาและผู้จัดการโครงการ',
+      rationale: `[PM Disposition: ${pmForm.pm_disposition}] ${pmForm.pm_disposition_note}`,
+      requirement_impact: isNowValidated
+        ? 'ผ่านการรับรองจาก PM บรรจุใน Inception Report (DEL-01)'
+        : 'ต้องปรับปรุงตามข้อสังเกตของคณะที่ปรึกษา',
+      evidence_file_name: `EVD_PM_Disposition_${activePmModalItem.item_code}.pdf`,
+      evidence_file_size: 1420000,
+      resulting_status: updatedStatus,
+      recommended_status: updatedStatus,
+      is_permanent_record: true,
+      created_at: pmTimestamp,
+    };
+
+    setReviewItems((prev) =>
+      prev.map((i) =>
+        i.id === activePmModalItem.id
+          ? {
+              ...i,
+              status: updatedStatus,
+              pm_disposition: pmForm.pm_disposition,
+              pm_disposition_note: pmForm.pm_disposition_note,
+              pm_disposition_by: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร (PM)',
+              pm_disposition_at: pmTimestamp,
+              pm_action_items: actionItemsList,
+              evidence_records: [pmConsensusRecord, ...i.evidence_records],
+              updated_at: pmTimestamp,
+            }
+          : i
+      )
+    );
+
+    setActivePmModalItem(null);
   };
 
   // 7 Advisors info for selection (Sections 13.2 & 13.3)
@@ -674,23 +765,30 @@ export default function ReviewsRoute() {
         </div>
 
         {/* Review Items Cards with Multi-Perspective Trails */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {displayedItems.map((item) => {
             const statusInfo = VERIFICATION_STATUS_BADGES[item.status];
+            const pmDispInfo = PM_DISPOSITION_BADGES[item.pm_disposition || 'PENDING_REVIEW'];
+
             return (
               <div
                 key={item.id}
-                className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-md transition"
+                className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-md transition space-y-4"
               >
+                {/* Header Row: Codes, Status Badges, PM Disposition Badge */}
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-                  {/* Left: Code, Title, Description, Lead Owner */}
+                  {/* Left: VI-ID, Item Code, Document Ref, Version ID, Title */}
                   <div className="space-y-2.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63] text-white rounded-lg flex items-center gap-1 shadow-2xs">
+                        <Bookmark className="w-3 h-3 text-[#F36C21]" />
+                        VI: {item.vi_code || item.item_code}
+                      </span>
                       <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#1356A3] text-white rounded-lg">
                         {item.item_code}
                       </span>
                       <span className="px-2 py-0.5 text-xs font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200 rounded-md">
-                        {item.document_code} (v{item.document_version_number})
+                        DOC: {item.document_code} (v{item.document_version_number})
                       </span>
                       {item.deliverable_code && (
                         <span className="px-2 py-0.5 text-xs font-mono font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md">
@@ -702,9 +800,14 @@ export default function ReviewsRoute() {
                       >
                         ● {statusInfo.label}
                       </span>
+                      <span
+                        className={`inline-block px-2.5 py-0.5 text-xs font-bold rounded-full border ${pmDispInfo.class}`}
+                      >
+                        ⚖️ PM: {pmDispInfo.label}
+                      </span>
                       <span className="px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-700 rounded-md border border-slate-200 flex items-center gap-1">
-                        <MessageSquare className="w-3 h-3 text-[#1356A3]" />
-                        {item.evidence_records.length} ความเห็น/หลักฐาน
+                        <History className="w-3 h-3 text-[#1356A3]" />
+                        {item.evidence_records.length} ระเบียนถาวร
                       </span>
                     </div>
 
@@ -715,7 +818,7 @@ export default function ReviewsRoute() {
                       {item.issue_description}
                     </div>
 
-                    {/* Lead Expert Badge & Co-Reviewers */}
+                    {/* Metadata: Lead Expert, Section, Page, Due Date, Doc Version UUID */}
                     <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs pt-1">
                       <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200 text-blue-900 font-bold rounded-xl">
                         <Award className="w-3.5 h-3.5 text-[#1356A3]" />
@@ -725,48 +828,112 @@ export default function ReviewsRoute() {
                         </span>
                       </div>
 
-                      <span className="flex items-center gap-1 text-[#062B63] font-semibold text-slate-600">
-                        <FileText className="w-3.5 h-3.5" /> {item.article_section} (หน้า {item.page_number})
+                      <span className="flex items-center gap-1 text-[#062B63] font-semibold">
+                        <FileText className="w-3.5 h-3.5 text-[#1356A3]" /> {item.article_section} (หน้า {item.page_number})
                       </span>
 
                       <span className="flex items-center gap-1 text-slate-500 font-mono">
                         <Clock className="w-3.5 h-3.5" /> กำหนดส่ง: {formatThaiDate(item.due_date)}
                       </span>
+
+                      {item.document_version_id && (
+                        <span className="text-[10px] font-mono text-slate-400">
+                          UUID: {item.document_version_id.substring(0, 8)}...
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Right Actions: Co-Review & Validate Buttons */}
+                  {/* Right Actions: Add Expert Evidence & PM Disposition Button */}
                   <div className="flex flex-col sm:flex-row lg:flex-col items-stretch lg:items-end justify-between gap-2.5 shrink-0 pt-2 lg:pt-0">
                     <button
                       onClick={() => handleOpenReviewModal(item, 'SUPPORTING')}
                       className="px-4 py-2.5 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-2 group"
                     >
                       <Plus className="w-3.5 h-3.5 text-[#F36C21]" />
-                      <span>+ ร่วมให้ความเห็น / แนบหลักฐาน</span>
+                      <span>+ บันทึกความเห็นผู้เชี่ยวชาญ</span>
                     </button>
 
-                    {item.status !== 'VALIDATED' && (
-                      <button
-                        onClick={() => handleValidateItem(item)}
-                        className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5"
-                      >
-                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        <span>อนุมัติรับรอง (PM Validate)</span>
-                      </button>
+                    <button
+                      onClick={() => handleOpenPmModal(item)}
+                      className="px-4 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-300 text-purple-900 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5"
+                    >
+                      <Gavel className="w-4 h-4 text-purple-700" />
+                      <span>มติและการสั่งการ PM (Disposition)</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* SEPARATE PANEL: PM Disposition & Governance Decisions */}
+                <div className="bg-gradient-to-r from-purple-50/70 via-indigo-50/40 to-slate-50 border border-purple-200/80 rounded-2xl p-4 text-xs space-y-2.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200/60 pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-purple-700 text-white flex items-center justify-center text-xs">
+                        ⚖️
+                      </div>
+                      <div>
+                        <span className="font-extrabold text-purple-950">ช่องคำสั่งการและมติ PM (PM Disposition)</span>
+                        <span className="text-[11px] text-purple-700 ml-2 font-medium">
+                          (แยกส่วนจากการให้ความเห็นผู้เชี่ยวชาญ)
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-lg border text-[11px] font-bold ${pmDispInfo.class}`}>
+                        {pmDispInfo.label}
+                      </span>
+                      {item.pm_disposition_at && (
+                        <span className="text-[11px] text-slate-500 font-mono">
+                          {formatThaiDateTime(item.pm_disposition_at)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 text-slate-700">
+                    <div>
+                      <span className="font-bold text-slate-900">เหตุผลและมติที่ประชุม PM: </span>
+                      <span className="text-slate-800 leading-relaxed font-medium">
+                        {item.pm_disposition_note || 'ยังไม่มีการลงมติจาก PM (รอการพิจารณาร่วม)'}
+                      </span>
+                    </div>
+
+                    {item.pm_disposition_by && (
+                      <div className="text-[11px] text-slate-500">
+                        ผู้บันทึกมติ: <strong className="text-slate-700">{item.pm_disposition_by}</strong>
+                      </div>
+                    )}
+
+                    {Array.isArray(item.pm_action_items) && item.pm_action_items.length > 0 && (
+                      <div className="pt-1.5 border-t border-purple-100 flex flex-wrap items-center gap-1.5">
+                        <span className="font-bold text-purple-900 text-[11px]">Action Items:</span>
+                        {item.pm_action_items.map((act: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 bg-white border border-purple-200 text-purple-800 rounded-md text-[11px] font-medium"
+                          >
+                            ✓ {act}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Evidence Records & Collaborative Perspectives */}
+                {/* Permanent Expert Responses & Evidence Records Trail */}
                 {item.evidence_records.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
-                    <div className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                  <div className="pt-2 border-t border-slate-100 space-y-3">
+                    <div className="text-xs font-bold text-slate-800 flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
-                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        <span>ความเห็นและหลักฐานทางกฎหมาย ({item.evidence_records.length} ความเห็น)</span>
+                        <History className="w-4 h-4 text-[#1356A3]" />
+                        <span>ระเบียนความเห็นถาวรของผู้เชี่ยวชาญ (Permanent Expert Responses)</span>
+                        <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono border border-slate-200">
+                          {item.evidence_records.length} Records
+                        </span>
                       </span>
-                      <span className="text-[11px] text-slate-400 font-normal">
-                        เปรียบเทียบมุมมองภาครัฐ vs เอกชน vs มติ PM
+                      <span className="text-[11px] text-slate-500 font-normal flex items-center gap-1">
+                        <Lock className="w-3 h-3 text-emerald-600" />
+                        <span>Immutable Audit Trail (อ้างอิง VI-ID, DOC-ID, Version, Rationale & Time)</span>
                       </span>
                     </div>
 
@@ -779,7 +946,7 @@ export default function ReviewsRoute() {
                         return (
                           <div
                             key={evd.id}
-                            className={`rounded-2xl p-4 text-xs space-y-2 border ${
+                            className={`rounded-2xl p-4 text-xs space-y-2 border transition ${
                               isPM
                                 ? 'bg-purple-50/80 border-purple-200 ring-1 ring-purple-300/30'
                                 : isPrivate
@@ -787,6 +954,7 @@ export default function ReviewsRoute() {
                                 : 'bg-slate-50 border-slate-200'
                             }`}
                           >
+                            {/* Card Header: Opinion Badge, Reviewer Info, Submitted At, Lock Badge */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-200/60 pb-2">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className={`px-2 py-0.5 rounded-lg border text-[11px] font-bold ${opinionBadge.class}`}>
@@ -795,15 +963,40 @@ export default function ReviewsRoute() {
                                 <span className="font-bold text-slate-900">{evd.reviewer_name}</span>
                                 <span className="text-slate-500 text-[11px]">({evd.reviewer_role})</span>
                               </div>
-                              <span className="text-slate-500 font-mono text-[11px]">
-                                {formatThaiDateTime(evd.review_date)}
+                              <div className="flex items-center gap-2">
+                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-[10px] font-mono font-bold flex items-center gap-1">
+                                  <Lock className="w-2.5 h-2.5 text-emerald-600" /> ถาวร
+                                </span>
+                                <span className="text-slate-500 font-mono text-[11px]">
+                                  {formatThaiDateTime(evd.submitted_at || evd.review_date)}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Reference Bar: VI-ID, DOC-ID, Version ID, Section, Page */}
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 bg-white/80 p-2 rounded-xl border border-slate-200/60 font-mono">
+                              <span className="font-bold text-[#062B63]">
+                                VI-ID: <span className="font-normal">{evd.vi_code || item.vi_code || item.item_code}</span>
+                              </span>
+                              <span className="text-slate-300">|</span>
+                              <span className="font-bold text-[#1356A3]">
+                                DOC-ID: <span className="font-normal">{evd.doc_id_ref}</span>
+                              </span>
+                              <span className="text-slate-300">|</span>
+                              <span>
+                                Version: <span className="font-bold text-slate-800">{evd.document_version_id ? evd.document_version_id.substring(0, 8) + '...' : 'v1.0'}</span>
+                              </span>
+                              <span className="text-slate-300">|</span>
+                              <span className="font-bold text-slate-800 font-sans">
+                                มาตรา/ข้อ: {evd.article_section || '-'} (หน้า {evd.page_number || '-'})
                               </span>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-700">
+                            {/* Rationale & TOR Impact */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-700 pt-1">
                               <div>
-                                <span className="font-bold text-slate-900">คำวินิจฉัย / เหตุผลประกอบ: </span>
-                                <p className="mt-0.5 text-slate-600 leading-relaxed">{evd.rationale}</p>
+                                <span className="font-bold text-slate-900">คำวินิจฉัย / เหตุผลประกอบ (Rationale): </span>
+                                <p className="mt-0.5 text-slate-700 leading-relaxed font-medium">{evd.rationale}</p>
                               </div>
                               <div>
                                 <span className="font-bold text-slate-900">ผลกระทบต่อ TOR / REQ: </span>
@@ -811,10 +1004,15 @@ export default function ReviewsRoute() {
                               </div>
                             </div>
 
+                            {/* Recommended Status & Evidence File */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/60 text-[11px] text-slate-500">
-                              <span>
-                                เอกสารอ้างอิง: <strong className="text-slate-800">{evd.doc_id_ref}</strong> • {evd.edition_used}
-                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span>ฉบับที่เทียบ: <strong className="text-slate-800">{evd.edition_used}</strong></span>
+                                <span className="text-slate-300">•</span>
+                                <span>
+                                  ข้อเสนอแนะสถานะ: <strong className="text-[#062B63] font-bold">{evd.recommended_status || evd.resulting_status}</strong>
+                                </span>
+                              </div>
                               {evd.evidence_file_name && (
                                 <span className="flex items-center gap-1.5 text-[#1356A3] font-bold bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
                                   <Paperclip className="w-3.5 h-3.5 text-[#F36C21]" />
@@ -841,18 +1039,19 @@ export default function ReviewsRoute() {
           )}
         </div>
 
-        {/* Modal Form: Collaborative Evidence Submission */}
+        {/* Modal Form 1: Permanent Expert Audit Response Submission */}
         {activeModalItem && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden max-h-[90vh] flex flex-col font-sans">
               {/* Modal Header */}
               <div className="p-5 border-b border-slate-200 bg-gradient-to-r from-[#062B63] to-[#1356A3] text-white flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F36C21]">
-                    COLLABORATIVE REVIEW SUBMISSION • {activeModalItem.item_code}
+                  <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F36C21] flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-[#F36C21]" />
+                    PERMANENT EXPERT AUDIT RESPONSE • {activeModalItem.vi_code || activeModalItem.item_code}
                   </div>
                   <h3 className="text-base font-extrabold mt-0.5">
-                    บันทึกผลการตรวจทานร่วมและหลักฐาน (Multi-Expert Review)
+                    บันทึกระเบียนความเห็นผู้เชี่ยวชาญถาวร (Permanent Expert Response)
                   </h3>
                 </div>
                 <button
@@ -865,12 +1064,23 @@ export default function ReviewsRoute() {
 
               {/* Modal Form Body */}
               <form onSubmit={handleSubmitEvidence} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+                {/* Notice: Permanent Record & Anti Auto-Validate Rule */}
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3.5 flex items-start gap-2.5 text-blue-900">
+                  <Info className="w-4 h-4 text-[#1356A3] shrink-0 mt-0.5" />
+                  <div className="space-y-0.5 text-[11px] leading-relaxed">
+                    <span className="font-extrabold block">กฎความปลอดภัยของระเบียนถาวร (Audit Integrity):</span>
+                    <span>
+                      คำตอบและความเห็นนี้จะถูกบันทึกเป็น <strong>ระเบียนถาวร (Permanent Record)</strong> อ้างอิง VI-ID, DOC-ID, Version ID และเวลาส่ง โดยจะไม่เปลี่ยนสถานะโครงการเป็น VALIDATED อัตโนมัติ จนกว่า PM จะพิจารณาลงมติ (PM Disposition)
+                    </span>
+                  </div>
+                </div>
+
                 {/* Item Info Summary Box */}
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 text-slate-700">
-                  <div className="font-bold text-slate-900 text-sm">{activeModalItem.title}</div>
-                  <div className="text-slate-600">{activeModalItem.issue_description}</div>
-                  <div className="text-[11px] text-[#1356A3] font-mono pt-1">
-                    เอกสาร: {activeModalItem.document_code} (v{activeModalItem.document_version_number}) • เจ้าภาพหลัก: {activeModalItem.assigned_expert_name}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 text-slate-700 font-mono">
+                  <div className="font-bold text-slate-900 text-sm font-sans">{activeModalItem.title}</div>
+                  <div className="text-slate-600 font-sans">{activeModalItem.issue_description}</div>
+                  <div className="text-[11px] text-[#1356A3] pt-1">
+                    VI-ID: <strong>{activeModalItem.vi_code || activeModalItem.item_code}</strong> • DOC: <strong>{activeModalItem.document_code} (v{activeModalItem.document_version_number})</strong>
                   </div>
                 </div>
 
@@ -1006,41 +1216,41 @@ export default function ReviewsRoute() {
                   />
                 </div>
 
-                {/* Target Verification Status Selection */}
+                {/* Target Recommended Verification Status Selection */}
                 <div>
                   <label className="block font-bold text-slate-800 mb-1">
-                    ข้อเสนอแนะสถานะ (Recommended Verification Status) <span className="text-rose-500">*</span>
+                    ข้อเสนอแนะสถานะต่อ PM (Recommended Verification Status) <span className="text-rose-500">*</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button
                       type="button"
-                      onClick={() => setEvidenceForm({ ...evidenceForm, resulting_status: 'VALIDATED' })}
+                      onClick={() => setEvidenceForm({ ...evidenceForm, recommended_status: 'VALIDATED' })}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                        evidenceForm.resulting_status === 'VALIDATED'
+                        evidenceForm.recommended_status === 'VALIDATED'
                           ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                           : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
                       }`}
                     >
-                      <CheckCircle2 className="w-4 h-4" /> VALIDATED (รับรอง)
+                      <CheckCircle2 className="w-4 h-4" /> เสนอรับรอง (VALIDATED)
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => setEvidenceForm({ ...evidenceForm, resulting_status: 'SOURCE_CONFLICT' })}
+                      onClick={() => setEvidenceForm({ ...evidenceForm, recommended_status: 'SOURCE_CONFLICT' })}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                        evidenceForm.resulting_status === 'SOURCE_CONFLICT'
+                        evidenceForm.recommended_status === 'SOURCE_CONFLICT'
                           ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
                           : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
                       }`}
                     >
-                      <AlertTriangle className="w-4 h-4" /> SOURCE CONFLICT
+                      <AlertTriangle className="w-4 h-4" /> พบข้อขัดแย้ง (CONFLICT)
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => setEvidenceForm({ ...evidenceForm, resulting_status: 'EXPERT_VALIDATION_REQUIRED' })}
+                      onClick={() => setEvidenceForm({ ...evidenceForm, recommended_status: 'EXPERT_VALIDATION_REQUIRED' })}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                        evidenceForm.resulting_status === 'EXPERT_VALIDATION_REQUIRED'
+                        evidenceForm.recommended_status === 'EXPERT_VALIDATION_REQUIRED'
                           ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
                           : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
                       }`}
@@ -1053,7 +1263,7 @@ export default function ReviewsRoute() {
                 {/* Rationale & Legal Reasoning */}
                 <div>
                   <label className="block font-bold text-slate-800 mb-1">
-                    คำวินิจฉัย / เหตุผลทางวิชาการและกฎหมาย <span className="text-rose-500">*</span>
+                    คำวินิจฉัย / เหตุผลทางวิชาการและกฎหมาย (Rationale) <span className="text-rose-500">*</span>
                   </label>
                   <textarea
                     required
@@ -1108,7 +1318,164 @@ export default function ReviewsRoute() {
                     className="px-5 py-2.5 bg-[#062B63] hover:bg-[#1356A3] text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"
                   >
                     <Send className="w-4 h-4 text-[#F36C21]" />
-                    <span>บันทึกความเห็นเข้าสู่ระบบ</span>
+                    <span>บันทึกระเบียนถาวรเข้าสู่ระบบ</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Form 2: PM Disposition Modal */}
+        {activePmModalItem && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden max-h-[90vh] flex flex-col font-sans">
+              {/* PM Modal Header */}
+              <div className="p-5 border-b border-purple-200 bg-gradient-to-r from-purple-900 to-indigo-900 text-white flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                    <Gavel className="w-3.5 h-3.5 text-amber-300" />
+                    PM DISPOSITION & GOVERNANCE GATEWAY • {activePmModalItem.item_code}
+                  </div>
+                  <h3 className="text-base font-extrabold mt-0.5">
+                    บันทึกมติและการสั่งการของผู้จัดการโครงการ (PM Disposition)
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setActivePmModalItem(null)}
+                  className="p-1.5 text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* PM Modal Form Body */}
+              <form onSubmit={handleSubmitPmDisposition} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+                {/* Item Info Summary Box */}
+                <div className="bg-purple-50/70 border border-purple-200 rounded-2xl p-4 space-y-1 text-purple-950 font-sans">
+                  <div className="font-bold text-slate-900 text-sm">{activePmModalItem.title}</div>
+                  <div className="text-slate-600 text-xs">{activePmModalItem.issue_description}</div>
+                  <div className="text-[11px] text-purple-800 font-mono pt-1">
+                    VI-ID: <strong>{activePmModalItem.vi_code || activePmModalItem.item_code}</strong> • เจ้าภาพหลัก: {activePmModalItem.assigned_expert_name} ({activePmModalItem.lead_team === 'PRIVATE_SECTOR' ? 'ภาคเอกชน' : 'ภาครัฐ'})
+                  </div>
+                </div>
+
+                {/* PM Disposition Type Selector */}
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1.5">
+                    มติการสั่งการของ PM (PM Disposition Decision) <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPmForm({ ...pmForm, pm_disposition: 'VALIDATED' })}
+                      className={`p-3 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${
+                        pmForm.pm_disposition === 'VALIDATED'
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                          : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <div className="text-left">
+                        <div>อนุมัติรับรองสมบูรณ์ (VALIDATED)</div>
+                        <div className="text-[10px] opacity-80 font-normal">ผ่านเกณฑ์ Gate G2 บรรจุในรายงาน</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPmForm({ ...pmForm, pm_disposition: 'ACCEPTED_AS_IS' })}
+                      className={`p-3 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${
+                        pmForm.pm_disposition === 'ACCEPTED_AS_IS'
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                          : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                      }`}
+                    >
+                      <FileCheck className="w-4 h-4" />
+                      <div className="text-left">
+                        <div>ยอมรับตามผลตรวจ (ACCEPTED AS IS)</div>
+                        <div className="text-[10px] opacity-80 font-normal">ยอมรับผลตรวจโดยไม่ต้องปรับแก้</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPmForm({ ...pmForm, pm_disposition: 'ACCEPTED_WITH_CONDITIONS' })}
+                      className={`p-3 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${
+                        pmForm.pm_disposition === 'ACCEPTED_WITH_CONDITIONS'
+                          ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                          : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                      }`}
+                    >
+                      <AlertTriangle className="w-4 h-4" />
+                      <div className="text-left">
+                        <div>ยอมรับแบบมีเงื่อนไข (CONDITIONAL)</div>
+                        <div className="text-[10px] opacity-80 font-normal">ต้องดำเนินการตาม Action Items</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPmForm({ ...pmForm, pm_disposition: 'REVISION_REQUESTED' })}
+                      className={`p-3 rounded-xl border text-xs font-bold transition flex items-center gap-2 ${
+                        pmForm.pm_disposition === 'REVISION_REQUESTED'
+                          ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                          : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'
+                      }`}
+                    >
+                      <X className="w-4 h-4" />
+                      <div className="text-left">
+                        <div>สั่งแก้ไขเพิ่มเติม (REVISION REQUIRED)</div>
+                        <div className="text-[10px] opacity-80 font-normal">มีข้อขัดแย้งที่ต้องปรับแก้เอกสาร</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* PM Disposition Note */}
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1">
+                    บันทึกมติที่ประชุม / คำสั่งการของ PM (PM Disposition Note) <span className="text-rose-500">*</span>
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="ระบุมติที่ประชุม เหตุผลการรับรอง หรือข้อสั่งการในการปรับปรุงเอกสาร..."
+                    value={pmForm.pm_disposition_note}
+                    onChange={(e) => setPmForm({ ...pmForm, pm_disposition_note: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 font-medium focus:ring-2 focus:ring-purple-600 focus:outline-none"
+                  ></textarea>
+                </div>
+
+                {/* PM Action Items */}
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1">
+                    รายการงานมอบหมายเพิ่มเติม (Action Items) <span className="text-slate-400 font-normal">(แยก 1 บรรทัดต่อ 1 ข้อ)</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="เช่น:&#10;เพิ่มเชิงอรรถเทียบเคียง พ.ร.บ. สภานโยบายฯ 2568&#10;แนบระเบียบ กสว. ว่าด้วยการร่วมลงทุนประกอบ Inception Report"
+                    value={pmForm.pm_action_items}
+                    onChange={(e) => setPmForm({ ...pmForm, pm_action_items: e.target.value })}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 font-mono text-xs focus:ring-2 focus:ring-purple-600 focus:outline-none"
+                  ></textarea>
+                </div>
+
+                {/* Modal Footer Actions */}
+                <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActivePmModalItem(null)}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                  >
+                    ยกเลิก
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-purple-900 hover:bg-purple-800 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"
+                  >
+                    <Gavel className="w-4 h-4 text-amber-400" />
+                    <span>บันทึกมติ PM ลงในระบบ</span>
                   </button>
                 </div>
               </form>

@@ -121,7 +121,7 @@ class CollaborativeRlsSimulator {
     return this.items;
   }
 
-  // Option 2 Policy: public.review_evidence_records FOR INSERT (Collaborative Co-Review)
+  // Option 2 Policy: public.review_evidence_records FOR INSERT (Collaborative Co-Review & Permanent Audit)
   insertEvidenceRecord(user, record) {
     if (!this.isProjectMember(record.project_id, user.id)) {
       throw new Error('RLS Violation: Only project members can submit evidence/opinions.');
@@ -129,13 +129,72 @@ class CollaborativeRlsSimulator {
     if (record.reviewer_id !== user.id) {
       throw new Error('RLS Violation: reviewer_id must match authenticated user.');
     }
-    if (record.resulting_status === 'VALIDATED' && !this.isPmOrAdmin(record.project_id, user.id)) {
-      throw new Error('Trigger Guard: Only PM can submit a VALIDATED resulting status.');
+
+    const submittedTimestamp = new Date().toISOString();
+    const evd = {
+      id: `evd-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      vi_code: record.vi_code || 'VI-UNKNOWN',
+      document_id: record.document_id || '00000000-0000-0000-0000-000000000001',
+      document_version_id: record.document_version_id || '00000000-0000-0000-0000-000000000001',
+      doc_code_ref: record.doc_code_ref || 'DOC-001',
+      article_section: record.article_section || 'มาตรา 1',
+      page_number: record.page_number || 1,
+      rationale: record.rationale || 'เหตุผลประกอบ',
+      recommended_status: record.recommended_status || record.resulting_status || 'EXPERT_VALIDATION_REQUIRED',
+      submitted_at: submittedTimestamp,
+      is_permanent_record: true,
+      ...record,
+      created_at: submittedTimestamp,
+    };
+
+    this.evidence.push(evd);
+
+    // ANTI AUTO-VALIDATION RULE TRIGGER:
+    // Inserting an expert response NEVER auto-promotes the review item or project gate to VALIDATED.
+    const item = this.items.find((i) => i.id === record.review_item_id);
+    if (item) {
+      if (evd.recommended_status === 'SOURCE_CONFLICT') {
+        item.status = 'SOURCE_CONFLICT';
+      }
+      // If recommended_status is VALIDATED, do NOT set item.status = VALIDATED!
+      // item stays in its current status (e.g. EXPERT_VALIDATION_REQUIRED) until PM disposition.
     }
 
-    const evd = { id: `evd-${Date.now()}`, ...record, created_at: new Date().toISOString() };
-    this.evidence.push(evd);
     return evd;
+  }
+
+  // Option 2 Policy: public.review_evidence_records FOR UPDATE/DELETE (Immutability)
+  updateEvidenceRecord(user, evidenceId, updates) {
+    throw new Error('Audit Guard: Permanent expert response records cannot be updated or modified.');
+  }
+
+  deleteEvidenceRecord(user, evidenceId) {
+    throw new Error('Audit Guard: Permanent expert response records cannot be deleted.');
+  }
+
+  // PM Disposition Management (Separate from expert responses)
+  setPmDisposition(user, itemId, { disposition, note, actionItems }) {
+    const item = this.items.find((i) => i.id === itemId);
+    if (!item) throw new Error('Item not found');
+
+    if (!this.isPmOrAdmin(item.project_id, user.id)) {
+      throw new Error('RLS Violation: Only PM or Project Admin can record PM disposition decisions.');
+    }
+
+    const timestamp = new Date().toISOString();
+    item.pm_disposition = disposition;
+    item.pm_disposition_note = note;
+    item.pm_disposition_by = user.name;
+    item.pm_disposition_at = timestamp;
+    item.pm_action_items = actionItems || [];
+
+    if (disposition === 'VALIDATED') {
+      item.status = 'VALIDATED';
+    } else if (disposition === 'REVISION_REQUESTED') {
+      item.status = 'SOURCE_CONFLICT';
+    }
+
+    return item;
   }
 
   // Option 2 Policy: public.review_items FOR UPDATE (Anti-self-validation)
@@ -211,9 +270,15 @@ function runTests() {
       review_item_id: 'rev-01',
       reviewer_id: USERS.PRIV_ADV_05.id,
       opinion_type: 'SUPPORTING',
-      resulting_status: 'EXPERT_VALIDATION_REQUIRED',
+      vi_code: 'VI-B1-001',
+      doc_code_ref: 'LAW-001 v1.0',
+      document_version_id: '11111111-2222-3333-4444-555555555555',
+      article_section: 'มาตรา 58 วรรคสอง',
+      page_number: 14,
+      rationale: 'สนับสนุนข้อวิเคราะห์ภาครัฐว่าการร่วมลงทุนเอกชนต้องผ่านบอร์ด กสว.',
+      recommended_status: 'EXPERT_VALIDATION_REQUIRED',
     });
-    if (!evd.id) throw new Error('Failed to insert supporting evidence');
+    if (!evd.id || !evd.is_permanent_record || !evd.submitted_at) throw new Error('Failed to insert permanent supporting evidence');
   });
 
   assert('ที่ปรึกษาภาครัฐ (อ.กานต์กุญช์) ส่งข้อสังเกตแย้ง (ALTERNATIVE_VIEW) ในข้อเอกชนได้', () => {
@@ -222,7 +287,13 @@ function runTests() {
       review_item_id: 'rev-05',
       reviewer_id: USERS.PUB_ADV_02.id,
       opinion_type: 'ALTERNATIVE_VIEW',
-      resulting_status: 'SOURCE_CONFLICT',
+      vi_code: 'VI-B1-005',
+      doc_code_ref: 'LAW-002 v1.0',
+      document_version_id: '22222222-3333-4444-5555-666666666666',
+      article_section: 'ข้อ 12 (3)',
+      page_number: 8,
+      rationale: 'พบเงื่อนไขขัดต่อระเบียบกองทุน ววน. เรื่องสิทธิประโยชน์ใน IP',
+      recommended_status: 'SOURCE_CONFLICT',
     });
     if (!evd.id) throw new Error('Failed to insert alternative view evidence');
   });
@@ -241,22 +312,82 @@ function runTests() {
     }
   });
 
-  console.log('\n--- 3. การป้องกันการ Self-Validate และอำนาจปิดประเด็นของ PM ---');
-  assert('ที่ปรึกษาเจ้าภาพหลัก (Lead) ไม่สามารถกด VALIDATED ปิดข้อเองได้ (ถูกบล็อก)', () => {
-    try {
-      sim.updateReviewItemStatus(USERS.PUB_ADV_01, 'rev-01', 'VALIDATED');
-      throw new Error('Should have blocked advisor validation');
-    } catch (e) {
-      if (!e.message.includes('Trigger Guard')) throw e;
+  console.log('\n--- 3. การป้องกัน Anti Auto-Validate & ความเป็นระเบียนถาวร (Audit Integrity) ---');
+  assert('Expert Response ที่เสนอ recommended_status = VALIDATED ต้องไม่เปลี่ยน item/gate เป็น VALIDATED อัตโนมัติ', () => {
+    sim.insertEvidenceRecord(USERS.PUB_ADV_01, {
+      project_id: SAMPLE_PROJECT_ID,
+      review_item_id: 'rev-01',
+      reviewer_id: USERS.PUB_ADV_01.id,
+      opinion_type: 'LEAD_FINDING',
+      vi_code: 'VI-B1-001',
+      doc_code_ref: 'LAW-001 v1.0',
+      document_version_id: '11111111-2222-3333-4444-555555555555',
+      article_section: 'มาตรา 58',
+      page_number: 14,
+      rationale: 'ผลตรวจผ่านเกณฑ์กฎหมายครบถ้วน',
+      recommended_status: 'VALIDATED',
+    });
+    const item = sim.items.find((i) => i.id === 'rev-01');
+    if (item.status === 'VALIDATED') {
+      throw new Error('Anti-Auto-Validate FAILED: Item was automatically validated by expert response!');
     }
   });
 
-  assert('PM สามารถอนุมัติเปลี่ยนสถานะเป็น VALIDATED ตามฉันทามติที่ประชุมได้สำเร็จ', () => {
-    const item = sim.updateReviewItemStatus(USERS.PM, 'rev-01', 'VALIDATED');
-    if (item.status !== 'VALIDATED') throw new Error('PM validation failed');
+  assert('ระเบียนความเห็นผู้เชี่ยวชาญถาวร (Permanent Record) ห้ามแก้ไขหรือลบ (Immutable Audit Trail)', () => {
+    try {
+      sim.updateEvidenceRecord(USERS.PUB_ADV_01, 'evd-01', { rationale: 'แก้ไขข้อความ' });
+      throw new Error('Should have blocked evidence update');
+    } catch (e) {
+      if (!e.message.includes('Audit Guard')) throw e;
+    }
+
+    try {
+      sim.deleteEvidenceRecord(USERS.PUB_ADV_01, 'evd-01');
+      throw new Error('Should have blocked evidence deletion');
+    } catch (e) {
+      if (!e.message.includes('Audit Guard')) throw e;
+    }
   });
 
-  console.log('\n--- 4. การจัดการรอบตรวจโดย PM (Batch & Round Management) ---');
+  console.log('\n--- 4. การแยกช่อง PM Disposition & การรับรอง Gate อย่างเป็นเอกเทศ ---');
+  assert('ที่ปรึกษาไม่สามารถบันทึกช่อง PM Disposition ได้ (ถูกบล็อกด้วย RLS)', () => {
+    try {
+      sim.setPmDisposition(USERS.PRIV_ADV_05, 'rev-01', {
+        disposition: 'VALIDATED',
+        note: 'พยายามลงมติแทน PM',
+      });
+      throw new Error('Should have blocked advisor from recording PM disposition');
+    } catch (e) {
+      if (!e.message.includes('RLS Violation')) throw e;
+    }
+  });
+
+  assert('PM สามารถลงมติ PM Disposition = VALIDATED พร้อม Action Items เพื่อปิดข้อและรับรอง Gate ได้สำเร็จ', () => {
+    const updated = sim.setPmDisposition(USERS.PM, 'rev-01', {
+      disposition: 'VALIDATED',
+      note: 'คณะที่ปรึกษาทั้ง 2 ทีมมีฉันทามติรับรอง PM อนุมัติบรรจุใน Inception Report (DEL-01)',
+      actionItems: ['แนบผลตรวจในภาคผนวก ก.', 'ส่งมอบเอกสารให้ สกสว.'],
+    });
+    if (updated.status !== 'VALIDATED' || updated.pm_disposition !== 'VALIDATED' || !updated.pm_disposition_at) {
+      throw new Error('PM disposition validation failed');
+    }
+  });
+
+  assert('PM สามารถลงมติ ACCEPTED_WITH_CONDITIONS โดยไม่เปลี่ยนสถานะเป็น VALIDATED จนกว่าจะทำตามเงื่อนไข', () => {
+    const updated = sim.setPmDisposition(USERS.PM, 'rev-05', {
+      disposition: 'ACCEPTED_WITH_CONDITIONS',
+      note: 'รับผลตรวจแบบมีเงื่อนไข ให้ทีมเอกชนส่งหนังสือหารือเพิ่มเติม',
+      actionItems: ['จัดทำบันทึกข้อตกลงร่วมทุนฉบับร่าง'],
+    });
+    if (updated.status === 'VALIDATED') {
+      throw new Error('Conditional acceptance should not set status to VALIDATED');
+    }
+    if (updated.pm_disposition !== 'ACCEPTED_WITH_CONDITIONS') {
+      throw new Error('PM disposition setting failed');
+    }
+  });
+
+  console.log('\n--- 5. การจัดการรอบตรวจโดย PM (Batch & Round Management) ---');
   assert('PM สามารถเปิดรอบตรวจใหม่ (BATCH-02) สำหรับ Gate G3 ได้', () => {
     const b = sim.manageBatch(USERS.PM, {
       id: 'batch-02',
@@ -280,7 +411,7 @@ function runTests() {
   });
 
   console.log('\n================================================================');
-  console.log(`📊 ผลการทดสอบโมเดล Option 2: ผ่าน ${passed}/${total} การทดสอบ (${Math.round((passed / total) * 100)}%)`);
+  console.log(`📊 ผลการทดสอบ: ผ่าน ${passed}/${total} การทดสอบ (${Math.round((passed / total) * 100)}%)`);
   console.log('================================================================\n');
 }
 

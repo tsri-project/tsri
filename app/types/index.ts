@@ -395,17 +395,63 @@ export interface ReviewBatch {
   updated_at: string;
 }
 
+export type PmDispositionType =
+  | 'PENDING_REVIEW'
+  | 'ACCEPTED_AS_IS'
+  | 'ACCEPTED_WITH_CONDITIONS'
+  | 'REVISION_REQUESTED'
+  | 'VALIDATED';
+
+export const PM_DISPOSITION_BADGES: Record<
+  PmDispositionType,
+  { label: string; class: string; iconName: string; desc: string }
+> = {
+  PENDING_REVIEW: {
+    label: 'รอ PM ประมวลผล (Pending PM Review)',
+    class: 'bg-slate-100 text-slate-700 border-slate-300',
+    iconName: 'Clock',
+    desc: 'อยู่ระหว่างรวบรวมความเห็นที่ปรึกษาและบรรจุเข้าวาระการประชุม',
+  },
+  ACCEPTED_AS_IS: {
+    label: 'PM รับทราบตามเสนอ (Accepted as-is)',
+    class: 'bg-blue-100 text-blue-800 border-blue-300',
+    iconName: 'CheckCircle',
+    desc: 'PM รับทราบและเห็นชอบตามความเห็นของผู้เชี่ยวชาญ',
+  },
+  ACCEPTED_WITH_CONDITIONS: {
+    label: 'รับทราบโดยมีเงื่อนไข (Conditional Acceptance)',
+    class: 'bg-amber-100 text-amber-900 border-amber-300',
+    iconName: 'AlertTriangle',
+    desc: 'รับทราบความเห็น แต่ให้ทีมวิจัย/HRD ปรับปรุงเพิ่มเติมในคู่มือหรือรายงานฉบับสมบูรณ์',
+  },
+  REVISION_REQUESTED: {
+    label: 'มอบหมายทบทวนเพิ่ม (Revision Requested)',
+    class: 'bg-rose-100 text-rose-800 border-rose-300',
+    iconName: 'RotateCcw',
+    desc: 'PM ส่งกลับให้ที่ปรึกษาหรือทีมวิจัยค้นหาหลักฐานและตัวบทเพิ่มเติม',
+  },
+  VALIDATED: {
+    label: 'อนุมัติรับรองผล (PM Validated & Closed)',
+    class: 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold',
+    iconName: 'ShieldCheck',
+    desc: 'PM อนุมัติรับรองผลการตรวจอย่างเป็นทางการ ปิดประเด็นพร้อมส่งมอบตาม TOR',
+  },
+};
+
 export interface ReviewEvidenceRecord {
   id: string;
   review_item_id: string;
+  vi_code?: string;
   project_id: string;
   reviewer_id: string;
   reviewer_name: string;
   reviewer_role?: string;
   reviewer_team?: AdvisorTeamGroup;
   opinion_type?: ReviewOpinionType;
-  review_date: string;
+  document_id?: string;
+  document_version_id?: string;
   doc_id_ref: string;
+  doc_code_ref?: string;
   article_section: string;
   page_number: number;
   edition_used: string;
@@ -415,6 +461,10 @@ export interface ReviewEvidenceRecord {
   evidence_file_name?: string;
   evidence_file_size?: number;
   resulting_status: VerificationStatus;
+  recommended_status?: VerificationStatus;
+  review_date?: string;
+  submitted_at: string;
+  is_permanent_record?: boolean;
   created_at: string;
 }
 
@@ -423,10 +473,12 @@ export interface ReviewItem {
   batch_id: string;
   project_id: string;
   item_code: string;
+  vi_code?: string;
   title: string;
   document_id?: string;
   document_code?: string;
   document_title?: string;
+  document_version_id?: string;
   document_version_number?: string;
   deliverable_code?: string;
   article_section: string;
@@ -441,6 +493,12 @@ export interface ReviewItem {
   status: VerificationStatus;
   priority: 'HIGH' | 'MEDIUM' | 'LOW';
   due_date: string;
+  pm_disposition?: PmDispositionType;
+  pm_disposition_note?: string;
+  pm_disposition_by?: string;
+  pm_disposition_by_name?: string;
+  pm_disposition_at?: string;
+  pm_action_items?: string[];
   evidence_records: ReviewEvidenceRecord[];
   created_at: string;
   updated_at: string;
