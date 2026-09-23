@@ -246,40 +246,40 @@ export default function ReviewsRoute() {
     }
   };
 
-  // 6 Advisors info for selection
+  // 7 Advisors info for selection (Sections 13.2 & 13.3)
   const allAdvisorsList = [
     {
       id: 'adv-01',
-      name: 'นพ.เฉลิมเกียรติ พรพฤฒิพันธุ์',
-      role: 'อดีต ผอ.ส่วนวิจัย สวรส. / ที่ปรึกษากฎหมายภาครัฐ',
+      name: 'ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร',
+      role: 'รองอธิการบดี ม.บูรพา / ที่ปรึกษากฎหมาย & บอร์ด กสว. (ม.58)',
       team: 'PUBLIC_SECTOR' as AdvisorTeamGroup,
       teamLabel: '🏛️ ภาครัฐ (ม.58 / บอร์ด กสว.)',
     },
     {
       id: 'adv-02',
       name: 'นายกานต์กุญช์ บำรุงชาติ',
-      role: 'หน.ส่วนบริหารงานวิจัย & IP มฟล. / ที่ปรึกษากองทุน ววน.',
+      role: 'หน.ส่วนบริหารงานวิจัย & IP มฟล. / ที่ปรึกษากองทุน ววน. (FF/SF)',
       team: 'PUBLIC_SECTOR' as AdvisorTeamGroup,
       teamLabel: '🏛️ ภาครัฐ (ระเบียบ FF/SF & IP)',
     },
     {
       id: 'adv-03',
       name: 'อ.นภวัฒน์ สืบนุสรณ์',
-      role: 'อาจารย์ประจำสำนักวิชานิติศาสตร์ มฟล.',
+      role: 'อาจารย์ประจำสำนักวิชานิติศาสตร์ มฟล. (ลำดับศักดิ์ พ.ร.บ. 2568)',
       team: 'PUBLIC_SECTOR' as AdvisorTeamGroup,
       teamLabel: '🏛️ ภาครัฐ (ลำดับศักดิ์ พ.ร.บ. 2568)',
     },
     {
       id: 'adv-04',
       name: 'ผศ.ดร.กนกพร ศรีสุจริตพานิช',
-      role: 'รองคณบดีฝ่ายบริหาร ม.บูรพา',
+      role: 'รองคณบดีฝ่ายบริหาร ม.บูรพา (การเงินพัสดุวิจัย & ทรัพยากร)',
       team: 'PUBLIC_SECTOR' as AdvisorTeamGroup,
       teamLabel: '🏛️ ภาครัฐ (การเงินพัสดุ & กำลังคน)',
     },
     {
       id: 'adv-05',
       name: 'คุณธนา & คุณเอ๋',
-      role: 'ที่ปรึกษากฎหมายธุรกิจ นิติกรรมสัญญา และการร่วมลงทุน',
+      role: 'ที่ปรึกษากฎหมายธุรกิจ นิติกรรมสัญญา และการร่วมลงทุนภาคเอกชน',
       team: 'PRIVATE_SECTOR' as AdvisorTeamGroup,
       teamLabel: '🏢 ภาคเอกชน (Private Law & JV)',
     },
@@ -288,7 +288,14 @@ export default function ReviewsRoute() {
       name: 'คุณบัณฑิตา พละพงศ์',
       role: 'Head of Learning Academy, KBTG / ที่ปรึกษา HRD',
       team: 'PRIVATE_SECTOR' as AdvisorTeamGroup,
-      teamLabel: '🏢 ภาคเอกชน (HRD & Competency)',
+      teamLabel: '🎓 HRD (Learning Architecture & KM)',
+    },
+    {
+      id: 'adv-07',
+      name: 'คุณซัน',
+      role: 'ที่ปรึกษาด้านการออกแบบโมดูลพัฒนาผู้บริหารทุกระดับ',
+      team: 'PRIVATE_SECTOR' as AdvisorTeamGroup,
+      teamLabel: '🎓 HRD (Executive Modules & Scenario Assessment)',
     },
   ];
 
@@ -304,7 +311,7 @@ export default function ReviewsRoute() {
               </span>
               <span className="px-2.5 py-0.5 text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 rounded-lg flex items-center gap-1">
                 <Users className="w-3.5 h-3.5 text-amber-700" />
-                โมเดลความเห็นร่วม (4 ท่านภาครัฐ + 2 ท่านเอกชน)
+                โครงสร้าง 3 คณะทำงาน (Kick-off MOM 13.1 - 13.4)
               </span>
               <span className="px-2.5 py-0.5 text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200 rounded-lg">
                 WORK-WS05-001A v0.1
@@ -336,68 +343,156 @@ export default function ReviewsRoute() {
           </div>
         </div>
 
-        {/* Team Collaboration Structure Banner */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Team 1: Public Sector (4 Experts) */}
-          <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/50 border border-blue-200 rounded-3xl p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#062B63] text-white flex items-center justify-center font-bold text-sm">
-                  🏛️
-                </div>
-                <div>
-                  <h3 className="text-sm font-extrabold text-[#062B63]">ทีมวิชาการและกฎหมายภาครัฐ (4 ท่าน)</h3>
-                  <p className="text-[11px] text-blue-700 font-medium">ระเบียบกองทุน ววน., กฎหมายมหาชน, พัสดุและการเงิน</p>
-                </div>
-              </div>
-              <span className="text-[11px] font-bold font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md border border-blue-200">
-                4 ท่าน
+        {/* 13.4 Workflow Principle Banner */}
+        <div className="bg-gradient-to-r from-[#062B63] via-[#1356A3] to-[#0A3D7C] text-white p-5 rounded-3xl shadow-sm space-y-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-white/15 pb-2.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#F36C21]" />
+              <span className="text-xs font-extrabold uppercase tracking-wider text-amber-300">
+                13.4 หลักการทำงานร่วมกันของทั้ง 3 ทีม (Integrated Collaborative Workflow)
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
-                <span className="font-bold text-slate-900 block">นพ.เฉลิมเกียรติ (สวรส.)</span>
-                <span className="text-slate-500">ม.58 / บอร์ด กสว.</span>
+            <span className="text-xs font-bold text-white/90 bg-white/10 px-3 py-0.5 rounded-full border border-white/20">
+              “ทีมบริหารเป็นเจ้าภาพงาน — ทีมที่ปรึกษารับรองความถูกต้อง — ทีม HRD ทำให้ความรู้ถูกนำไปใช้ได้จริง”
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
+            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
+              <span className="font-extrabold text-amber-300 block mb-1">1. ทีมบริหารโครงการ (Core PM)</span>
+              <span className="text-[11px] text-white/85 leading-relaxed">
+                รวบรวมข้อมูล → จัดทำ Draft → ประสานงาน สกสว. & Timeline
+              </span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
+              <span className="font-extrabold text-blue-200 block mb-1">2. ทีมที่ปรึกษากฎหมาย (Advisors)</span>
+              <span className="text-[11px] text-white/85 leading-relaxed">
+                ตรวจสอบ → วิเคราะห์ลำดับศักดิ์ → ให้ข้อเสนอแนะ → ยืนยันความถูกต้อง
+              </span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
+              <span className="font-extrabold text-emerald-300 block mb-1">3. ทีม HRD (Learning Team)</span>
+              <span className="text-[11px] text-white/85 leading-relaxed">
+                แปลงความรู้ → Knowledge Matrix → พัฒนาสื่อ 15 คลิป & ข้อสอบ 12 ชุด
+              </span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
+              <span className="font-extrabold text-purple-200 block mb-1">4. ร่วม Review & ส่งมอบ</span>
+              <span className="text-[11px] text-white/85 leading-relaxed">
+                ทั้ง 3 ทีมร่วม Review ฉันทามติ → PM จัดทำ Final Deliverables (DEL-01–04)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Team Collaboration Structure Details (13.1, 13.2, 13.3) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Team 1: PM Core (4 Members) */}
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#062B63] text-white flex items-center justify-center font-bold text-sm">
+                    👑
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-[#062B63]">13.1 ทีมบริหารโครงการ (Core PM)</h3>
+                    <p className="text-[11px] text-slate-500 font-medium">ศูนย์กลางประสานงานและส่งมอบ TOR</p>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold font-mono bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md border border-slate-200">
+                  4 ท่าน
+                </span>
               </div>
-              <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
-                <span className="font-bold text-slate-900 block">อ.กานต์กุญช์ (มฟล.)</span>
-                <span className="text-slate-500">ระเบียบ FF/SF & IP</span>
-              </div>
-              <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
-                <span className="font-bold text-slate-900 block">อ.นภวัฒน์ (มฟล.)</span>
-                <span className="text-slate-500">ลำดับศักดิ์ พ.ร.บ. 2568</span>
-              </div>
-              <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
-                <span className="font-bold text-slate-900 block">ผศ.ดร.กนกพร (ม.บูรพา)</span>
-                <span className="text-slate-500">การเงินพัสดุวิจัย</span>
+              <div className="space-y-1.5 text-[11px]">
+                <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                  <span className="font-bold text-slate-900 block">คุณไกรพุฒิ (ไนท์)</span>
+                  <span className="text-slate-500">Project Director & Strategic Risk Lead</span>
+                </div>
+                <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                  <span className="font-bold text-slate-900 block">นายอนุสรณ์ (เด่น)</span>
+                  <span className="text-slate-500">PM & Learning Architect Lead</span>
+                </div>
+                <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                  <span className="font-bold text-slate-900 block">ดร.หนึ่งนิดา (ต้นหลิว)</span>
+                  <span className="text-slate-500">Co-PM / Research & Qualitative Process</span>
+                </div>
+                <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                  <span className="font-bold text-slate-900 block">คุณเบนซ์</span>
+                  <span className="text-slate-500">Project Coordinator & Tracking</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Team 2: Private Sector & Investment (2 Experts) */}
-          <div className="bg-gradient-to-br from-amber-50/70 to-orange-50/50 border border-amber-200 rounded-3xl p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#F36C21] text-white flex items-center justify-center font-bold text-sm">
-                  🏢
+          {/* Team 2: Advisory Legal (4 Public + 2 Private) */}
+          <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/50 border border-blue-200 rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#1356A3] text-white flex items-center justify-center font-bold text-sm">
+                    ⚖️
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-[#062B63]">13.2 ทีมที่ปรึกษากฎหมาย & วิชาการ</h3>
+                    <p className="text-[11px] text-blue-700 font-medium">ตรวจทานลำดับศักดิ์, ระเบียบกองทุน, ร่วมลงทุน</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-extrabold text-amber-950">ทีมกฎหมายเอกชน & การลงทุน (2 ท่าน)</h3>
-                  <p className="text-[11px] text-amber-800 font-medium">ร่วมลงทุน Joint Venture, Startup/Deep Tech, HRD Modules</p>
+                <span className="text-[11px] font-bold font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md border border-blue-200">
+                  กลุ่ม 1 + 2
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
+                  <span className="font-bold text-slate-900 block">ผศ.ดร. มารุต (ปุ่น)</span>
+                  <span className="text-slate-500">ม.58 / บอร์ด กสว.</span>
+                </div>
+                <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
+                  <span className="font-bold text-slate-900 block">อ.กานต์กุญช์ (บอย)</span>
+                  <span className="text-slate-500">ระเบียบ FF/SF & IP</span>
+                </div>
+                <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
+                  <span className="font-bold text-slate-900 block">อ.นภวัฒน์ (มะตูม)</span>
+                  <span className="text-slate-500">ลำดับศักดิ์ พ.ร.บ. 2568</span>
+                </div>
+                <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
+                  <span className="font-bold text-slate-900 block">ผศ.ดร.กนกพร (อู๋)</span>
+                  <span className="text-slate-500">การเงินพัสดุวิจัย</span>
+                </div>
+                <div className="bg-white/80 p-2 rounded-xl border border-blue-100 col-span-2">
+                  <span className="font-bold text-slate-900 block">คุณธนา & คุณเอ๋ (เอกชน)</span>
+                  <span className="text-slate-500">กฎหมายธุรกิจ / SPV / Joint Venture</span>
                 </div>
               </div>
-              <span className="text-[11px] font-bold font-mono bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-300">
-                2 ท่าน
-              </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div className="bg-white/80 p-2 rounded-xl border border-amber-100">
-                <span className="font-bold text-slate-900 block">คุณธนา & คุณเอ๋</span>
-                <span className="text-slate-500">กฎหมายธุรกิจ / SPV / JV</span>
+          </div>
+
+          {/* Team 3: HRD & Learning Design (2 Experts) */}
+          <div className="bg-gradient-to-br from-amber-50/70 to-orange-50/50 border border-amber-200 rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#F36C21] text-white flex items-center justify-center font-bold text-sm">
+                    🎓
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-amber-950">13.3 ทีมที่ปรึกษา HRD & KM</h3>
+                    <p className="text-[11px] text-amber-800 font-medium">Knowledge Matrix, วิดีโอ 15 คลิป, ข้อสอบ 12 ชุด</p>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold font-mono bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-300">
+                  กลุ่ม 3
+                </span>
               </div>
-              <div className="bg-white/80 p-2 rounded-xl border border-amber-100">
-                <span className="font-bold text-slate-900 block">คุณบัณฑิตา (KBTG)</span>
-                <span className="text-slate-500">Learning & Assessment</span>
+              <div className="space-y-1.5 text-[11px]">
+                <div className="bg-white/80 p-2.5 rounded-xl border border-amber-100">
+                  <span className="font-bold text-slate-900 block">คุณบัณฑิตา พละพงศ์ (แอ๋ม - KBTG)</span>
+                  <span className="text-slate-500">Knowledge Matrix, KM Platform & Infographics</span>
+                </div>
+                <div className="bg-white/80 p-2.5 rounded-xl border border-amber-100">
+                  <span className="font-bold text-slate-900 block">คุณซัน (Executive Development)</span>
+                  <span className="text-slate-500">ชุดสื่อวิดีโอ 15 คลิป & Scenario Assessment 12 ชุด</span>
+                </div>
               </div>
             </div>
           </div>
