@@ -10,6 +10,7 @@
 | :--- | :--- | :--- |
 | **📁 โฟลเดอร์รวมเอกสารโครงการหลัก (Google Drive Root)** | ศูนย์รวมเอกสาร 14 หมวดงานวิจัยของโครงการ สกสว. ทั้งหมด | [Google Drive Master Repository](https://drive.google.com/drive/folders/1OZQaNmTQmaWFJfdcMwkatS8RP7Wuc9d8?usp=drive_link) |
 | **📁 โฟลเดอร์วิเคราะห์ พ.ร.บ. กับภารกิจ สกสว. (ข้อ 4.3.1)** | เอกสารการศึกษาและตรวจสอบความเกี่ยวพัน พ.ร.บ. กับภารกิจ สกสว. จากฝ่ายวิชาการ | [Google Drive 4.3.1 เอกสารวิเคราะห์](https://drive.google.com/drive/folders/1hfMPYkzRQlfuFq9ARDwS0_kFfMNk76Cq?usp=drive_link) |
+| **📄 ร่างรายงานผลการศึกษาและจัดหมวดหมู่ตามอำนาจหน้าที่/ภารกิจ สกสว.** | เอกสารร่างรายงานผลการศึกษาฉบับออนไลน์ (Google Docs) | [Google Docs ร่างรายงานผลการศึกษา](https://docs.google.com/document/d/1XF2Qdywc6rW5x0VOtgmIpAqLVZMRoEKJzPINI92cagI/edit?tab=t.0) |
 | **📁 โฟลเดอร์แผนงาน หมวด 00.03 (Timeline & Milestone)** | โฟลเดอร์จัดเก็บแผนดำเนินงาน แผนส่งมอบ และ Gantt Chart | [Google Drive หมวด 00.03](https://drive.google.com/drive/u/0/folders/1czzJh_4vNz-rjnFeh20I8oTiEEISNKKE) |
 | **📄 แผนดำเนินงาน ต.ค. - ธ.ค. 2569 (รุ่น 0.2)** | เอกสารรายละเอียดแผนงาน 40 รายการ 6 ผลส่งมอบ 26 รอบประชุม | [Google Docs แผนดำเนินงาน](https://docs.google.com/document/d/1DB5cSVghqAdi_jfz2O5xDf6-zq91C2AjKbkZ5djfhMA/edit?tab=t.0) |
 | **📊 Gantt Chart แผนดำเนินงาน (Google Sheets)** | แผนภูมิ Gantt Chart 40 รายการกิจกรรม และผลส่งมอบ 6 รายการ | [Google Sheets Gantt Chart](https://docs.google.com/spreadsheets/d/1rbh_WArSWEuq_fQKjpoClCptraoK1ZzW/edit?gid=247959143#gid=247959143) |
