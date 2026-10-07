@@ -194,7 +194,7 @@ export function useAuth(): AuthState {
       const stored = localStorage.getItem('tsri_auth_session');
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      if (parsed?.user?.email) {
+      if (parsed?.session?.user?.email || parsed?.profile?.email || parsed?.user?.email) {
         return parsed;
       }
     } catch (e) {

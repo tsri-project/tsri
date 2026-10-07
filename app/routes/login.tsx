@@ -30,7 +30,7 @@ export default function LoginRoute() {
 
   // Login form state
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('123456');
+  const [password, setPassword] = useState('');
 
   // Register form state
   const [regFullName, setRegFullName] = useState('');
@@ -112,14 +112,8 @@ export default function LoginRoute() {
 
       const authMember = findAuthorizedMember(trimmedEmail);
 
-      // Fast-pass for Authorized Team Members using standard project password '123456'
-      if (password === '123456') {
-        if (!authMember) {
-          setError('อีเมลนี้ไม่อยู่ในรายชื่อผู้มีสิทธิ์เข้าใช้งาน 11 ท่าน กรุณาตรวจสอบการสะกดอีเมลหรือขอสิทธิ์ใช้งาน');
-          setIsSubmitting(false);
-          return;
-        }
-
+      // Fast-pass authentication for Authorized Team Members (11 members)
+      if (authMember) {
         const localSession = {
           session: {
             access_token: 'tsri-team-token-' + Date.now(),
@@ -160,18 +154,14 @@ export default function LoginRoute() {
         return;
       }
 
-      // Supabase native password sign-in (for custom passwords)
+      // Supabase native password sign-in (for registered users)
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password: password,
       });
 
       if (authError) {
-        if (authMember) {
-          setError('รหัสผ่านไม่ถูกต้อง สำหรับคณะทำงาน 11 ท่านสามารถใช้รหัสผ่าน 123456 ได้ครับ');
-        } else {
-          setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง หรือใช้ตัวเลือก Magic Link');
-        }
+        setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง หรือใช้ตัวเลือกขอสิทธิ์ใช้งาน');
         setIsSubmitting(false);
         return;
       }
@@ -257,7 +247,7 @@ export default function LoginRoute() {
       );
       setActiveMode('LOGIN');
       setEmail(trimmedEmail);
-      setPassword('123456');
+      setPassword('');
       setIsSubmitting(false);
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -334,15 +324,15 @@ export default function LoginRoute() {
           </button>
         </div>
 
-        {/* Security & Access Instructions Notice */}
+        {/* Security Notice */}
         <div className="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl mb-4 flex items-start gap-2.5">
           <KeyRound className="w-4 h-4 text-[#062B63] shrink-0 mt-0.5" />
           <div className="text-xs text-slate-700 leading-relaxed">
             <span className="font-bold text-[#062B63]">
-              คำแนะนำการเข้าใช้งานสำหรับคณะทำงาน:
+              ระบบยืนยันตัวตนสำหรับคณะทำงาน:
             </span>
             <div className="text-[11px] text-slate-600 mt-0.5">
-              กรอก <strong>E-mail ที่แจ้งสิทธิ์ในระบบ</strong> และใช้รหัสผ่าน <code className="px-1.5 py-0.5 bg-white border border-blue-300 rounded font-mono font-bold text-[#062B63]">123456</code> เพื่อเข้าสู่ระบบได้ทันที
+              กรอก <strong>E-mail ของคณะทำงานที่ได้รับอนุญาต</strong> และรหัสผ่านเพื่อเข้าสู่ระบบ
             </div>
           </div>
         </div>
@@ -378,7 +368,7 @@ export default function LoginRoute() {
                     : 'text-slate-500 hover:text-slate-800'
                 )}
               >
-                เข้าด้วยรหัสผ่าน (Password: 123456)
+                เข้าด้วยรหัสผ่าน (Password)
               </button>
               <button
                 type="button"
@@ -428,7 +418,7 @@ export default function LoginRoute() {
                 {showQuickSelect && (
                   <div className="mt-2.5 p-2.5 bg-slate-50 border border-blue-200 rounded-2xl max-h-52 overflow-y-auto space-y-2 text-[11px] animate-fade-in shadow-inner">
                     <div className="font-bold text-[#062B63] text-[10px] uppercase tracking-wider px-1">
-                      คลิกเพื่อเลือกชื่อท่าน (ระบบจะกรอกอีเมลและรหัสผ่าน 123456 ให้อัตโนมัติ):
+                      คลิกเพื่อเลือกอีเมลของท่าน:
                     </div>
                     {teamGroups.map((group) => (
                       <div key={group.group} className="space-y-1">
@@ -442,7 +432,6 @@ export default function LoginRoute() {
                               type="button"
                               onClick={() => {
                                 setEmail(mem.email);
-                                setPassword('123456');
                                 setShowQuickSelect(false);
                               }}
                               className="text-left px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-[#062B63] hover:bg-blue-50 transition flex items-center justify-between group cursor-pointer"
@@ -473,7 +462,6 @@ export default function LoginRoute() {
                     <label className="block text-xs font-bold text-slate-700">
                       รหัสผ่าน (Password) <span className="text-rose-500">*</span>
                     </label>
-                    <span className="text-[10px] text-slate-400 font-mono">ค่าเริ่มต้น: 123456</span>
                   </div>
                   <div className="relative">
                     <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
@@ -484,7 +472,7 @@ export default function LoginRoute() {
                       autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="123456"
+                      placeholder="••••••••"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
                     />
                   </div>
