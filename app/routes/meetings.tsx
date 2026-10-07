@@ -71,29 +71,29 @@ export default function MeetingsRoute() {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-600"></span>
               </span>
               <span className="text-xs font-bold font-mono text-purple-900 uppercase tracking-wider">
-                UPCOMING CRITICAL MEETING: MEETING #2
+                UPCOMING CRITICAL MEETING: MTG-2026-04
               </span>
             </div>
             <span className="text-xs font-semibold text-purple-800 bg-purple-100/80 px-3 py-1 rounded-full border border-purple-300">
-              วันพฤหัสบดีที่ 25 กันยายน 2569 เวลา 14:00 - 16:00 น.
+              วันศุกร์ที่ 9 ตุลาคม 2569 เวลา 14:00 - 15:30 น.
             </span>
           </div>
 
           <h3 className="text-lg md:text-xl font-bold text-slate-900 leading-snug mb-2">
-            การประชุมครั้งที่ 2 เพื่ออัปเดตการดำเนินงานและสรุปข้อคิดเห็นของที่ปรึกษาตาม WORK-WS05-001A (Prepare Expert Review Package)
+            การประชุมครั้งที่ 4: การประชุมตรวจความพร้อมทั้งทีมก่อนลงภาคสนาม & ข้อคิดเห็นร่างฉบับที่ 1
           </h3>
           <p className="text-xs sm:text-sm text-slate-700 leading-relaxed max-w-4xl mb-4">
-            นำเสนอผลสำเร็จการจัดระบบเอกสารและบทบัญญัติกฎหมายตาม TOR ข้อ 4.3.1 (เสร็จสมบูรณ์ 100%), สรุป Evidence Audit Records จากที่ปรึกษา 4 ท่าน (ช่วง 18-25 ก.ย. 69), พิจารณาประเด็นข้อติดขัดระเบียบงบประมาณ FF/SF และวางแผนการสัมภาษณ์ผู้บริหาร สกสว.
+            ตรวจสอบคิวและรูปแบบการเก็บข้อมูลภาคสนาม (26 รอบ), ยืนยันเครื่องมือ ผู้ดำเนินรายการ และผู้บันทึก, พร้อมทั้งรวบรวมข้อคิดเห็นต่อร่างรายงานฉบับที่ 1 (ข้อ 4.3.1) ก่อนเริ่มเก็บข้อมูลเชิงลึก
           </p>
 
           <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-700 pt-3 border-t border-purple-200/60">
             <div className="flex items-center gap-1.5 text-purple-900">
               <MapPin className="w-4 h-4 text-purple-600" />
-              <span>ห้องประชุม 501 สกสว. และ Zoom Cloud Meeting</span>
+              <span>ระบบ Zoom Meeting</span>
             </div>
             <div className="flex items-center gap-1.5 text-blue-900">
               <Users className="w-4 h-4 text-blue-600" />
-              <span>ผู้เข้าร่วม: คณะทำงาน สกสว. + ที่ปรึกษา 3 กลุ่ม (15 ท่าน)</span>
+              <span>ผู้เข้าร่วม: คณะทำงานและที่ปรึกษาทุกฝ่าย (16 ท่าน)</span>
             </div>
             <div className="flex items-center gap-1.5 text-emerald-900">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -160,17 +160,30 @@ export default function MeetingsRoute() {
                 </span>
                 
                 {mtg.status === 'COMPLETED' ? (
-                  <Link
-                    to="/documents"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg transition font-bold"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    เอกสาร MOM (MOM-PROJ-001)
-                  </Link>
-                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg font-bold">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      ดำเนินการแล้ว
+                    </span>
+                    {mtg.mom_document_version_id && (
+                      <Link
+                        to="/documents"
+                        className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg transition font-semibold"
+                      >
+                        <FileText className="w-3 h-3 text-slate-500" />
+                        MOM
+                      </Link>
+                    )}
+                  </div>
+                ) : mtg.status === 'IN_PROGRESS' ? (
                   <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg font-bold">
                     <Clock className="w-3.5 h-3.5 text-amber-600" />
-                    รอดำเนินการประชุม (25 ก.ย. 69)
+                    อยู่ระหว่างดำเนินงาน
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg font-bold">
+                    <Clock className="w-3.5 h-3.5 text-blue-600" />
+                    กำหนดการดำเนินงานตามแผน
                   </span>
                 )}
               </div>
