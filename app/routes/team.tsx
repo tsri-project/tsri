@@ -73,11 +73,10 @@ export default function TeamRoute() {
   const [newMemberRole, setNewMemberRole] = useState<UserRole>('legal_advisor');
 
   const categories = [
-    { id: 'ALL', name: 'สมาชิกทั้งหมด (All 3 Teams)' },
-    { id: 'CORE_PM', name: '1. ทีมบริหารโครงการ (Core PM Team)' },
-    { id: 'ADVISORY_LEGAL', name: '2.1 ที่ปรึกษากฎหมาย & ระเบียบ ววน.' },
-    { id: 'ADVISORY_PRIVATE', name: '2.2 ที่ปรึกษากฎหมายธุรกิจ & การลงทุน' },
-    { id: 'ADVISORY_HRD', name: '2.3 ที่ปรึกษา Learning & HRD' },
+    { id: 'ALL', name: 'สมาชิกทั้งหมด (11 ท่าน / 3 ฝ่าย)' },
+    { id: 'CORE_PM', name: '1. ฝ่ายบริหารโครงการ (4 ท่าน)' },
+    { id: 'ADVISORY_LEGAL', name: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย (4 ท่าน)' },
+    { id: 'ADVISORY_HRD', name: '3. ฝ่ายที่ปรึกษา HR & Learning (3 ท่าน)' },
     ...(isAdminOrPm
       ? [
           {

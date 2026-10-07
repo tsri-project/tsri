@@ -4,6 +4,7 @@ import { MobileNav } from './MobileNav';
 import { GlobalSearch } from './GlobalSearch';
 import { GateStatusBadge } from './GateStatusBadge';
 import { mockProject, mockCurrentUser } from '~/lib/mock-data';
+import { useRequireAuth } from '~/lib/use-auth';
 import {
   Search,
   Bell,
@@ -14,6 +15,7 @@ import {
   ShieldCheck,
   Building2,
   Settings,
+  Loader2,
 } from 'lucide-react';
 import { Link } from '@remix-run/react';
 
@@ -34,8 +36,35 @@ const mobileMenuItems = [
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const { isLoading, isAuthenticated } = useRequireAuth('/login');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+
+  // If auth is verifying, show clean animated loading screen to prevent content flash
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50 font-sans">
+        <div className="flex flex-col items-center gap-3.5 p-6 bg-white border border-slate-200 rounded-3xl shadow-xl max-w-xs w-full text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#062B63] flex items-center justify-center text-white shadow-lg shadow-[#062B63]/20">
+            <Building2 className="w-7 h-7 text-orange-400 animate-pulse" />
+          </div>
+          <div>
+            <div className="text-sm font-extrabold text-slate-900">TSRI One Link for All</div>
+            <div className="text-xs text-slate-500 mt-0.5">PM & Legal Research Control</div>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#062B63] mt-2">
+            <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+            <span>กำลังตรวจสอบสิทธิ์เข้าใช้งาน...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If not authenticated, return null while useRequireAuth navigates to /login
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">

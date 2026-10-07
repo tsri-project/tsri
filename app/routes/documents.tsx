@@ -187,10 +187,34 @@ export default function DocumentsRoute() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
+            {/* Google Drive Master Folder Link */}
+            <a
+              href="https://drive.google.com/drive/folders/1OZQaNmTQmaWFJfdcMwkatS8RP7Wuc9d8?usp=drive_link"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-2xl text-xs font-bold text-amber-900 shadow-xs transition"
+              title="เปิด Google Drive โฟลเดอร์รวมเอกสารโครงการ 14 หมวด"
+            >
+              <ExternalLink className="w-4 h-4 text-amber-600" />
+              <span>Google Drive คลังเอกสาร</span>
+            </a>
+
+            {/* Google Drive Plan Folder 00.03 */}
+            <a
+              href="https://drive.google.com/drive/u/0/folders/1czzJh_4vNz-rjnFeh20I8oTiEEISNKKE"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-900 shadow-xs transition"
+              title="เปิดโฟลเดอร์แผนงาน Timeline & Milestone หมวด 00.03"
+            >
+              <FolderOpen className="w-4 h-4 text-emerald-600" />
+              <span>โฟลเดอร์แผนงาน (00.03)</span>
+            </a>
+
             {/* R2 Cloudflare Sync Indicator */}
             <div className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 border border-blue-200 rounded-2xl text-xs font-bold text-[#062B63] shadow-xs">
               <Cloud className="w-4 h-4 text-[#1356A3]" />
-              <span>R2 Bucket: tsri-documents-vault</span>
+              <span>R2: tsri-documents-vault</span>
             </div>
 
             <button

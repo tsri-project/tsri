@@ -43,6 +43,38 @@ export default function LoginRoute() {
   const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [loginMethod, setLoginMethod] = useState<'PASSWORD' | 'MAGIC_LINK'>('PASSWORD');
+  const [showQuickSelect, setShowQuickSelect] = useState(false);
+
+  const teamDirectory = [
+    {
+      group: '1. ฝ่ายบริหารโครงการ',
+      members: [
+        { name: 'เด่น PM (Admin)', email: 'dencapvision@gmail.com', role: 'Super Admin' },
+        { name: 'ต้นหลิว Co-PM', email: 'taleiw1717@gmail.com', role: 'Co-PM' },
+        { name: 'ไนท์ PM', email: 'kraiput.in@gmail.com', role: 'Project Director' },
+        { name: 'เบนซ์', email: 'pimpasphitcha@gmail.com', role: 'Coordinator' },
+      ],
+    },
+    {
+      group: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย',
+      members: [
+        { name: 'อ.มะตูม', email: 'napawat.sue@mfu.ac.th', role: 'Legal Advisor' },
+        { name: 'อ.ปุ่น', email: 'tp.marut@gmail.com', role: 'Legal & Fund Advisor' },
+        { name: 'อ.บอย', email: 'karnkul.bum@mfu.ac.th', role: 'Research & IP Advisor' },
+        { name: 'อ.อู๋', email: 'kanokporns@go.buu.ac.th', role: 'Resource & Finance Advisor' },
+      ],
+    },
+    {
+      group: '3. ฝ่ายที่ปรึกษา HR & Learning',
+      members: [
+        { name: 'K.แอ๋ม', email: 'b.phalapong@gmail.com', role: 'Learning Architecture' },
+        { name: 'K.ซัน', email: 'atichart.sri@gmail.com', role: 'Executive Modules' },
+        { name: 'K.สายป่าน', email: 'c.benrabbit@gmail.com', role: 'Infographic & Media' },
+      ],
+    },
+  ];
+
   // If user already has a valid session, redirect to returnTo or /dashboard
   useEffect(() => {
     if (!isAuthLoading && session) {
@@ -56,15 +88,41 @@ export default function LoginRoute() {
     setSuccessMessage('');
 
     const trimmedEmail = email.trim();
-    if (!trimmedEmail || !password) {
-      setError('กรุณากรอกอีเมลและรหัสผ่าน');
+    if (!trimmedEmail) {
+      setError('กรุณากรอกอีเมลผู้ใช้งาน');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Real Supabase Authentication
+      if (loginMethod === 'MAGIC_LINK') {
+        // Supabase Magic Link OTP
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+          email: trimmedEmail,
+          options: {
+            emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}${returnTo}` : undefined,
+          },
+        });
+
+        if (otpError) {
+          setError(`ไม่สามารถส่งลิงก์ได้: ${otpError.message}`);
+          setIsSubmitting(false);
+          return;
+        }
+
+        setSuccessMessage(`ส่งลิงก์เข้าสู่ระบบไปยัง ${trimmedEmail} เรียบร้อยแล้ว! กรุณาตรวจสอบกล่องจดหมายของคุณ`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Password Authentication
+      if (!password) {
+        setError('กรุณากรอกรหัสผ่าน');
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password: password,
@@ -72,7 +130,7 @@ export default function LoginRoute() {
 
       if (authError) {
         if (authError.message.includes('Invalid login credentials')) {
-          setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง');
+          setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง หรือใช้ตัวเลือกส่ง Magic Link ไปที่อีเมล');
         } else if (authError.message.includes('Email not confirmed')) {
           setError('บัญชีนี้ยังไม่ได้ยืนยันอีเมลในระบบ Supabase');
         } else {
@@ -275,63 +333,157 @@ export default function LoginRoute() {
 
         {/* MODE: LOGIN */}
         {activeMode === 'LOGIN' && (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                อีเมลผู้ใช้งาน (Email)
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="dencapvision@gmail.com"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
-                />
-              </div>
+          <div className="space-y-4">
+            {/* Login Method Toggle */}
+            <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-[11px] font-semibold">
+              <button
+                type="button"
+                onClick={() => setLoginMethod('PASSWORD')}
+                className={cn(
+                  'flex-1 py-1.5 rounded-lg transition text-center cursor-pointer',
+                  loginMethod === 'PASSWORD'
+                    ? 'bg-white text-[#062B63] shadow-xs font-bold'
+                    : 'text-slate-500 hover:text-slate-800'
+                )}
+              >
+                เข้าด้วยรหัสผ่าน (Password)
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMethod('MAGIC_LINK')}
+                className={cn(
+                  'flex-1 py-1.5 rounded-lg transition text-center cursor-pointer flex items-center justify-center gap-1',
+                  loginMethod === 'MAGIC_LINK'
+                    ? 'bg-white text-[#062B63] shadow-xs font-bold'
+                    : 'text-slate-500 hover:text-slate-800'
+                )}
+              >
+                <Sparkles className="w-3 h-3 text-orange-500" />
+                ลิงก์อีเมล (Magic Link)
+              </button>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                รหัสผ่าน (Password)
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="กรอกรหัสผ่านของคุณ"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
-                />
-              </div>
-            </div>
+            <form onSubmit={handleLogin} className="space-y-3.5">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-slate-700">
+                    อีเมลผู้ใช้งาน (Email) <span className="text-rose-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickSelect(!showQuickSelect)}
+                    className="text-[11px] font-bold text-[#1356A3] hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <span>{showQuickSelect ? 'ซ่อนรายชื่อ' : '⚡ เลือกอีเมลทีมงาน'}</span>
+                  </button>
+                </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full mt-2 py-3 bg-[#062B63] hover:bg-[#1356A3] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 group cursor-pointer"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
-                  <span>กำลังเข้าสู่ระบบผ่าน Supabase...</span>
-                </>
-              ) : (
-                <>
-                  <span>เข้าสู่ระบบ Control Center</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-orange-400" />
-                </>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="dencapvision@gmail.com"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
+                  />
+                </div>
+
+                {/* Team Quick Select Accordion */}
+                {showQuickSelect && (
+                  <div className="mt-2.5 p-2.5 bg-slate-50 border border-blue-200 rounded-2xl max-h-48 overflow-y-auto space-y-2 text-[11px] animate-fade-in shadow-inner">
+                    <div className="font-bold text-[#062B63] text-[10px] uppercase tracking-wider px-1">
+                      คลิกเพื่อเลือกอีเมลของท่าน (11 ท่าน / 3 ฝ่าย):
+                    </div>
+                    {teamDirectory.map((group) => (
+                      <div key={group.group} className="space-y-1">
+                        <div className="text-[10px] font-bold text-slate-500 px-1 pt-1 border-t border-slate-200">
+                          {group.group}
+                        </div>
+                        <div className="grid grid-cols-1 gap-1">
+                          {group.members.map((mem) => (
+                            <button
+                              key={mem.email}
+                              type="button"
+                              onClick={() => {
+                                setEmail(mem.email);
+                                setShowQuickSelect(false);
+                              }}
+                              className="text-left px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-[#062B63] hover:bg-blue-50 transition flex items-center justify-between group cursor-pointer"
+                            >
+                              <div>
+                                <span className="font-bold text-slate-800 group-hover:text-[#062B63]">
+                                  {mem.name}
+                                </span>
+                                <span className="text-[10px] text-slate-400 block font-mono">
+                                  {mem.email}
+                                </span>
+                              </div>
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
+                                {mem.role}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {loginMethod === 'PASSWORD' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    รหัสผ่าน (Password) <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                    <input
+                      type="password"
+                      name="password"
+                      required
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="กรอกรหัสผ่านของคุณ"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
+                    />
+                  </div>
+                </div>
               )}
-            </button>
-          </form>
+
+              {loginMethod === 'MAGIC_LINK' && (
+                <div className="p-3 bg-amber-50/80 border border-amber-200/80 rounded-xl text-[11px] text-amber-900 leading-relaxed">
+                  ระบบจะส่งลิงก์เข้าสู่ระบบแบบไม่ต้องใช้รหัสผ่านไปยังกล่องจดหมายอีเมลของคุณโดยตรง เพียงคลิกลิงก์ในอีเมลก็จะเข้าสู่ระบบได้ทันที
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full mt-2 py-3 bg-[#062B63] hover:bg-[#1356A3] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 group cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
+                    <span>กำลังดำเนินการ...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>
+                      {loginMethod === 'MAGIC_LINK'
+                        ? 'ส่ง Magic Link ไปที่อีเมล'
+                        : 'เข้าสู่ระบบ Control Center'}
+                    </span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-orange-400" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         )}
 
         {/* MODE: REGISTER / REQUEST ACCESS */}

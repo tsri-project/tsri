@@ -4,7 +4,7 @@ import { AppLayout } from '~/components/shell/AppLayout';
 import { RoleWorkspaceView, WorkspaceType } from '~/components/dashboard/RoleWorkspaceView';
 import { mockDashboardData } from '~/lib/mock-data';
 import { ExecutiveDashboardData, DOCUMENT_STATUS_BADGES } from '~/types';
-import { useRequireAuth } from '~/lib/use-auth';
+import { useAuth } from '~/lib/use-auth';
 import { FileText, ArrowRight, Plus, FolderKanban, ShieldCheck, Loader2 } from 'lucide-react';
 import { formatThaiDate } from '~/lib/utils';
 
@@ -13,20 +13,9 @@ export const clientLoader = async () => {
 };
 
 export default function DashboardRoute() {
-  const { isLoading, isAuthenticated } = useRequireAuth('/login?returnTo=/dashboard');
+  const { isLoading, isAuthenticated, role } = useAuth();
   const data = useLoaderData<ExecutiveDashboardData>();
   const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceType>('PM_CONTROL_TOWER');
-
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-[#062B63] animate-spin" />
-          <div className="text-xs font-semibold text-slate-500">กำลังตรวจสอบสิทธิ์การเข้าใช้งาน Dashboard...</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <AppLayout>

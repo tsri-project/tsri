@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from '@remix-run/react';
+import { useNavigate, useLocation } from '@remix-run/react';
 import { supabase } from '~/lib/supabase.client';
 import type { Session, User } from '@supabase/supabase-js';
 
@@ -27,6 +27,7 @@ export interface AuthState {
   profile: UserProfile | null;
   role: UserRole | null;
   isAdminOrPm: boolean;
+  isAuthenticated: boolean;
   isLoading: boolean;
   refreshAuth: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -155,6 +156,7 @@ export function useAuth(): AuthState {
     profile,
     role,
     isAdminOrPm,
+    isAuthenticated: !!session,
     isLoading,
     refreshAuth,
     signOut,
@@ -165,15 +167,21 @@ export function useAuth(): AuthState {
  * Hook to enforce authentication on protected routes (/dashboard, /reviews, etc.)
  * Redirects unauthenticated users to /login immediately.
  */
-export function useRequireAuth(redirectTo: string = '/login') {
+export function useRequireAuth(defaultRedirectTo: string = '/login') {
   const navigate = useNavigate();
+  const location = useLocation();
   const auth = useAuth();
 
   useEffect(() => {
     if (!auth.isLoading && !auth.session) {
-      navigate(redirectTo, { replace: true });
+      const currentPath = location.pathname + location.search;
+      const targetUrl =
+        currentPath && currentPath !== '/' && currentPath !== '/login'
+          ? `/login?returnTo=${encodeURIComponent(currentPath)}`
+          : defaultRedirectTo;
+      navigate(targetUrl, { replace: true });
     }
-  }, [auth.session, auth.isLoading, navigate, redirectTo]);
+  }, [auth.session, auth.isLoading, navigate, location, defaultRedirectTo]);
 
   return { ...auth, isAuthenticated: !!auth.session };
 }

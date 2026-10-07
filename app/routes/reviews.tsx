@@ -19,7 +19,7 @@ import {
   PmDispositionType,
   PM_DISPOSITION_BADGES,
 } from '~/types';
-import { useRequireAuth } from '~/lib/use-auth';
+import { useAuth } from '~/lib/use-auth';
 import {
   fetchReviewsFromSupabase,
   submitExpertEvidenceToSupabase,
@@ -63,19 +63,20 @@ import {
   RefreshCw,
   Database,
   Crown,
+  LogIn,
 } from 'lucide-react';
 import { formatThaiDate, formatThaiDateTime, formatFileSize } from '~/lib/utils';
 
 export const clientLoader = async () => {
   return {
-    batches: [] as ReviewBatch[],
-    items: [] as ReviewItem[],
+    batches: mockReviewBatches,
+    items: mockReviewItems,
     team: mockTeamMembers,
   };
 };
 
 export default function ReviewsRoute() {
-  const { user, profile, role, isAdminOrPm, isLoading: isAuthLoading, isAuthenticated } = useRequireAuth('/login?returnTo=/reviews');
+  const { user, profile, role, isAdminOrPm, isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const { batches: initialBatches, items: initialItems } = useLoaderData<typeof clientLoader>();
 
   const [batches, setBatches] = useState<ReviewBatch[]>(initialBatches);
@@ -86,7 +87,7 @@ export default function ReviewsRoute() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL'); // 'ALL' or VerificationStatus
 
   // Loading, Submitting & Error States for Supabase
-  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -141,37 +142,40 @@ export default function ReviewsRoute() {
     pm_action_items: '',
   });
 
-  // Load live data from Supabase (Strict: No mock fallback)
+  // Load live data from Supabase (Graceful fallback to mock data in Guest Preview Mode)
   const loadSupabaseData = useCallback(async () => {
     setIsLoadingData(true);
     setFetchError(null);
     try {
       const result = await fetchReviewsFromSupabase();
-      setBatches(result.batches);
-      setReviewItems(result.items);
-      if (result.batches.length > 0 && !result.batches.some((b) => b.id === selectedBatchId)) {
-        setSelectedBatchId(result.batches[0].id);
+      if (result.batches && result.batches.length > 0) {
+        setBatches(result.batches);
+        setReviewItems(result.items);
+        if (!result.batches.some((b) => b.id === selectedBatchId)) {
+          setSelectedBatchId(result.batches[0].id);
+        }
+      } else {
+        setBatches(mockReviewBatches);
+        setReviewItems(mockReviewItems);
       }
       return result;
     } catch (err: any) {
-      console.error('Failed to load reviews from Supabase:', err);
-      const errMsg = err.message || 'ไม่สามารถโหลดข้อมูลจาก Supabase ได้';
-      setFetchError(errMsg);
-      setBatches([]);
-      setReviewItems([]);
-      throw new Error(errMsg);
+      console.warn('Supabase fetch notice, falling back to mock data for preview:', err);
+      setBatches(mockReviewBatches);
+      setReviewItems(mockReviewItems);
+      if (isAuthenticated) {
+        setFetchError('ไม่สามารถโหลดข้อมูลล่าสุดจาก Supabase ได้ (กำลังแสดงข้อมูลตัวอย่างในระบบ)');
+      }
     } finally {
       setIsLoadingData(false);
     }
-  }, [selectedBatchId]);
+  }, [selectedBatchId, isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadSupabaseData().catch((err) => {
-        console.warn('Initial data load warning:', err.message);
-      });
-    }
-  }, [isAuthenticated, loadSupabaseData]);
+    loadSupabaseData().catch((err) => {
+      console.warn('Initial data load notice:', err);
+    });
+  }, [loadSupabaseData]);
 
   // Auto-dismiss notification after 5 seconds
   useEffect(() => {
@@ -182,17 +186,6 @@ export default function ReviewsRoute() {
       return () => clearTimeout(timer);
     }
   }, [feedbackMessage]);
-
-  if (isAuthLoading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-[#062B63] animate-spin" />
-          <div className="text-xs font-semibold text-slate-500">กำลังตรวจสอบสิทธิ์การเข้าใช้งาน Expert Review Center...</div>
-        </div>
-      </div>
-    );
-  }
 
   const activeBatch = batches.find((b) => b.id === selectedBatchId) || batches[0];
 
@@ -266,6 +259,57 @@ export default function ReviewsRoute() {
     setIsSubmitting(true);
     setSubmitError(null);
 
+    // Guest Preview Simulation: In-memory state update for frictionless testing
+    if (!isAuthenticated) {
+      const newRecord: ReviewEvidenceRecord = {
+        id: `evd-mock-${Date.now()}`,
+        review_item_id: activeModalItem.id,
+        project_id: activeModalItem.project_id || 'proj-001',
+        reviewer_id: user?.id || 'guest-reviewer',
+        reviewer_name: profile?.full_name || evidenceForm.reviewer_name || 'ผู้เชี่ยวชาญ (โหมดทดสอบพรีวิว)',
+        reviewer_role: evidenceForm.reviewer_role || 'ที่ปรึกษากฎหมาย (โหมดพรีวิว)',
+        reviewer_team: evidenceForm.reviewer_team,
+        opinion_type: evidenceForm.opinion_type,
+        vi_code: evidenceForm.vi_code,
+        doc_code_ref: evidenceForm.doc_code_ref,
+        doc_id_ref: activeModalItem.document_code || activeModalItem.document_id || 'DOC-01',
+        document_version_id: evidenceForm.document_version_id,
+        article_section: evidenceForm.article_section,
+        page_number: evidenceForm.page_number,
+        edition_used: evidenceForm.edition_used,
+        rationale: evidenceForm.rationale,
+        requirement_impact: evidenceForm.requirement_impact,
+        resulting_status: evidenceForm.recommended_status || 'EXPERT_VALIDATION_REQUIRED',
+        recommended_status: evidenceForm.recommended_status,
+        evidence_file_name: evidenceForm.evidence_file_name,
+        review_date: new Date().toISOString(),
+        submitted_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        is_permanent_record: false,
+      };
+
+      setReviewItems((prev) =>
+        prev.map((item) => {
+          if (item.id === activeModalItem.id) {
+            return {
+              ...item,
+              evidence_records: [newRecord, ...(item.evidence_records || [])],
+              status: evidenceForm.recommended_status || item.status,
+            };
+          }
+          return item;
+        })
+      );
+
+      setActiveModalItem(null);
+      setFeedbackMessage({
+        type: 'success',
+        message: `(โหมดพรีวิว) จำลองการบันทึกความเห็นข้อ ${activeModalItem.vi_code || activeModalItem.item_code} สำเร็จ`,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       await submitExpertEvidenceToSupabase(activeModalItem, {
         ...evidenceForm,
@@ -298,6 +342,38 @@ export default function ReviewsRoute() {
 
     setIsSubmitting(true);
     setSubmitError(null);
+
+    // Guest Preview Simulation: In-memory state update for PM disposition testing
+    if (!isAuthenticated) {
+      const actionItemsList = pmForm.pm_action_items
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      setReviewItems((prev) =>
+        prev.map((item) => {
+          if (item.id === activePmModalItem.id) {
+            return {
+              ...item,
+              pm_disposition: pmForm.pm_disposition,
+              pm_disposition_note: pmForm.pm_disposition_note,
+              pm_action_items: actionItemsList,
+              pm_reviewed_at: new Date().toISOString(),
+              pm_reviewer_name: 'ผู้จัดการโครงการ PM (โหมดทดสอบพรีวิว)',
+            };
+          }
+          return item;
+        })
+      );
+
+      setActivePmModalItem(null);
+      setFeedbackMessage({
+        type: 'success',
+        message: `(โหมดพรีวิว) จำลองการบันทึกมติ PM สำหรับข้อ ${activePmModalItem.vi_code || activePmModalItem.item_code} สำเร็จ`,
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const actionItemsList = pmForm.pm_action_items
@@ -386,7 +462,37 @@ export default function ReviewsRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans">
+      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans pb-24 md:pb-8">
+        {/* Guest Preview Mode Notice Banner */}
+        {!isAuthenticated && (
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-4 md:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-fade-in">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-300 flex items-center justify-center shrink-0 text-amber-600 font-bold text-base">
+                👁️
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-amber-950 uppercase tracking-wide">
+                    โหมดพรีวิว / ตรวจทานตัวอย่าง (Preview Mode)
+                  </span>
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-200 text-amber-900 rounded-md">
+                    Mobile Ready
+                  </span>
+                </div>
+                <p className="text-xs text-amber-800/90 mt-0.5">
+                  ท่านสามารถเปิดอ่านระเบียบ ข้อกฎหมาย สรุปประเด็น และทดลองให้ความเห็นได้ทันที
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/login?returnTo=/reviews"
+              className="w-full sm:w-auto px-4 py-2.5 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2 shrink-0"
+            >
+              <LogIn className="w-4 h-4 text-orange-400" />
+              <span>เข้าสู่ระบบเพื่อบันทึกจริง</span>
+            </Link>
+          </div>
+        )}
         {/* Top Header Card */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
