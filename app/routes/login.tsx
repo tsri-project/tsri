@@ -324,19 +324,6 @@ export default function LoginRoute() {
           </button>
         </div>
 
-        {/* Security Notice */}
-        <div className="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl mb-4 flex items-start gap-2.5">
-          <KeyRound className="w-4 h-4 text-[#062B63] shrink-0 mt-0.5" />
-          <div className="text-xs text-slate-700 leading-relaxed">
-            <span className="font-bold text-[#062B63]">
-              ระบบยืนยันตัวตนสำหรับคณะทำงาน:
-            </span>
-            <div className="text-[11px] text-slate-600 mt-0.5">
-              กรอก <strong>E-mail ของคณะทำงานที่ได้รับอนุญาต</strong> และรหัสผ่านเพื่อเข้าสู่ระบบ
-            </div>
-          </div>
-        </div>
-
         {/* Success Alert */}
         {successMessage && (
           <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl mb-4 text-xs font-semibold text-emerald-800 flex items-start gap-2">
@@ -387,18 +374,9 @@ export default function LoginRoute() {
 
             <form onSubmit={handleLogin} className="space-y-3.5">
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-bold text-slate-700">
-                    อีเมลผู้ใช้งาน (Email) <span className="text-rose-500">*</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowQuickSelect(!showQuickSelect)}
-                    className="text-[11px] font-bold text-[#1356A3] hover:underline cursor-pointer flex items-center gap-1"
-                  >
-                    <span>{showQuickSelect ? 'ซ่อนรายชื่อ' : '⚡ เลือกอีเมลคณะทำงาน (11 ท่าน)'}</span>
-                  </button>
-                </div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  อีเมลผู้ใช้งาน (Email) <span className="text-rose-500">*</span>
+                </label>
 
                 <div className="relative">
                   <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
@@ -409,60 +387,17 @@ export default function LoginRoute() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="dencapvision@gmail.com"
+                    placeholder="กรุณากรอกอีเมลของท่าน"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
                   />
                 </div>
-
-                {/* Team Quick Select Accordion */}
-                {showQuickSelect && (
-                  <div className="mt-2.5 p-2.5 bg-slate-50 border border-blue-200 rounded-2xl max-h-52 overflow-y-auto space-y-2 text-[11px] animate-fade-in shadow-inner">
-                    <div className="font-bold text-[#062B63] text-[10px] uppercase tracking-wider px-1">
-                      คลิกเพื่อเลือกอีเมลของท่าน:
-                    </div>
-                    {teamGroups.map((group) => (
-                      <div key={group.group} className="space-y-1">
-                        <div className="text-[10px] font-bold text-slate-500 px-1 pt-1 border-t border-slate-200">
-                          {group.group}
-                        </div>
-                        <div className="grid grid-cols-1 gap-1">
-                          {group.members.map((mem) => (
-                            <button
-                              key={mem.email}
-                              type="button"
-                              onClick={() => {
-                                setEmail(mem.email);
-                                setShowQuickSelect(false);
-                              }}
-                              className="text-left px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-[#062B63] hover:bg-blue-50 transition flex items-center justify-between group cursor-pointer"
-                            >
-                              <div>
-                                <span className="font-bold text-slate-800 group-hover:text-[#062B63]">
-                                  {mem.name}
-                                </span>
-                                <span className="text-[10px] text-slate-400 block font-mono">
-                                  {mem.email}
-                                </span>
-                              </div>
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">
-                                {mem.role}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {loginMethod === 'PASSWORD' && (
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-slate-700">
-                      รหัสผ่าน (Password) <span className="text-rose-500">*</span>
-                    </label>
-                  </div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    รหัสผ่าน (Password) <span className="text-rose-500">*</span>
+                  </label>
                   <div className="relative">
                     <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                     <input
