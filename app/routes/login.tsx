@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from '@remix-run/react';
 import { supabase } from '~/lib/supabase.client';
-import { useAuth, UserRole } from '~/lib/use-auth';
+import { useAuth, UserRole, findAuthorizedMember, AUTHORIZED_TEAM_MEMBERS } from '~/lib/use-auth';
 import {
   Building2,
   Lock,
@@ -16,6 +16,7 @@ import {
   Briefcase,
   HelpCircle,
   Sparkles,
+  KeyRound,
 } from 'lucide-react';
 import { cn } from '~/lib/utils';
 
@@ -23,13 +24,13 @@ export default function LoginRoute() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get('returnTo') || '/dashboard';
-  const { session, isLoading: isAuthLoading } = useAuth();
+  const { session, isLoading: isAuthLoading, refreshAuth } = useAuth();
 
   const [activeMode, setActiveMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
   // Login form state
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('123456');
 
   // Register form state
   const [regFullName, setRegFullName] = useState('');
@@ -46,32 +47,18 @@ export default function LoginRoute() {
   const [loginMethod, setLoginMethod] = useState<'PASSWORD' | 'MAGIC_LINK'>('PASSWORD');
   const [showQuickSelect, setShowQuickSelect] = useState(false);
 
-  const teamDirectory = [
+  const teamGroups = [
     {
       group: '1. ฝ่ายบริหารโครงการ',
-      members: [
-        { name: 'เด่น PM (Admin)', email: 'dencapvision@gmail.com', role: 'Super Admin' },
-        { name: 'ต้นหลิว Co-PM', email: 'taleiw1717@gmail.com', role: 'Co-PM' },
-        { name: 'ไนท์ PM', email: 'kraiput.in@gmail.com', role: 'Project Director' },
-        { name: 'เบนซ์', email: 'pimpasphitcha@gmail.com', role: 'Coordinator' },
-      ],
+      members: AUTHORIZED_TEAM_MEMBERS.filter((m) => m.groupName.includes('1.')),
     },
     {
       group: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย',
-      members: [
-        { name: 'อ.มะตูม', email: 'napawat.sue@mfu.ac.th', role: 'Legal Advisor' },
-        { name: 'อ.ปุ่น', email: 'tp.marut@gmail.com', role: 'Legal & Fund Advisor' },
-        { name: 'อ.บอย', email: 'karnkul.bum@mfu.ac.th', role: 'Research & IP Advisor' },
-        { name: 'อ.อู๋', email: 'kanokporns@go.buu.ac.th', role: 'Resource & Finance Advisor' },
-      ],
+      members: AUTHORIZED_TEAM_MEMBERS.filter((m) => m.groupName.includes('2.')),
     },
     {
       group: '3. ฝ่ายที่ปรึกษา HR & Learning',
-      members: [
-        { name: 'K.แอ๋ม', email: 'b.phalapong@gmail.com', role: 'Learning Architecture' },
-        { name: 'K.ซัน', email: 'atichart.sri@gmail.com', role: 'Executive Modules' },
-        { name: 'K.สายป่าน', email: 'c.benrabbit@gmail.com', role: 'Infographic & Media' },
-      ],
+      members: AUTHORIZED_TEAM_MEMBERS.filter((m) => m.groupName.includes('3.')),
     },
   ];
 
@@ -87,7 +74,7 @@ export default function LoginRoute() {
     setError('');
     setSuccessMessage('');
 
-    const trimmedEmail = email.trim();
+    const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail) {
       setError('กรุณากรอกอีเมลผู้ใช้งาน');
       return;
@@ -123,24 +110,74 @@ export default function LoginRoute() {
         return;
       }
 
+      const authMember = findAuthorizedMember(trimmedEmail);
+
+      // Fast-pass for Authorized Team Members using standard project password '123456'
+      if (password === '123456') {
+        if (!authMember) {
+          setError('อีเมลนี้ไม่อยู่ในรายชื่อผู้มีสิทธิ์เข้าใช้งาน 11 ท่าน กรุณาตรวจสอบการสะกดอีเมลหรือขอสิทธิ์ใช้งาน');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const localSession = {
+          session: {
+            access_token: 'tsri-team-token-' + Date.now(),
+            token_type: 'bearer',
+            expires_in: 86400 * 30,
+            refresh_token: 'tsri-refresh-token',
+            user: {
+              id: authMember.id,
+              email: authMember.email,
+              user_metadata: {
+                full_name: authMember.name,
+                nickname: authMember.nickname,
+                role_title: authMember.roleTitle,
+                organization: authMember.organization,
+                role: authMember.role,
+              },
+            },
+          },
+          profile: {
+            id: authMember.id,
+            email: authMember.email,
+            full_name: authMember.name,
+            nickname: authMember.nickname,
+            role_title: authMember.roleTitle,
+            organization: authMember.organization,
+            avatar_url: authMember.avatarUrl,
+          },
+          role: authMember.role,
+        };
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('tsri_auth_session', JSON.stringify(localSession));
+          window.dispatchEvent(new Event('tsri-auth-changed'));
+        }
+
+        await refreshAuth();
+        navigate(returnTo, { replace: true });
+        return;
+      }
+
+      // Supabase native password sign-in (for custom passwords)
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password: password,
       });
 
       if (authError) {
-        if (authError.message.includes('Invalid login credentials')) {
-          setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง หรือใช้ตัวเลือกส่ง Magic Link ไปที่อีเมล');
-        } else if (authError.message.includes('Email not confirmed')) {
-          setError('บัญชีนี้ยังไม่ได้ยืนยันอีเมลในระบบ Supabase');
+        if (authMember) {
+          setError('รหัสผ่านไม่ถูกต้อง สำหรับคณะทำงาน 11 ท่านสามารถใช้รหัสผ่าน 123456 ได้ครับ');
         } else {
-          setError(`การเข้าสู่ระบบไม่สำเร็จ: ${authError.message}`);
+          setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง หรือใช้ตัวเลือก Magic Link');
         }
         setIsSubmitting(false);
         return;
       }
 
       if (data.session) {
+        await refreshAuth();
         navigate(returnTo, { replace: true });
       } else {
         setError('ไม่สามารถสร้าง Session ได้ กรุณาลองใหม่อีกครั้ง');
@@ -148,7 +185,7 @@ export default function LoginRoute() {
       }
     } catch (err: any) {
       console.error('Supabase Auth error:', err);
-      setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์ Supabase Auth');
+      setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง');
       setIsSubmitting(false);
     }
   };
@@ -172,7 +209,6 @@ export default function LoginRoute() {
     setIsSubmitting(true);
 
     try {
-      // 1. Sign up user in Supabase Auth
       const { data: authData, error: authErr } = await supabase.auth.signUp({
         email: trimmedEmail,
         password: regPassword,
@@ -193,7 +229,6 @@ export default function LoginRoute() {
 
       const userId = authData.user?.id;
 
-      // 2. Upsert profile
       if (userId) {
         try {
           await supabase.from('profiles').upsert({
@@ -203,7 +238,6 @@ export default function LoginRoute() {
             organization: regOrg.trim() || 'สกสว.',
           });
 
-          // 3. Create user access request if table exists
           await supabase.from('user_access_requests').insert({
             user_id: userId,
             email: trimmedEmail,
@@ -223,7 +257,7 @@ export default function LoginRoute() {
       );
       setActiveMode('LOGIN');
       setEmail(trimmedEmail);
-      setPassword('');
+      setPassword('123456');
       setIsSubmitting(false);
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -266,7 +300,7 @@ export default function LoginRoute() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-slate-100 p-1 rounded-2xl mb-5 border border-slate-200">
+        <div className="flex bg-slate-100 p-1 rounded-2xl mb-4 border border-slate-200">
           <button
             type="button"
             onClick={() => {
@@ -300,17 +334,15 @@ export default function LoginRoute() {
           </button>
         </div>
 
-        {/* Security / System Notice */}
-        <div className="p-3 bg-blue-50/80 border border-blue-200/80 rounded-2xl mb-5 flex items-start gap-2.5">
-          <Shield className="w-4 h-4 text-[#062B63] shrink-0 mt-0.5" />
+        {/* Security & Access Instructions Notice */}
+        <div className="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl mb-4 flex items-start gap-2.5">
+          <KeyRound className="w-4 h-4 text-[#062B63] shrink-0 mt-0.5" />
           <div className="text-xs text-slate-700 leading-relaxed">
             <span className="font-bold text-[#062B63]">
-              {activeMode === 'LOGIN' ? 'ระบบความปลอดภัย Supabase Auth:' : 'การอนุมัติสิทธิ์เข้าใช้งาน:'}
+              คำแนะนำการเข้าใช้งานสำหรับคณะทำงาน:
             </span>
             <div className="text-[11px] text-slate-600 mt-0.5">
-              {activeMode === 'LOGIN'
-                ? 'ตรวจสอบตัวตนจริงผ่านฐานข้อมูล Supabase ด้วยนโยบายความปลอดภัย RLS'
-                : 'สมาชิกใหม่จะต้องได้รับการอนุมัติบทบาทโดย PM Admin (ครูเด่น) ก่อนเริ่มใช้งาน'}
+              กรอก <strong>E-mail ที่แจ้งสิทธิ์ในระบบ</strong> และใช้รหัสผ่าน <code className="px-1.5 py-0.5 bg-white border border-blue-300 rounded font-mono font-bold text-[#062B63]">123456</code> เพื่อเข้าสู่ระบบได้ทันที
             </div>
           </div>
         </div>
@@ -346,7 +378,7 @@ export default function LoginRoute() {
                     : 'text-slate-500 hover:text-slate-800'
                 )}
               >
-                เข้าด้วยรหัสผ่าน (Password)
+                เข้าด้วยรหัสผ่าน (Password: 123456)
               </button>
               <button
                 type="button"
@@ -374,7 +406,7 @@ export default function LoginRoute() {
                     onClick={() => setShowQuickSelect(!showQuickSelect)}
                     className="text-[11px] font-bold text-[#1356A3] hover:underline cursor-pointer flex items-center gap-1"
                   >
-                    <span>{showQuickSelect ? 'ซ่อนรายชื่อ' : '⚡ เลือกอีเมลทีมงาน'}</span>
+                    <span>{showQuickSelect ? 'ซ่อนรายชื่อ' : '⚡ เลือกอีเมลคณะทำงาน (11 ท่าน)'}</span>
                   </button>
                 </div>
 
@@ -394,11 +426,11 @@ export default function LoginRoute() {
 
                 {/* Team Quick Select Accordion */}
                 {showQuickSelect && (
-                  <div className="mt-2.5 p-2.5 bg-slate-50 border border-blue-200 rounded-2xl max-h-48 overflow-y-auto space-y-2 text-[11px] animate-fade-in shadow-inner">
+                  <div className="mt-2.5 p-2.5 bg-slate-50 border border-blue-200 rounded-2xl max-h-52 overflow-y-auto space-y-2 text-[11px] animate-fade-in shadow-inner">
                     <div className="font-bold text-[#062B63] text-[10px] uppercase tracking-wider px-1">
-                      คลิกเพื่อเลือกอีเมลของท่าน (11 ท่าน / 3 ฝ่าย):
+                      คลิกเพื่อเลือกชื่อท่าน (ระบบจะกรอกอีเมลและรหัสผ่าน 123456 ให้อัตโนมัติ):
                     </div>
-                    {teamDirectory.map((group) => (
+                    {teamGroups.map((group) => (
                       <div key={group.group} className="space-y-1">
                         <div className="text-[10px] font-bold text-slate-500 px-1 pt-1 border-t border-slate-200">
                           {group.group}
@@ -410,6 +442,7 @@ export default function LoginRoute() {
                               type="button"
                               onClick={() => {
                                 setEmail(mem.email);
+                                setPassword('123456');
                                 setShowQuickSelect(false);
                               }}
                               className="text-left px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-[#062B63] hover:bg-blue-50 transition flex items-center justify-between group cursor-pointer"
@@ -422,7 +455,7 @@ export default function LoginRoute() {
                                   {mem.email}
                                 </span>
                               </div>
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">
                                 {mem.role}
                               </span>
                             </button>
@@ -436,9 +469,12 @@ export default function LoginRoute() {
 
               {loginMethod === 'PASSWORD' && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    รหัสผ่าน (Password) <span className="text-rose-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">
+                      รหัสผ่าน (Password) <span className="text-rose-500">*</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-mono">ค่าเริ่มต้น: 123456</span>
+                  </div>
                   <div className="relative">
                     <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                     <input
@@ -448,7 +484,7 @@ export default function LoginRoute() {
                       autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="กรอกรหัสผ่านของคุณ"
+                      placeholder="123456"
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] focus:ring-2 focus:ring-[#062B63]/10 font-medium"
                     />
                   </div>
@@ -469,7 +505,7 @@ export default function LoginRoute() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
-                    <span>กำลังดำเนินการ...</span>
+                    <span>กำลังเข้าสู่ระบบ...</span>
                   </>
                 ) : (
                   <>
@@ -500,7 +536,7 @@ export default function LoginRoute() {
                   required
                   value={regFullName}
                   onChange={(e) => setRegFullName(e.target.value)}
-                  placeholder="เช่น ดร.สมชาย ใจดี หรือ นายวิจัย ววน."
+                  placeholder="เช่น ผศ.ดร.สมชาย ใจดี หรือ คุณวิจัย ววน."
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] font-medium"
                 />
               </div>
@@ -517,7 +553,7 @@ export default function LoginRoute() {
                   required
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
-                  placeholder="your.email@organization.or.th"
+                  placeholder="your.email@gmail.com หรือ @mfu.ac.th"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] font-medium"
                 />
               </div>
@@ -525,90 +561,97 @@ export default function LoginRoute() {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                กำหนดรหัสผ่าน (อย่างน้อย 6 ตัวอักษร) <span className="text-rose-500">*</span>
+                หน่วยงาน / สังกัด <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <Building2 className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                 <input
-                  type="password"
+                  type="text"
                   required
-                  minLength={6}
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  placeholder="รหัสผ่านของคุณ"
+                  value={regOrg}
+                  onChange={(e) => setRegOrg(e.target.value)}
+                  placeholder="สำนักงานคณะกรรมการส่งเสริมวิทยาศาสตร์ วิจัยและนวัตกรรม (สกสว.)"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] font-medium"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  หน่วยงาน / สังกัด
-                </label>
-                <input
-                  type="text"
-                  value={regOrg}
-                  onChange={(e) => setRegOrg(e.target.value)}
-                  placeholder="สกสว., มธ., จุฬาฯ"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  บทบาทที่ขอเข้าใช้งาน
-                </label>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                บทบาทที่ขอรับสิทธิ์ <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <Briefcase className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                 <select
                   value={regRole}
                   onChange={(e) => setRegRole(e.target.value as UserRole)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium focus:outline-none focus:border-[#062B63]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#062B63] font-medium"
                 >
-                  <option value="legal_advisor">ที่ปรึกษากฎหมาย (Legal Advisor)</option>
-                  <option value="researcher">ทีมวิจัย (Researcher)</option>
-                  <option value="hrd">ทีม HRD & การเรียนรู้</option>
-                  <option value="stakeholder">Stakeholder / บพท.</option>
-                  <option value="viewer">ผู้สังเกตการณ์ (Viewer)</option>
+                  <option value="legal_advisor">ฝ่ายที่ปรึกษาวิชาการและกฎหมาย (Academic/Legal Advisor)</option>
+                  <option value="hrd">ฝ่ายที่ปรึกษา HR & Learning (HRD/Instructional)</option>
+                  <option value="pm">ฝ่ายบริหารโครงการ (Project Management / Coordinator)</option>
+                  <option value="stakeholder">ผู้มีส่วนได้ส่วนเสีย / ผู้บริหาร สกสว. (Stakeholder)</option>
+                  <option value="viewer">ผู้สังเกตการณ์ทั่วไป (Viewer)</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                รายละเอียดงาน / ความรับผิดชอบในโครงการ
+                กำหนดรหัสผ่าน (Password) <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="password"
+                  required
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="ความยาวอย่างน้อย 6 ตัวอักษร (เช่น 123456)"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] font-medium"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                เหตุผลและความจำเป็นในการเข้าถึงระบบ
               </label>
               <textarea
                 rows={2}
                 value={regReason}
                 onChange={(e) => setRegReason(e.target.value)}
-                placeholder="ระบุภารกิจหรือผลผลิตที่รับผิดชอบตาม TOR..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:border-[#062B63]"
+                placeholder="ระบุหน้าที่ความรับผิดชอบในโครงการ PRJ-TSRI-2569-001"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#062B63] font-medium resize-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-2 py-3 bg-[#F36C21] hover:bg-[#D95B14] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 group cursor-pointer"
+              className="w-full mt-2 py-3 bg-[#062B63] hover:bg-[#1356A3] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 group cursor-pointer"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span>กำลังส่งคำขอเข้าใช้งาน...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
+                  <span>กำลังส่งคำขอสิทธิ์...</span>
                 </>
               ) : (
                 <>
-                  <span>ส่งคำขอเข้าใช้งานโครงการ</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-white" />
+                  <span>ส่งคำขอลงทะเบียนสิทธิ์ใช้งาน</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-orange-400" />
                 </>
               )}
             </button>
           </form>
         )}
+      </div>
 
-        {/* Footer */}
-        <div className="mt-5 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400 font-medium">
-          One Project • One Link • One Source of Truth
+      {/* Footer System Info */}
+      <div className="text-center mt-6 text-[11px] text-slate-400 space-y-1 relative z-10">
+        <div>ระบบบริหารและติดตามงานโครงการศึกษาและพัฒนาองค์ความรู้กฎหมาย สกสว.</div>
+        <div className="font-mono text-[10px] text-slate-400">
+          PRJ-TSRI-2569-001 · Unified One Link Platform · Supabase & Cloudflare Edge
         </div>
       </div>
     </div>
