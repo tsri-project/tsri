@@ -43,7 +43,7 @@ export default function SettingsRoute() {
               <div className="flex justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500">สถานะ Gate ปัจจุบัน: </span>
                 <span className="font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  {mockProject.current_gate} (Source Verification)
+                  {mockProject.current_gate} (Research Validation)
                 </span>
               </div>
               <div className="flex justify-between py-1.5">

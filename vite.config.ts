@@ -19,9 +19,9 @@ export default defineConfig(({ command, mode }) => {
   const rawBuildTarget =
     env.BUILD_TARGET ||
     process.env.BUILD_TARGET ||
-    (process.env.CF_PAGES_BRANCH === "main" ? "production" : (process.env.CF_PAGES_BRANCH ? "preview" : ""));
+    (mode === "production" ? "production" : (process.env.CF_PAGES_BRANCH === "main" ? "production" : "production"));
   
-  const buildTarget = rawBuildTarget || "preview"; // Default to preview if omitted
+  const buildTarget = rawBuildTarget || "production";
   const isProdDb = supabaseUrl.includes("aatlledgsftkjfunqsvh");
 
   // Strict Dev Guard: Stop `npm run dev` immediately if pointing to Production DB

@@ -227,6 +227,96 @@ export default function DocumentsRoute() {
           </div>
         </div>
 
+        {/* Featured Documents of Today (Oct 8, 2026) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-white border border-amber-200 rounded-3xl p-5 flex flex-col justify-between shadow-2xs">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300 rounded-full">
+                  🔥 กำลังดำเนินการ: แบบสัมภาษณ์กึ่งโครงสร้าง 10 ประเด็น
+                </span>
+                <span className="text-[10px] font-mono text-slate-500">v0.1 Draft</span>
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">
+                FORM-INT-001-2569: แบบสัมภาษณ์กึ่งโครงสร้าง (Semi-Structured Interview)
+              </h3>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                เครื่องมือวิจัยสำหรับสัมภาษณ์และ Focus Group 10 ประเด็นหลัก ครอบคลุมอำนาจหน้าที่, Flow งานจริง, ปัญหาอุปสรรค, Gap และความเสี่ยง
+              </p>
+            </div>
+            <div className="mt-3.5 pt-3 border-t border-amber-200/60 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">หมวด 05.02 การเก็บข้อมูล</span>
+              <a
+                href="https://drive.google.com/drive/folders/1Y4uCfXDbjjm3fe63wmDSi29neiYbOwaF?usp=drive_link"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1"
+              >
+                <span>Google Drive สัมภาษณ์</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-emerald-600/10 via-emerald-500/5 to-white border border-emerald-200 rounded-3xl p-5 flex flex-col justify-between shadow-2xs">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-full">
+                  ✓ ข้อคิดเห็นที่ปรึกษา (ฝ่ายวิชาการ 4 ท่าน)
+                </span>
+                <span className="text-[10px] font-mono text-emerald-700 font-bold">Verified</span>
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">
+                WORK-WS05-001A: การตรวจสอบและให้ข้อคิดเห็นของที่ปรึกษา (4 ท่าน)
+              </h3>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                เอกสารบันทึกข้อคิดเห็นต่อบทบัญญัติกฎหมายและแนวทางวิเคราะห์อำนาจหน้าที่ สกสว. จาก ผศ.ดร.มารุต, นายกานต์กุญช์, อ.นภวัฒน์, ผศ.ดร.กนกพร
+              </p>
+            </div>
+            <div className="mt-3.5 pt-3 border-t border-emerald-200/60 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">หมวด 05.03 ข้อคิดเห็นที่ปรึกษา</span>
+              <a
+                href="https://drive.google.com/drive/folders/1hfMPYkzRQlfuFq9ARDwS0_kFfMNk76Cq?usp=drive_link"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1"
+              >
+                <span>Google Drive ข้อคิดเห็น</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-600/10 via-blue-500/5 to-white border border-blue-200 rounded-3xl p-5 flex flex-col justify-between shadow-2xs">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-blue-100 text-blue-900 border border-blue-300 rounded-full">
+                  📖 ข้อมูลวิเคราะห์: ขอบเขตอำนาจหน้าที่ กสว. และ สกสว.
+                </span>
+                <span className="text-[10px] font-mono text-slate-500">v1.0 Ready</span>
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">
+                DOC-LEGAL-MAPPING-001: ผลการศึกษาและวิเคราะห์ความเกี่ยวพันของ พ.ร.บ. กับภารกิจหน้าที่ สกสว.
+              </h3>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                รายงานถอดบทบัญญัติกฎหมาย 20 ฉบับ (195 ข้อกำหนด) สู่ 5 ภารกิจหลัก สกสว. ตามขอบเขต TOR ข้อ 4.3.1
+              </p>
+            </div>
+            <div className="mt-3.5 pt-3 border-t border-blue-200/60 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">หมวด 06.02 Legal Mapping</span>
+              <a
+                href="/documents/06_งานวิเคราะห์และสังเคราะห์/06.02_Legal-Mapping/DOC-LEGAL-MAPPING-001_ผลการวิเคราะห์ความสัมพันธ์พรบกับภารกิจสกสว.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-1.5 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1"
+              >
+                <span>เปิดอ่านผลวิเคราะห์</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Main Grid: Left Folder Explorer Tree vs Right Document List */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Column: 13 Lifecycle Folders Tree */}

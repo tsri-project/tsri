@@ -23,6 +23,8 @@ import {
   FileText,
   Building2,
   Scale,
+  ListTodo,
+  FolderKanban,
 } from 'lucide-react';
 import { formatThaiDate } from '~/lib/utils';
 
@@ -96,66 +98,85 @@ export default function TorRoute() {
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 shrink-0">
             <div className="text-center px-3 border-r border-slate-200">
               <div className="text-xs text-slate-500 font-medium">ความก้าวหน้า TOR รวม</div>
-              <div className="text-xl font-bold font-mono text-[#062B63]">25%</div>
+              <div className="text-xl font-bold font-mono text-[#062B63]">35%</div>
             </div>
             <div className="text-center px-3 border-r border-slate-200">
               <div className="text-xs text-slate-500 font-medium">ข้อ 4.3.1 จัดระบบ</div>
               <div className="text-xl font-bold font-mono text-emerald-600">100%</div>
             </div>
             <div className="text-center px-3">
-              <div className="text-xs text-slate-500 font-medium">น้ำหนักสัญญารวม</div>
-              <div className="text-xl font-bold font-mono text-slate-900">100%</div>
+              <div className="text-xs text-slate-500 font-medium">ข้อ 4.3.2 สัมภาษณ์/วิเคราะห์</div>
+              <div className="text-xl font-bold font-mono text-amber-600">50%</div>
             </div>
           </div>
         </div>
 
-        {/* Featured Banner: Current Cadence & Expert Review Package */}
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50/60 to-orange-50/50 border border-blue-200/80 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Featured Banner: Current Stage TOR 4.3.2 (8 Oct 2026) */}
+        <div className="bg-gradient-to-r from-amber-500/10 via-blue-500/5 to-emerald-500/10 border-2 border-[#F36C21]/40 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
               <div className="flex items-center gap-2">
-                <span className="flex h-2.5 w-2.5 relative">
+                <span className="flex h-3 w-3 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F36C21] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F36C21]"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#F36C21]"></span>
                 </span>
-                <span className="text-xs font-bold font-mono uppercase tracking-wider text-[#062B63]">
-                  CURRENT CADENCE: EXPERT REVIEW PACKAGE (WORK-WS05-001A v0.1)
+                <span className="text-xs font-bold font-mono uppercase tracking-wider text-[#062B63] bg-orange-100/80 px-2.5 py-0.5 rounded-md border border-orange-200">
+                  ⚡ CURRENT STAGE: TOR ข้อ 4.3.2 (สถานะปัจจุบัน ณ 8 ตุลาคม 2569)
                 </span>
               </div>
-              <span className="text-xs font-medium text-slate-600 bg-white/80 px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
-                ช่วงการดำเนินงาน: 18 – 25 กันยายน 2569
+              <span className="text-xs font-bold text-amber-900 bg-amber-100/90 px-3 py-1 rounded-full border border-amber-300 shadow-2xs">
+                Gate G2: Research Validation (กลั่นกรองผลการวิจัยเบื้องต้น)
               </span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-center">
               <div className="lg:col-span-2 space-y-2">
-                <h3 className="text-lg font-bold text-slate-900 leading-snug">
-                  การจัดระบบเอกสาร ข้อ 4.3.1 เรียบร้อย 100% ➔ เริ่มการตรวจสอบและเพิ่มเติมข้อคิดเห็นจากที่ปรึกษา (Batch 1)
+                <h3 className="text-lg font-extrabold text-slate-900 leading-snug">
+                  กำลังดำเนินการ: ตรวจทานเครื่องมือสัมภาษณ์กึ่งโครงสร้าง (FORM-INT-001) และเตรียมสัมภาษณ์ผู้บริหาร สกสว.
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                  หลังจากการจัดระบบและขึ้นทะเบียนเอกสารกฎหมาย 46 ฉบับขึ้นสู่ Cloudflare R2 Vault เรียบร้อยแล้ว ขณะนี้คณะที่ปรึกษา 4 ท่าน (ผศ.ดร.มารุต, นายกานต์กุญช์, อ.นภวัฒน์, ผศ.ดร.กนกพร) กำลังตรวจสอบบทบัญญัติและบันทึก Evidence Audit Trail เพื่อเตรียมสรุปในการประชุมครั้งที่ 2
+                  ขณะนี้ทีมวิจัยเชิงคุณภาพ (WS03) ร่วมกับทีมที่ปรึกษากำลังตรวจทานเครื่องมือสัมภาษณ์กึ่งโครงสร้าง 10 ประเด็น เพื่อเตรียมเข้าสัมภาษณ์เชิงลึก <strong>รองผู้อำนวยการ สกสว. ทั้ง 5 ท่าน (9–29 ต.ค.)</strong> โดยข้อ 4.3.1 และข้อคิดเห็นที่ปรึกษา 4 ท่านได้จัดทำเสร็จสมบูรณ์เรียบร้อยแล้ว
                 </p>
-                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-900 pt-1">
-                  <Clock className="w-4 h-4 text-indigo-600" />
-                  <span>การประชุมครั้งที่ 2 (Meeting #2): วันที่ 25 กันยายน 2569 เวลา 14:00 - 16:00 น. ณ สกสว. และ Zoom</span>
+                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-700 pt-1">
+                  <span className="flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    ข้อ 4.3.1 จัดระบบ: 100% (ส่งร่าง 16 ต.ค.)
+                  </span>
+                  <span className="flex items-center gap-1 text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    ข้อ 4.3.2 เก็บข้อมูลภาคสนาม: 9–29 ต.ค.
+                  </span>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 justify-end">
-                <Link
-                  to="/reviews"
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-xl shadow-sm transition"
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-2 justify-end">
+                <a
+                  href="https://drive.google.com/drive/folders/1Y4uCfXDbjjm3fe63wmDSi29neiYbOwaF?usp=drive_link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-[#F36C21] hover:bg-[#D95813] text-white text-xs font-bold rounded-xl shadow-xs transition"
                 >
-                  <ShieldCheck className="w-4 h-4 text-orange-400" />
-                  เข้าสู่ Expert Review Center (Batch 1)
-                </Link>
-                <Link
-                  to="/meetings"
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-xl border border-slate-300 shadow-2xs transition"
+                  <FolderOpen className="w-4 h-4 text-orange-100" />
+                  <span>Google Drive ประเด็นสัมภาษณ์ 4.3.2</span>
+                  <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
+                </a>
+                <a
+                  href="https://drive.google.com/drive/folders/1hfMPYkzRQlfuFq9ARDwS0_kFfMNk76Cq?usp=drive_link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs transition"
                 >
-                  <Calendar className="w-4 h-4 text-slate-600" />
-                  ดูวาระการประชุมครั้งที่ 2 (25 ก.ย. 69)
+                  <FolderOpen className="w-4 h-4 text-emerald-200" />
+                  <span>Google Drive ข้อคิดเห็นที่ปรึกษา 4 ท่าน</span>
+                  <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
+                </a>
+                <Link
+                  to="/calendar"
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-[#062B63] text-xs font-bold rounded-xl border border-slate-300 shadow-2xs transition"
+                >
+                  <Calendar className="w-4 h-4 text-[#1356A3]" />
+                  <span>ตารางสัมภาษณ์ 5 ผู้บริหาร (Calendar)</span>
                 </Link>
               </div>
             </div>
@@ -276,12 +297,13 @@ export default function TorRoute() {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {clause.work_packages.map((wp) => {
                           const isReviewPkg = wp.code.includes('WORK-WS05-001A');
+                          const driveLink = (wp as any).drive_url;
                           return (
                             <div
                               key={wp.code}
                               className={`p-3.5 rounded-xl border flex flex-col justify-between text-xs transition ${
                                 isReviewPkg
-                                  ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-200'
+                                  ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-200'
                                   : wp.status === 'COMPLETED'
                                   ? 'bg-emerald-50/50 border-emerald-200'
                                   : 'bg-white border-slate-200'
@@ -322,12 +344,23 @@ export default function TorRoute() {
                                     <span className="truncate">{wp.period}</span>
                                   </div>
                                 )}
-                                {wp.output_file && (
+                                {driveLink ? (
+                                  <a
+                                    href={driveLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 text-emerald-800 font-bold hover:underline transition truncate"
+                                  >
+                                    <FolderOpen className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                    <span className="truncate">{wp.output_file || 'Google Drive ข้อคิดเห็น'}</span>
+                                    <ExternalLink className="w-3 h-3 ml-0.5 shrink-0 opacity-70" />
+                                  </a>
+                                ) : wp.output_file ? (
                                   <div className="flex items-center gap-1 text-blue-700 font-medium truncate">
                                     <FileText className="w-3 h-3 text-blue-500 shrink-0" />
                                     <span className="truncate">{wp.output_file}</span>
                                   </div>
-                                )}
+                                ) : null}
                               </div>
                             </div>
                           );

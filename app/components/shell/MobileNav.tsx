@@ -6,14 +6,15 @@ import {
   Calendar,
   Layers,
   CheckCircle2,
+  ListTodo,
 } from 'lucide-react';
 import { cn } from '~/lib/utils';
 
 const mobileNavItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'TOR & Work', path: '/tor', icon: FileCheck2 },
-  { name: 'Review Center', path: '/reviews', icon: CheckCircle2 },
-  { name: 'Documents', path: '/documents', icon: FolderKanban },
+  { name: 'สถานะงาน', path: '/tasks', icon: ListTodo },
+  { name: 'เอกสารโครงการ', path: '/documents', icon: FolderKanban },
+  { name: 'TOR & ส่งมอบ', path: '/tor', icon: FileCheck2 },
 ];
 
 export function MobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {

@@ -33,8 +33,8 @@ import { Link } from '@remix-run/react';
 
 export type WorkspaceType =
   | 'PM_CONTROL_TOWER'
+  | 'PROJECT_TASKS_PROGRESS'
   | 'RESEARCH_WORKSPACE'
-  | 'LEGAL_REVIEW_CENTER'
   | 'HRD_KNOWLEDGE_WORKSPACE'
   | 'STAKEHOLDER_PORTAL';
 
@@ -52,31 +52,31 @@ export function RoleWorkspaceView({
   const workspaces: { id: WorkspaceType; name: string; roleDesc: string; badgeColor: string }[] = [
     {
       id: 'PM_CONTROL_TOWER',
-      name: 'PM / Control Tower',
+      name: 'ภาพรวม & สรุปโครงการ',
       roleDesc: 'ศูนย์ควบคุมโครงการภาพรวม',
       badgeColor: 'bg-[#062B63] text-white shadow-xs',
     },
     {
+      id: 'PROJECT_TASKS_PROGRESS',
+      name: 'สถานะงาน & ความคืบหน้า',
+      roleDesc: 'ติดตาม WBS กิจกรรม และสถานะส่งมอบ',
+      badgeColor: 'bg-emerald-600 text-white shadow-xs',
+    },
+    {
       id: 'RESEARCH_WORKSPACE',
-      name: 'Research Team',
+      name: 'งานวิจัย & วิเคราะห์กฎหมาย',
       roleDesc: 'งานวิจัย & Focus Group',
       badgeColor: 'bg-indigo-600 text-white shadow-xs',
     },
     {
-      id: 'LEGAL_REVIEW_CENTER',
-      name: 'Legal Advisors',
-      roleDesc: 'ศูนย์กลั่นกรองกฎหมาย (Batch 1)',
+      id: 'HRD_KNOWLEDGE_WORKSPACE',
+      name: 'KM & สื่อการเรียนรู้',
+      roleDesc: 'Knowledge Matrix & สื่อ 15 คลิป',
       badgeColor: 'bg-purple-600 text-white shadow-xs',
     },
     {
-      id: 'HRD_KNOWLEDGE_WORKSPACE',
-      name: 'HRD & Learning',
-      roleDesc: 'Knowledge Matrix & สื่อ 15 คลิป',
-      badgeColor: 'bg-emerald-600 text-white shadow-xs',
-    },
-    {
       id: 'STAKEHOLDER_PORTAL',
-      name: 'Stakeholder / สกสว.',
+      name: 'พอร์ทัลผู้บริหาร สกสว.',
       roleDesc: 'พอร์ทัลผู้บริหารและบอร์ด',
       badgeColor: 'bg-amber-600 text-white shadow-xs',
     },
@@ -136,16 +136,16 @@ export function RoleWorkspaceView({
             </div>
             <div className="flex items-center gap-2">
               <Link
-                to="/reviews"
-                className="px-4 py-2.5 bg-white text-[#062B63] hover:bg-blue-50 text-xs font-bold rounded-xl shadow-xs transition"
+                to="/tasks"
+                className="px-4 py-2.5 bg-white text-[#062B63] hover:bg-blue-50 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5"
               >
-                ศูนย์กลั่นกรอง (Batch 1)
+                <span>สถานะการทำงาน (Tasks)</span>
               </Link>
               <Link
-                to="/tor"
-                className="px-4 py-2.5 bg-[#F36C21] hover:bg-[#D95813] text-white text-xs font-bold rounded-xl shadow-xs transition"
+                to="/documents"
+                className="px-4 py-2.5 bg-[#F36C21] hover:bg-[#D95813] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5"
               >
-                ติดตาม TOR & Deliverables
+                <span>ศูนย์เอกสารโครงการ</span>
               </Link>
             </div>
           </div>
@@ -156,140 +156,61 @@ export function RoleWorkspaceView({
         </div>
       )}
 
-      {/* 2. Research Team — Research Workspace */}
-      {activeWorkspace === 'RESEARCH_WORKSPACE' && (
+      {/* 2. Project Tasks & Progress Hub */}
+      {activeWorkspace === 'PROJECT_TASKS_PROGRESS' && (
         <div className="space-y-6 animate-fade-in">
-          <div className="bg-gradient-to-r from-indigo-900 via-[#062B63] to-slate-900 p-6 rounded-3xl text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-gradient-to-r from-emerald-900 via-[#062B63] to-slate-900 p-6 rounded-3xl text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[11px] font-mono font-bold text-indigo-300 uppercase tracking-wider bg-white/10 px-2.5 py-0.5 rounded-full">
-                🔬 RESEARCH & QUALITATIVE WORKSPACE
+              <span className="text-[11px] font-mono font-bold text-emerald-300 uppercase tracking-wider bg-white/10 px-2.5 py-0.5 rounded-full">
+                📊 WORKSTREAM & TASK EXECUTION HUB
               </span>
-              <h2 className="text-xl md:text-2xl font-extrabold mt-1.5">Research Workspace — พื้นที่ทำงานนักวิจัย</h2>
-              <p className="text-xs text-indigo-100 mt-1 max-w-2xl">
-                รวบรวมข้อมูลภาคสนาม In-depth Interview / Focus Group, จัดทำร่าง Gap Analysis และรายงานข้อเสนอแนะ 3 ชุด
+              <h2 className="text-xl md:text-2xl font-extrabold mt-1.5">สถานะการทำงานและความคืบหน้าโครงการ</h2>
+              <p className="text-xs text-emerald-100 mt-1 max-w-2xl">
+                ติดตามกิจกรรม 5 สายงาน (WS01 - WS05), สถานะส่งมอบ Gate G1-G6 และความคืบหน้ารายสัปดาห์
               </p>
             </div>
-            <Link
-              to="/traceability"
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xs transition self-start sm:self-auto"
-            >
-              เปิด Traceability Explorer
-            </Link>
-          </div>
-
-          {/* Research Progress Cards (Light Theme) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm">
-              <div className="text-xs font-bold text-indigo-600 uppercase mb-2">
-                1. ร่างรายงาน Gap Analysis (ข้อ 4.3.2)
-              </div>
-              <div className="text-3xl font-extrabold text-slate-900 font-mono">v0.9 (Draft)</div>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                เปรียบเทียบกฎหมายกับแนวปฏิบัติจริง (Actual Practice) อยู่ระหว่างส่งที่ปรึกษาตรวจทาน
-              </p>
-            </div>
-
-            <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm">
-              <div className="text-xs font-bold text-indigo-600 uppercase mb-2">
-                2. แผนการสัมภาษณ์ & Focus Group
-              </div>
-              <div className="text-3xl font-extrabold text-slate-900 font-mono">2 กลุ่มเป้าหมาย</div>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                ระดับผู้บริหาร/บอร์ด กสว. และระดับปฏิบัติการ สกสว./PMU พร้อมชุดคำถามโครงสร้าง
-              </p>
-            </div>
-
-            <div className="p-6 bg-white border border-slate-200 rounded-3xl shadow-sm">
-              <div className="text-xs font-bold text-indigo-600 uppercase mb-2">
-                3. รายงานข้อเสนอแนะเชิงนโยบาย
-              </div>
-              <div className="text-3xl font-extrabold text-slate-900 font-mono">3 ชุด / เล่ม</div>
-              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                จัดทำรายงานตามขอบเขต TOR ส่งมอบใน Gate G4-G5
-              </p>
-            </div>
-          </div>
-
-          <ActionMeetingsPanel data={data} />
-        </div>
-      )}
-
-      {/* 3. Legal Advisor — Review Center */}
-      {activeWorkspace === 'LEGAL_REVIEW_CENTER' && (
-        <div className="space-y-6 animate-fade-in">
-          <div className="bg-gradient-to-r from-purple-900 via-[#062B63] to-slate-900 p-6 rounded-3xl text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <span className="text-[11px] font-mono font-bold text-purple-300 uppercase tracking-wider bg-white/10 px-2.5 py-0.5 rounded-full">
-                ⚖️ LEGAL ADVISORY & VALIDATION WORKSPACE
-              </span>
-              <h2 className="text-xl md:text-2xl font-extrabold mt-1.5">Review Center — ศูนย์กลั่นกรองและรับรองกฎหมาย</h2>
-              <p className="text-xs text-purple-100 mt-1 max-w-2xl">
-                ตรวจสอบลำดับศักดิ์กฎหมาย 3 ระดับ, ตีความอำนาจมาตรา 58, และตรวจความถูกต้องของคู่มือปฏิบัติงาน 2 ฉบับ
-              </p>
-            </div>
-            <Link
-              to="/reviews"
-              className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl shadow-xs transition self-start sm:self-auto flex items-center gap-1.5"
-            >
-              <Scale className="w-4 h-4" />
-              <span>เข้าสู่ Expert Review Center (Batch 1)</span>
-            </Link>
-          </div>
-
-          {/* Legal Review Summary Cards in Light Theme */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <Scale className="w-5 h-5 text-purple-600" />
-                สถานะการตรวจทาน Batch 1 รายบุคคล (Assigned Advisor Progress)
-              </h3>
-              <Link to="/reviews" className="text-xs text-[#1356A3] font-bold hover:underline flex items-center gap-1">
-                เปิดระบบตรวจ <ArrowRight className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2">
+              <Link
+                to="/tasks"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5"
+              >
+                <span>ดูแผนงานทั้งหมด (Tasks)</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                <div className="text-xs font-bold text-slate-900">ผศ.ดร. มารุต ตั้งวัฒนาชุลีพร</div>
-                <div className="text-[11px] text-slate-500 mt-0.5">อำนาจหน้าที่บอร์ด & ม.58</div>
-                <div className="mt-2.5 flex items-center gap-1.5">
-                  <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
-                    ● VALIDATED
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                <div className="text-xs font-bold text-slate-900">นายกานต์กุญช์ บำรุงชาติ</div>
-                <div className="text-[11px] text-slate-500 mt-0.5">ระเบียบกองทุน ววน. FF/SF</div>
-                <div className="mt-2.5 flex items-center gap-1.5">
-                  <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-100 text-rose-800 rounded-full border border-rose-300">
-                    ● SOURCE CONFLICT
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                <div className="text-xs font-bold text-slate-900">อ.นภวัฒน์ สืบนุสรณ์</div>
-                <div className="text-[11px] text-slate-500 mt-0.5">ลำดับศักดิ์ พ.ร.บ. (ฉบับที่ 2) 2568</div>
-                <div className="mt-2.5 flex items-center gap-1.5">
-                  <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-300">
-                    ● EXPERT REQUIRED
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                <div className="text-xs font-bold text-slate-900">ผศ.ดร.กนกพร ศรีสุจริตพานิช</div>
-                <div className="text-[11px] text-slate-500 mt-0.5">การเงินพัสดุ & ทรัพยากร</div>
-                <div className="mt-2.5 flex items-center gap-1.5">
-                  <span className="px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-700 rounded-full border border-slate-300">
-                    ● NOT VERIFIED
-                  </span>
-                </div>
-              </div>
+          {/* Progress summary by Workstreams */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+            <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+              <div className="text-[11px] font-mono font-bold text-slate-500">WS01 บริหารโครงการ</div>
+              <div className="text-xl font-extrabold text-slate-900 mt-1 font-mono">100%</div>
+              <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">● Kick-off & Setup เสร็จสมบูรณ์</div>
+            </div>
+            <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+              <div className="text-[11px] font-mono font-bold text-slate-500">WS02 วิเคราะห์กฎหมาย</div>
+              <div className="text-xl font-extrabold text-slate-900 mt-1 font-mono">85%</div>
+              <div className="text-[10px] text-blue-600 font-semibold mt-0.5">● จัดหมวด 46 ฉบับเรียบร้อย</div>
+            </div>
+            <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+              <div className="text-[11px] font-mono font-bold text-slate-500">WS03 วิจัย & Gap</div>
+              <div className="text-xl font-extrabold text-slate-900 mt-1 font-mono">45%</div>
+              <div className="text-[10px] text-amber-600 font-semibold mt-0.5">● เตรียม Focus Group 2 กลุ่ม</div>
+            </div>
+            <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+              <div className="text-[11px] font-mono font-bold text-slate-500">WS04 ข้อเสนอเชิงนโยบาย</div>
+              <div className="text-xl font-extrabold text-slate-900 mt-1 font-mono">20%</div>
+              <div className="text-[10px] text-slate-500 font-semibold mt-0.5">● ร่างกรอบข้อเสนอ 3 ชุด</div>
+            </div>
+            <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+              <div className="text-[11px] font-mono font-bold text-slate-500">WS05 KM & การสื่อสาร</div>
+              <div className="text-xl font-extrabold text-slate-900 mt-1 font-mono">35%</div>
+              <div className="text-[10px] text-purple-600 font-semibold mt-0.5">● สื่อวิดีโอ 15 ตอน & SOP</div>
             </div>
           </div>
+
+          <GateProgressBar currentGate={data.currentGate} />
+          <ActionMeetingsPanel data={data} />
         </div>
       )}
 

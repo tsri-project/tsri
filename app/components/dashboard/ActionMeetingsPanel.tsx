@@ -61,10 +61,10 @@ export function ActionMeetingsPanel({ data }: ActionMeetingsPanelProps) {
                     กำหนด: {formatThaiDate(item.due_date)}
                   </span>
                   <Link
-                    to="/reviews"
+                    to="/tasks"
                     className="text-[#1356A3] font-bold hover:underline cursor-pointer flex items-center gap-0.5"
                   >
-                    จัดการ <ArrowRight className="w-3 h-3" />
+                    ดูงาน <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
@@ -73,16 +73,16 @@ export function ActionMeetingsPanel({ data }: ActionMeetingsPanelProps) {
         </div>
       </div>
 
-      {/* Column 2: Upcoming Meetings */}
+      {/* Column 2: Meetings (Upcoming & Completed) */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm flex flex-col justify-between">
         <div>
           <div className="flex items-center justify-between pb-3 mb-3.5 border-b border-slate-100">
             <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-purple-600" />
-              Upcoming Meetings (การประชุมเร็วๆ นี้)
+              การประชุมโครงการ (Meetings)
             </h3>
             <Link
-              to="/calendar"
+              to="/meetings"
               className="text-xs text-[#1356A3] hover:text-[#062B63] font-bold flex items-center gap-1"
             >
               ดูทั้งหมด <ArrowRight className="w-3 h-3" />
@@ -90,36 +90,64 @@ export function ActionMeetingsPanel({ data }: ActionMeetingsPanelProps) {
           </div>
 
           <div className="space-y-3">
-            {data.upcomingMeetings.map((meeting) => (
-              <div
-                key={meeting.id}
-                className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl hover:border-purple-300 transition"
-              >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <span className="text-[10px] font-mono px-2 py-0.5 bg-purple-100 text-purple-800 border border-purple-200 rounded-md font-bold">
-                    {meeting.meeting_number}
-                  </span>
-                  <span className="text-xs text-slate-500 font-mono font-medium">
-                    {meeting.duration_minutes} นาที
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-slate-900 line-clamp-2 mb-2">
-                  {meeting.title}
-                </div>
-                <div className="text-[11px] text-slate-500 space-y-1">
-                  <div className="flex items-center gap-1.5 text-[#1356A3] font-semibold">
-                    <Clock className="w-3.5 h-3.5" />
-                    {formatThaiDateTime(meeting.scheduled_at)}
+            {/* 1. Next Upcoming Meeting (MTG-2026-04) - Highlighted */}
+            {data.upcomingMeetings
+              .filter((m) => m.status === 'SCHEDULED')
+              .slice(0, 2)
+              .map((meeting) => (
+                <div
+                  key={meeting.id}
+                  className="p-3.5 bg-gradient-to-r from-purple-50/80 to-blue-50/50 border border-purple-200 rounded-2xl hover:border-purple-300 transition"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[10px] font-mono px-2 py-0.5 bg-purple-600 text-white rounded-md font-bold">
+                      {meeting.meeting_number} (นัดหมายถัดไป)
+                    </span>
+                    <span className="text-[10px] text-purple-700 font-bold bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
+                      ● รอประชุม
+                    </span>
                   </div>
-                  {meeting.location_or_link && (
-                    <div className="flex items-center gap-1.5 truncate text-slate-600">
-                      <Video className="w-3.5 h-3.5 text-[#F36C21]" />
-                      {meeting.location_or_link}
+                  <div className="text-xs font-bold text-slate-900 line-clamp-2 mb-2">
+                    {meeting.title}
+                  </div>
+                  <div className="text-[11px] text-slate-500 space-y-1">
+                    <div className="flex items-center gap-1.5 text-[#1356A3] font-semibold">
+                      <Clock className="w-3.5 h-3.5" />
+                      {formatThaiDateTime(meeting.scheduled_at)}
                     </div>
-                  )}
+                    {meeting.location_or_link && (
+                      <div className="flex items-center gap-1.5 truncate text-slate-600">
+                        <Video className="w-3.5 h-3.5 text-[#F36C21]" />
+                        {meeting.location_or_link}
+                      </div>
+                    )}
+                  </div>
                 </div>
+              ))}
+
+            {/* 2. Completed Meetings Summary Strip */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5">
+              <div className="text-[11px] font-bold text-slate-700 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-emerald-700">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  การประชุมที่เสร็จสมบูรณ์แล้ว (3 ครั้ง)
+                </span>
+                <Link to="/meetings" className="text-[10px] text-[#1356A3] font-bold hover:underline">
+                  ดู MOM ทั้งหมด
+                </Link>
               </div>
-            ))}
+              <div className="flex flex-wrap gap-1.5 text-[10px] font-mono pt-1">
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded border border-emerald-300 font-bold">
+                  ✓ MTG-01 Kick-off (18 ก.ย.)
+                </span>
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded border border-emerald-300 font-bold">
+                  ✓ MTG-02 ประชุมครั้งที่ 2 (25 ก.ย.)
+                </span>
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded border border-emerald-300 font-bold">
+                  ✓ MTG-03 ประชุมฝ่าย HR (6 ต.ค.)
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

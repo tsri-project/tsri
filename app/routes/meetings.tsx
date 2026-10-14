@@ -175,7 +175,7 @@ export default function MeetingsRoute() {
                       </Link>
                     )}
                   </div>
-                ) : mtg.status === 'IN_PROGRESS' ? (
+                ) : (mtg.status as string) === 'IN_PROGRESS' ? (
                   <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg font-bold">
                     <Clock className="w-3.5 h-3.5 text-amber-600" />
                     อยู่ระหว่างดำเนินงาน

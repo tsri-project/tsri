@@ -50,10 +50,10 @@ export default function TraceabilityRoute() {
               </p>
             </div>
             <Link
-              to="/reviews"
+              to="/documents"
               className="text-xs font-bold text-[#062B63] hover:text-[#1356A3] flex items-center gap-1"
             >
-              ไปที่ Expert Review Center <ArrowRight className="w-3.5 h-3.5" />
+              ไปที่ศูนย์เอกสารโครงการ <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 

@@ -20,19 +20,20 @@ import {
 import { Link } from '@remix-run/react';
 
 const mobileMenuItems = [
-  { id: '01', name: '01 ภาพรวมโครงการ', path: '/dashboard' },
-  { id: '02', name: '02 TOR & ผลส่งมอบ', path: '/tor' },
-  { id: '03', name: '03 งานของโครงการ', path: '/tasks' },
-  { id: '04', name: '04 ศูนย์เอกสาร', path: '/documents' },
-  { id: '05', name: '05 กฎหมายและระเบียบ', path: '/legal-inventory' },
-  { id: '06', name: '06 Traceability', path: '/traceability' },
-  { id: '07', name: '07 ปฏิทินโครงการ', path: '/calendar' },
-  { id: '08', name: '08 การประชุม', path: '/meetings' },
-  { id: '09', name: '09 Review Center (Batch 1)', path: '/reviews' },
-  { id: '10', name: '10 Risk / Issue / Decision', path: '/raid' },
-  { id: '11', name: '11 Knowledge & Learning', path: '/knowledge' },
-  { id: '12', name: '12 รายงาน', path: '/reports' },
-  { id: '13', name: '13 ทีมงานและสิทธิ์', path: '/team' },
+  { id: '01', name: '01 ภาพรวม & ความคืบหน้า', path: '/dashboard' },
+  { id: '02', name: '02 สถานะการทำงาน & กิจกรรม', path: '/tasks' },
+  { id: '03', name: '03 ผลส่งมอบตาม TOR', path: '/tor' },
+  { id: '04', name: '04 ศูนย์เอกสารโครงการ', path: '/documents' },
+  { id: '05', name: '05 รายงานความคืบหน้า', path: '/reports' },
+  { id: '06', name: '06 การประชุม & มติ', path: '/meetings' },
+  { id: '07', name: '07 ปฏิทินและการดำเนินงาน', path: '/calendar' },
+  { id: '08', name: '08 กฎหมายและระเบียบ', path: '/legal-inventory' },
+  { id: '09', name: '09 ผังความเชื่อมโยง (Traceability)', path: '/traceability' },
+  { id: '10', name: '10 ความเสี่ยง & การตัดสินใจ (RAID)', path: '/raid' },
+  { id: '11', name: '11 องค์ความรู้ & สื่อการเรียนรู้', path: '/knowledge' },
+  { id: '12', name: '12 ทีมงานและผู้รับผิดชอบ', path: '/team' },
+  { id: '13', name: '13 บันทึกงานรายวัน (Daily)', path: '/daily' },
+  { id: '14', name: '14 จัดการหลังบ้าน (Admin)', path: '/admin' },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {

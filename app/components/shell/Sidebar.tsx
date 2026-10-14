@@ -17,30 +17,32 @@ import {
   Settings,
   MessagesSquare,
   LogOut,
+  ListPlus,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { mockCurrentUser } from '~/lib/mock-data';
 import { useAuth } from '~/lib/use-auth';
-
 
 interface SidebarProps {
   onOpenSearch?: () => void;
 }
 
 const mainNavigationItems = [
-  { id: '01', name: '01 ภาพรวมโครงการ', path: '/dashboard', icon: LayoutDashboard },
-  { id: '02', name: '02 TOR & ผลส่งมอบ', path: '/tor', icon: FileCheck2 },
-  { id: '03', name: '03 งานของโครงการ', path: '/tasks', icon: ListTodo },
-  { id: '04', name: '04 ศูนย์เอกสาร', path: '/documents', icon: FolderKanban },
-  { id: '05', name: '05 กฎหมายและระเบียบ', path: '/legal-inventory', icon: Scale },
-  { id: '06', name: '06 Traceability', path: '/traceability', icon: GitFork },
-  { id: '07', name: '07 ปฏิทินโครงการ', path: '/calendar', icon: Calendar },
-  { id: '08', name: '08 การประชุม', path: '/meetings', icon: MessagesSquare },
-  { id: '09', name: '09 Review Center (Batch 1)', path: '/reviews', icon: CheckCircle2 },
-  { id: '10', name: '10 Risk / Issue / Decision', path: '/raid', icon: AlertTriangle },
-  { id: '11', name: '11 Knowledge & Learning', path: '/knowledge', icon: BookOpen },
-  { id: '12', name: '12 รายงาน', path: '/reports', icon: FileBarChart },
-  { id: '13', name: '13 ทีมงานและสิทธิ์', path: '/team', icon: Users2 },
+  { id: '01', name: '01 ภาพรวม & ความคืบหน้า', path: '/dashboard', icon: LayoutDashboard },
+  { id: '02', name: '02 สถานะการทำงาน & กิจกรรม', path: '/tasks', icon: ListTodo },
+  { id: '03', name: '03 ผลส่งมอบตาม TOR', path: '/tor', icon: FileCheck2 },
+  { id: '04', name: '04 ศูนย์เอกสารโครงการ', path: '/documents', icon: FolderKanban },
+  { id: '05', name: '05 รายงานความคืบหน้า', path: '/reports', icon: FileBarChart },
+  { id: '06', name: '06 การประชุม & มติ', path: '/meetings', icon: MessagesSquare },
+  { id: '07', name: '07 ปฏิทินและการดำเนินงาน', path: '/calendar', icon: Calendar },
+  { id: '08', name: '08 กฎหมายและระเบียบ', path: '/legal-inventory', icon: Scale },
+  { id: '09', name: '09 ผังความเชื่อมโยง (Traceability)', path: '/traceability', icon: GitFork },
+  { id: '10', name: '10 ความเสี่ยง & การตัดสินใจ (RAID)', path: '/raid', icon: AlertTriangle },
+  { id: '11', name: '11 องค์ความรู้ & สื่อการเรียนรู้', path: '/knowledge', icon: BookOpen },
+  { id: '12', name: '12 ทีมงานและผู้รับผิดชอบ', path: '/team', icon: Users2 },
+  { id: '13', name: '13 บันทึกงานรายวัน (Daily)', path: '/daily', icon: ListPlus },
+  { id: '14', name: '14 จัดการหลังบ้าน (Admin)', path: '/admin', icon: ShieldCheck },
 ];
 
 export function Sidebar({ onOpenSearch }: SidebarProps) {

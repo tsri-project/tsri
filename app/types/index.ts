@@ -28,7 +28,7 @@ export const GATE_DETAILS: Record<
   G2: {
     name: 'Research Validation',
     titleTh: 'G2: กลั่นกรองผลการวิจัยเบื้องต้น',
-    description: 'กลั่นกรองระเบียบวิธีวิจัยและผลการศึกษาเบื้องต้น',
+    description: 'เก็บข้อมูลภาคสนาม สัมภาษณ์ผู้บริหาร สกสว. และกลั่นกรองผลการวิจัย/วิเคราะห์อำนาจหน้าที่',
     color: 'bg-indigo-600 text-white',
   },
   G3: {
@@ -553,5 +553,63 @@ export interface ProjectTaskItem {
   description: string;
   progress_pct: number;
 }
+
+// -----------------------------------------------------------------------------
+// DAILY UPDATES & LIVE FOCUS TYPES
+// -----------------------------------------------------------------------------
+
+export type TeamCategory = 'CORE_PM' | 'ADVISORY_LEGAL' | 'ADVISORY_PRIVATE' | 'ADVISORY_HRD';
+
+export interface DailyUpdateItem {
+  id: string;
+  date: string; // YYYY-MM-DD or Thai formatted date
+  team_category: TeamCategory;
+  team_name: string;
+  author_id: string;
+  author_name: string;
+  author_avatar?: string;
+  author_role: string;
+  workstream_code?: string;
+  gate_milestone?: ProjectGate;
+  completed_today: string[];
+  in_progress_today?: string[];
+  planned_tomorrow: string[];
+  blockers?: string[];
+  attachments?: {
+    title: string;
+    url: string;
+    type?: 'GDRIVE' | 'DOCUMENT' | 'SPREADSHEET' | 'LINK';
+  }[];
+  mood?: 'EXCELLENT' | 'GOOD' | 'NORMAL' | 'BLOCKED';
+  progress_percentage?: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface LiveProjectFocus {
+  as_of_date: string;
+  current_gate: ProjectGate;
+  overall_progress_pct: number;
+  card1_title: string;
+  card1_code: string;
+  card1_tag: string;
+  card1_description: string;
+  card1_modal_type?: 'INTERVIEW' | 'CUSTOM';
+  card1_drive_link: string;
+  card1_modal_title?: string;
+  card1_modal_content?: string;
+  card2_title: string;
+  card2_code: string;
+  card2_tag: string;
+  card2_description: string;
+  card2_modal_type?: 'LEGAL_MAPPING' | 'CUSTOM';
+  card2_drive_link: string;
+  card2_modal_title?: string;
+  card2_modal_content?: string;
+  announcement_text?: string;
+  updated_by?: string;
+  updated_at?: string;
+}
+
 
 

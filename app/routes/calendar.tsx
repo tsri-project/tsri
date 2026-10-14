@@ -58,6 +58,15 @@ export default function CalendarRoute() {
     },
     {
       date: '9 ต.ค. 2569',
+      time: '10:00 - 11:30 น.',
+      title: 'สัมภาษณ์ รศ.ดร.นพพร ลีปรีชานนท์ (รอง ผอ. สกสว.)',
+      type: 'INTERVIEW',
+      status: 'SCHEDULED',
+      gate: 'G2',
+      description: 'การสัมภาษณ์เชิงลึกโดยทีมที่ปรึกษาวิชาการ ประเด็นอำนาจหน้าที่ ยุทธศาสตร์ และการพัฒนาระบบ ววน.',
+    },
+    {
+      date: '9 ต.ค. 2569',
       time: '14:00 - 15:30 น.',
       title: 'แจ้งความคืบหน้าการเข้าสัมภาษณ์และเก็บข้อมูล พร้อมตัวอย่างประเด็นคำถาม (MTG-2026-04)',
       type: 'MEETING',
@@ -66,22 +75,49 @@ export default function CalendarRoute() {
       description: 'แจ้งความคืบหน้าแนวทางการเข้าสัมภาษณ์และเก็บข้อมูลภาคสนาม พร้อมนำเสนอตัวอย่างประเด็นคำถามสำหรับแต่ละกลุ่มผู้ให้ข้อมูล',
     },
     {
-      date: '12 – 30 ต.ค. 2569',
-      time: '13 วันทำการ (26 รอบ)',
-      title: 'กระบวนการสัมภาษณ์และเก็บข้อมูลภาคสนาม 3 ระดับ',
-      type: 'FIELDWORK',
+      date: '14 ต.ค. 2569',
+      time: '10:00 - 11:30 น.',
+      title: 'สัมภาษณ์ ศ.ดร.วิษณุ มีอยู่ (รอง ผอ. สกสว.)',
+      type: 'INTERVIEW',
       status: 'SCHEDULED',
       gate: 'G2',
-      description: 'เจ้าหน้าที่ (12, 14–16 ต.ค.), ผู้บริหารต้น/กลาง (19–22 ต.ค.), ผู้บริหารสูงและบอร์ด (26–30 ต.ค.)',
+      description: 'การสัมภาษณ์เชิงลึกโดยทีมที่ปรึกษาวิชาการ ประเด็นการบริหารกองทุน ววน. การเงินและงบประมาณ',
+    },
+    {
+      date: '16 ต.ค. 2569',
+      time: '10:00 - 11:30 น.',
+      title: 'สัมภาษณ์ ศ.ดร.คมกฤต เล็กสกุล (รอง ผอ. สกสว.)',
+      type: 'INTERVIEW',
+      status: 'SCHEDULED',
+      gate: 'G2',
+      description: 'การสัมภาษณ์เชิงลึกโดยทีมที่ปรึกษาวิชาการ ประเด็นการจัดสรรงบประมาณ FF/SF และการติดตามประเมินผล',
     },
     {
       date: '16 ต.ค. 2569',
       time: 'กำหนดส่งร่างแรก',
-      title: 'ส่งร่างรายงานฉบับที่ 1 (ข้อ 4.3.1) & ฐานข้อมูลกฎหมาย (DEL-01 & DEL-05)',
+      title: 'ทบทวนกฎหมาย & ส่งร่างรายงานฉบับที่ 1 (ข้อ 4.3.1) & ฐานข้อมูลกฎหมาย (DEL-01 & DEL-05)',
       type: 'MILESTONE',
       status: 'SCHEDULED',
       gate: 'G1',
-      description: 'ร่างรายงานรวบรวมและจัดหมวดหมู่กฎหมาย 3 ระดับ พร้อมฐานข้อมูลกฎหมาย',
+      description: 'ทบทวนกฎหมาย 3 ระดับ พร้อมจัดส่งร่างรายงานรวบรวมและจัดหมวดหมู่กฎหมายและฐานข้อมูลกฎหมาย',
+    },
+    {
+      date: '19 – 23 ต.ค. 2569',
+      time: 'ช่วงเวลานัดหมาย',
+      title: 'สัมภาษณ์ ศ.ดร.จักรพันธ์ สุทธิรัตน์ (รอง ผอ. สกสว.)',
+      type: 'INTERVIEW',
+      status: 'SCHEDULED',
+      gate: 'G2',
+      description: 'การสัมภาษณ์เชิงลึกโดยทีมที่ปรึกษาวิชาการ ประเด็นการขับเคลื่อนงานวิจัยสู่การใช้ประโยชน์และทรัพย์สินทางปัญญา (TRIUP Act)',
+    },
+    {
+      date: '29 ต.ค. 2569',
+      time: '14:00 - 15:30 น.',
+      title: 'สัมภาษณ์ ผศ.ดร.พูลศักดิ์ โกษียาภรณ์ (รอง ผอ. สกสว.)',
+      type: 'INTERVIEW',
+      status: 'SCHEDULED',
+      gate: 'G2',
+      description: 'การสัมภาษณ์เชิงลึกโดยทีมที่ปรึกษาวิชาการ ประเด็นการบริหารจัดการองค์กร ทรัพยากรมนุษย์ และการพัฒนาระบบงาน',
     },
     {
       date: '6 พ.ย. 2569',
@@ -152,6 +188,163 @@ export default function CalendarRoute() {
               <FileText className="w-4 h-4" />
               ดูรายการบันทึก MOM
             </Link>
+          </div>
+        </div>
+
+        {/* Deputy Directors Interview Schedule Table/Cards (Oct 2026) */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-[#062B63] text-white rounded-full">
+                  FIELDWORK SCHEDULE
+                </span>
+                <span className="text-xs font-bold text-orange-600 font-mono">
+                  ตุลาคม 2569
+                </span>
+              </div>
+              <h2 className="text-base font-extrabold text-slate-900 mt-1 flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#1356A3]" />
+                กำหนดการขอสัมภาษณ์ รองผู้อำนวยการ สกสว. ทั้ง 5 ท่าน (โดยทีมที่ปรึกษาวิชาการ)
+              </h2>
+            </div>
+            <a
+              href="https://drive.google.com/drive/folders/1Y4uCfXDbjjm3fe63wmDSi29neiYbOwaF?usp=drive_link"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto"
+            >
+              <CalendarDays className="w-4 h-4 text-amber-600" />
+              <span>Google Drive ประเด็นสัมภาษณ์</span>
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {/* 1. รศ.ดร.นพพร ลีปรีชานนท์ */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#1356A3]/40 transition group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="px-2.5 py-0.5 bg-blue-100 text-[#062B63] text-xs font-bold font-mono rounded-lg border border-blue-200">
+                    9 ต.ค. 2569
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">10:00 - 11:30 น.</span>
+                </div>
+                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#1356A3] transition">
+                  รศ.ดร.นพพร ลีปรีชานนท์
+                </h3>
+                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                  รองผู้อำนวยการ สกสว.
+                </div>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed bg-white p-2.5 rounded-xl border border-slate-100">
+                  <strong>ประเด็นสัมภาษณ์:</strong> ขอบเขตอำนาจหน้าที่ ยุทธศาสตร์ แผน ววน. และการพัฒนาระบบ ววน.
+                </p>
+              </div>
+            </div>
+
+            {/* 2. ศ.ดร.วิษณุ มีอยู่ */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#1356A3]/40 transition group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="px-2.5 py-0.5 bg-blue-100 text-[#062B63] text-xs font-bold font-mono rounded-lg border border-blue-200">
+                    14 ต.ค. 2569
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">10:00 - 11:30 น.</span>
+                </div>
+                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#1356A3] transition">
+                  ศ.ดร.วิษณุ มีอยู่
+                </h3>
+                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                  รองผู้อำนวยการ สกสว.
+                </div>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed bg-white p-2.5 rounded-xl border border-slate-100">
+                  <strong>ประเด็นสัมภาษณ์:</strong> การบริหารกองทุนส่งเสริม ววน. ระบบการเงิน บัญชี และการลงทุน
+                </p>
+              </div>
+            </div>
+
+            {/* 3. ศ.ดร.คมกฤต เล็กสกุล */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#1356A3]/40 transition group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="px-2.5 py-0.5 bg-blue-100 text-[#062B63] text-xs font-bold font-mono rounded-lg border border-blue-200">
+                    16 ต.ค. 2569
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">10:00 - 11:30 น.</span>
+                </div>
+                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#1356A3] transition">
+                  ศ.ดร.คมกฤต เล็กสกุล
+                </h3>
+                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                  รองผู้อำนวยการ สกสว.
+                </div>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed bg-white p-2.5 rounded-xl border border-slate-100">
+                  <strong>ประเด็นสัมภาษณ์:</strong> การจัดสรรและบริหารงบประมาณ FF/SF และการกำกับติดตามประเมินผล
+                </p>
+              </div>
+            </div>
+
+            {/* 4. ทบทวนกฎหมาย Milestone 16 ต.ค. */}
+            <div className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="px-2.5 py-0.5 bg-indigo-600 text-white text-xs font-bold font-mono rounded-lg shadow-2xs">
+                    16 ต.ค. 2569
+                  </span>
+                  <span className="text-[10px] text-indigo-700 font-bold font-mono">MILESTONE 4.3.1</span>
+                </div>
+                <h3 className="text-sm font-extrabold text-indigo-950">
+                  ทบทวนกฎหมาย & ส่งร่างรายงานฉบับที่ 1
+                </h3>
+                <div className="text-[11px] text-indigo-700 font-medium mt-0.5">
+                  ทีมวิชาการและที่ปรึกษากฎหมาย (WS02)
+                </div>
+                <p className="text-xs text-indigo-900 mt-2 leading-relaxed bg-white/80 p-2.5 rounded-xl border border-indigo-100">
+                  <strong>สาระงาน:</strong> ทบทวนกฎหมาย 3 ระดับศักดิ์ และจัดส่งร่างรายงานข้อ 4.3.1 พร้อมฐานข้อมูลกฎหมาย (DEL-01 & DEL-05)
+                </p>
+              </div>
+            </div>
+
+            {/* 5. ศ.ดร.จักรพันธ์ สุทธิรัตน์ */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#1356A3]/40 transition group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="px-2.5 py-0.5 bg-blue-100 text-[#062B63] text-xs font-bold font-mono rounded-lg border border-blue-200">
+                    19 – 23 ต.ค. 2569
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">ช่วงสัปดาห์</span>
+                </div>
+                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#1356A3] transition">
+                  ศ.ดร.จักรพันธ์ สุทธิรัตน์
+                </h3>
+                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                  รองผู้อำนวยการ สกสว.
+                </div>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed bg-white p-2.5 rounded-xl border border-slate-100">
+                  <strong>ประเด็นสัมภาษณ์:</strong> การเชื่อมโยง PMU, การนำผลงานวิจัยไปใช้ประโยชน์ และทรัพย์สินทางปัญญา (TRIUP Act)
+                </p>
+              </div>
+            </div>
+
+            {/* 6. ผศ.ดร.พูลศักดิ์ โกษียาภรณ์ */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#1356A3]/40 transition group">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="px-2.5 py-0.5 bg-blue-100 text-[#062B63] text-xs font-bold font-mono rounded-lg border border-blue-200">
+                    29 ต.ค. 2569
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">14:00 - 15:30 น.</span>
+                </div>
+                <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#1356A3] transition">
+                  ผศ.ดร.พูลศักดิ์ โกษียาภรณ์
+                </h3>
+                <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                  รองผู้อำนวยการ สกสว.
+                </div>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed bg-white p-2.5 rounded-xl border border-slate-100">
+                  <strong>ประเด็นสัมภาษณ์:</strong> การบริหารจัดการองค์กร ทรัพยากรมนุษย์ การพัฒนาสมรรถนะบุคลากร และโครงสร้างระบบงาน
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 

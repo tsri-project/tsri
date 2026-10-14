@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { mockProjectTasks } from '~/lib/mock-data';
+import { getStoredTasks } from '~/lib/app-state';
 import { ProjectTaskItem, ProjectGate, GATE_DETAILS } from '~/types';
 import {
   ListTodo,
@@ -16,6 +17,7 @@ import {
   AlertCircle,
   TrendingUp,
   Search,
+  Edit3,
 } from 'lucide-react';
 import { formatThaiDate } from '~/lib/utils';
 
@@ -29,6 +31,20 @@ export default function TasksRoute() {
   const [selectedWorkstream, setSelectedWorkstream] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    setTasks(getStoredTasks());
+
+    const handleSync = () => {
+      setTasks(getStoredTasks());
+    };
+    window.addEventListener('tsri-state-change', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('tsri-state-change', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
@@ -158,6 +174,23 @@ export default function TasksRoute() {
                 <option value="TODO">รอดำเนินการ (TODO)</option>
               </select>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              to="/daily"
+              className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-[#062B63] text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-xs"
+            >
+              <ListTodo className="w-3.5 h-3.5" />
+              <span>บันทึกงานรายวัน</span>
+            </Link>
+            <Link
+              to="/admin"
+              className="px-3.5 py-1.5 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-xs"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-orange-400" />
+              <span>จัดการหลังบ้าน (Admin)</span>
+            </Link>
           </div>
         </div>
 

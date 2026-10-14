@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { RoleWorkspaceView, WorkspaceType } from '~/components/dashboard/RoleWorkspaceView';
+import { TodayActiveFocusBanner } from '~/components/dashboard/TodayActiveFocusBanner';
 import { mockDashboardData } from '~/lib/mock-data';
 import { ExecutiveDashboardData, DOCUMENT_STATUS_BADGES } from '~/types';
 import { useAuth } from '~/lib/use-auth';
@@ -20,6 +21,9 @@ export default function DashboardRoute() {
   return (
     <AppLayout>
       <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans">
+        {/* Live Project Focus Status for Today (Oct 8 2026) */}
+        <TodayActiveFocusBanner />
+
         {/* Dynamic Role Workspace Header & Content */}
         <RoleWorkspaceView
           data={data}
