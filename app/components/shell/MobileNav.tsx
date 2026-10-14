@@ -10,10 +10,10 @@ import {
 import { cn } from '~/lib/utils';
 
 const mobileNavItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'TOR & Work', path: '/tor', icon: FileCheck2 },
-  { name: 'Review Center', path: '/reviews', icon: CheckCircle2 },
-  { name: 'Documents', path: '/documents', icon: FolderKanban },
+  { name: 'ภาพรวม', path: '/dashboard', icon: LayoutDashboard },
+  { name: 'ผลส่งมอบ', path: '/tor', icon: FileCheck2 },
+  { name: 'ตรวจสอบ', path: '/reviews', icon: CheckCircle2 },
+  { name: 'เอกสาร', path: '/documents', icon: FolderKanban },
 ];
 
 export function MobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
@@ -27,7 +27,7 @@ export function MobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
             to={item.path}
             className={({ isActive }) =>
               cn(
-                'flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold transition',
+                'flex flex-col items-center justify-center py-1 px-2 rounded-xl text-xs font-semibold transition',
                 isActive
                   ? 'text-[#062B63] font-bold'
                   : 'text-slate-500 hover:text-slate-900'
@@ -50,7 +50,7 @@ export function MobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
       })}
       <button
         onClick={onOpenMenu}
-        className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[10px] font-semibold text-slate-500 hover:text-slate-900"
+        className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900"
       >
         <Layers className="w-5 h-5 mb-0.5 text-slate-400" />
         <span>ทั้งหมด</span>

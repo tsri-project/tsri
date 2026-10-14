@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
-import { useLoaderData, Link } from '@remix-run/react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLoaderData, Link, useSearchParams } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
-import { mockProjectTasks } from '~/lib/mock-data';
+import { mockProjectTasks, mockWorkstreams } from '~/lib/mock-data';
 import { ProjectTaskItem, ProjectGate, GATE_DETAILS } from '~/types';
 import {
   ListTodo,
@@ -29,6 +29,12 @@ export default function TasksRoute() {
   const [selectedWorkstream, setSelectedWorkstream] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const workstream = searchParams.get('workstream');
+    setSelectedWorkstream(mockWorkstreams.some(ws => ws.code === workstream) ? workstream! : 'ALL');
+    setSearchQuery(searchParams.get('q') || '');
+  }, [searchParams]);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {

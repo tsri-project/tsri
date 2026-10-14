@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useLoaderData, Link } from '@remix-run/react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLoaderData, Link, useSearchParams } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { DocumentVersionModal } from '~/components/documents/DocumentVersionModal';
 import { mockDocuments } from '~/lib/mock-data';
@@ -53,6 +53,14 @@ export default function DocumentsRoute() {
   const [selectedOrg, setSelectedOrg] = useState<string>('ALL');
   const [selectedDocForVersion, setSelectedDocForVersion] = useState<DocumentItem | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const [searchParams] = useSearchParams();
+  const requestedDocumentId = searchParams.get('id');
+  useEffect(() => {
+    if (requestedDocumentId) {
+      setSelectedDocForVersion(initialDocuments.find(doc => doc.id === requestedDocumentId) || null);
+    }
+  }, [requestedDocumentId, initialDocuments]);
 
   // New Document Generator State
   const [formType, setFormType] = useState<DocumentTypeCode>('LAW');
