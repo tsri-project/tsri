@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { useState, useEffect, useCallback } from 'react';
 import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
@@ -462,7 +463,7 @@ export default function ReviewsRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans pb-24 md:pb-8">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans pb-24 md:pb-8">
         {/* Guest Preview Mode Notice Banner */}
         {!isAuthenticated && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-4 md:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-fade-in">
@@ -494,9 +495,7 @@ export default function ReviewsRoute() {
           </div>
         )}
         {/* Top Header Card */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
+        <PageHero title="ตรวจสอบโดยผู้เชี่ยวชาญ" description="อ่านประเด็นร่วมกัน ให้ความเห็นพร้อมหลักฐาน และติดตามผลการตรวจสอบของคณะทำงาน" references={<div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63] text-white rounded-lg">
                 EXPERT REVIEW CENTER
               </span>
@@ -507,16 +506,7 @@ export default function ReviewsRoute() {
               <span className="px-2.5 py-0.5 text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200 rounded-lg">
                 WORK-WS05-001A v0.1
               </span>
-            </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              ศูนย์ตรวจทานกฎหมายโดยผู้เชี่ยวชาญ (Collaborative Review Center)
-            </h1>
-            <p className="text-xs text-slate-500 mt-1">
-              เปิดให้ที่ปรึกษาทุกท่านอ่านเอกสารร่วมกัน มอบหมายเจ้าภาพหลัก (Lead Expert) และรองรับการให้ความเห็นต่าง/สนับสนุนข้ามทีมเพื่อสร้างฉันทามติ
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+            </div>}><div className="flex flex-wrap items-center gap-2">
             <Link
               to="/meetings"
               className="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold rounded-xl transition flex items-center gap-2"
@@ -531,8 +521,7 @@ export default function ReviewsRoute() {
               <FileText className="w-4 h-4 text-[#1356A3]" />
               <span>คลังเอกสาร R2 (46 ฉบับ)</span>
             </Link>
-          </div>
-        </div>
+          </div></PageHero>
 
         {/* Supabase Live DB Synchronized Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xs text-xs">
@@ -606,31 +595,31 @@ export default function ReviewsRoute() {
                 13.4 หลักการทำงานร่วมกันของทั้ง 3 ทีม (Integrated Collaborative Workflow)
               </span>
             </div>
-            <span className="text-xs font-bold text-white/90 bg-white/10 px-3 py-0.5 rounded-full border border-white/20">
+            <span className="theme-card text-xs font-bold text-white/90 bg-white/10 px-3 py-0.5 rounded-full border border-white/20">
               “ทีมบริหารเป็นเจ้าภาพงาน — ทีมที่ปรึกษารับรองความถูกต้อง — ทีม HRD ทำให้ความรู้ถูกนำไปใช้ได้จริง”
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
-            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
+            <div className="theme-card bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
               <span className="font-extrabold text-amber-300 block mb-1">1. ทีมบริหารโครงการ (Core PM)</span>
               <span className="text-[11px] text-white/85 leading-relaxed">
                 รวบรวมข้อมูล → จัดทำ Draft → ประสานงาน สกสว. & Timeline
               </span>
             </div>
-            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
+            <div className="theme-card bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
               <span className="font-extrabold text-blue-200 block mb-1">2. ทีมที่ปรึกษากฎหมาย (Advisors)</span>
               <span className="text-[11px] text-white/85 leading-relaxed">
                 ตรวจสอบ → วิเคราะห์ลำดับศักดิ์ → ให้ข้อเสนอแนะ → ยืนยันความถูกต้อง
               </span>
             </div>
-            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
+            <div className="theme-card bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
               <span className="font-extrabold text-emerald-300 block mb-1">3. ทีม HRD (Learning Team)</span>
               <span className="text-[11px] text-white/85 leading-relaxed">
                 แปลงความรู้ → Knowledge Matrix → พัฒนาสื่อ 15 คลิป & ข้อสอบ 12 ชุด
               </span>
             </div>
-            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
+            <div className="theme-card bg-white/10 backdrop-blur-xs p-3 rounded-2xl border border-white/10">
               <span className="font-extrabold text-purple-200 block mb-1">4. ร่วม Review & ส่งมอบ</span>
               <span className="text-[11px] text-white/85 leading-relaxed">
                 ทั้ง 3 ทีมร่วม Review ฉันทามติ → PM จัดทำ Final Deliverables (DEL-01–04)
@@ -642,7 +631,7 @@ export default function ReviewsRoute() {
         {/* Team Collaboration Structure Details (13.1, 13.2, 13.3) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Team 1: PM Core (4 Members) */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="theme-card bg-white border border-slate-200 rounded-3xl p-5 shadow-xs flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -697,23 +686,23 @@ export default function ReviewsRoute() {
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
+                <div className="theme-card bg-white/80 p-2 rounded-xl border border-blue-100">
                   <span className="font-bold text-slate-900 block">ผศ.ดร. มารุต (ปุ่น)</span>
                   <span className="text-slate-500">ม.58 / บอร์ด กสว.</span>
                 </div>
-                <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
+                <div className="theme-card bg-white/80 p-2 rounded-xl border border-blue-100">
                   <span className="font-bold text-slate-900 block">อ.กานต์กุญช์ (บอย)</span>
                   <span className="text-slate-500">ระเบียบ FF/SF & IP</span>
                 </div>
-                <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
+                <div className="theme-card bg-white/80 p-2 rounded-xl border border-blue-100">
                   <span className="font-bold text-slate-900 block">อ.นภวัฒน์ (มะตูม)</span>
                   <span className="text-slate-500">ลำดับศักดิ์ พ.ร.บ. 2568</span>
                 </div>
-                <div className="bg-white/80 p-2 rounded-xl border border-blue-100">
+                <div className="theme-card bg-white/80 p-2 rounded-xl border border-blue-100">
                   <span className="font-bold text-slate-900 block">ผศ.ดร.กนกพร (อู๋)</span>
                   <span className="text-slate-500">การเงินพัสดุวิจัย</span>
                 </div>
-                <div className="bg-white/80 p-2 rounded-xl border border-blue-100 col-span-2">
+                <div className="theme-card bg-white/80 p-2 rounded-xl border border-blue-100 col-span-2">
                   <span className="font-bold text-slate-900 block">คุณธนา & คุณเอ๋ (เอกชน)</span>
                   <span className="text-slate-500">กฎหมายธุรกิจ / SPV / Joint Venture</span>
                 </div>
@@ -739,11 +728,11 @@ export default function ReviewsRoute() {
                 </span>
               </div>
               <div className="space-y-1.5 text-[11px]">
-                <div className="bg-white/80 p-2.5 rounded-xl border border-amber-100">
+                <div className="theme-card bg-white/80 p-2.5 rounded-xl border border-amber-100">
                   <span className="font-bold text-slate-900 block">คุณบัณฑิตา พละพงศ์ (แอ๋ม - KBTG)</span>
                   <span className="text-slate-500">Knowledge Matrix, KM Platform & Infographics</span>
                 </div>
-                <div className="bg-white/80 p-2.5 rounded-xl border border-amber-100">
+                <div className="theme-card bg-white/80 p-2.5 rounded-xl border border-amber-100">
                   <span className="font-bold text-slate-900 block">คุณซัน (Executive Development)</span>
                   <span className="text-slate-500">ชุดสื่อวิดีโอ 15 คลิป & Scenario Assessment 12 ชุด</span>
                 </div>
@@ -838,7 +827,7 @@ export default function ReviewsRoute() {
         </div>
 
         {/* Team & Expert Workspace Filter Controls */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-3">
+        <div className="theme-card bg-white border border-slate-200 rounded-3xl p-4 shadow-xs space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
             <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
               <Filter className="w-4 h-4 text-[#1356A3]" />
@@ -936,7 +925,7 @@ export default function ReviewsRoute() {
             return (
               <div
                 key={item.id}
-                className="bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-md transition space-y-4"
+                className="theme-card bg-white border border-slate-200 rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-md transition space-y-4"
               >
                 {/* Header Row: Codes, Status Badges, PM Disposition Badge */}
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
@@ -1073,7 +1062,7 @@ export default function ReviewsRoute() {
                         {item.pm_action_items.map((act: string, idx: number) => (
                           <span
                             key={idx}
-                            className="px-2 py-0.5 bg-white border border-purple-200 text-purple-800 rounded-md text-[11px] font-medium"
+                            className="theme-card px-2 py-0.5 bg-white border border-purple-200 text-purple-800 rounded-md text-[11px] font-medium"
                           >
                             ✓ {act}
                           </span>
@@ -1137,7 +1126,7 @@ export default function ReviewsRoute() {
                             </div>
 
                             {/* Reference Bar: VI-ID, DOC-ID, Version ID, Section, Page */}
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 bg-white/80 p-2 rounded-xl border border-slate-200/60 font-mono">
+                            <div className="theme-card flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 bg-white/80 p-2 rounded-xl border border-slate-200/60 font-mono">
                               <span className="font-bold text-[#062B63]">
                                 VI-ID: <span className="font-normal">{evd.vi_code || item.vi_code || item.item_code}</span>
                               </span>
@@ -1177,7 +1166,7 @@ export default function ReviewsRoute() {
                                 </span>
                               </div>
                               {evd.evidence_file_name && (
-                                <span className="flex items-center gap-1.5 text-[#1356A3] font-bold bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
+                                <span className="theme-card flex items-center gap-1.5 text-[#1356A3] font-bold bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
                                   <Paperclip className="w-3.5 h-3.5 text-[#F36C21]" />
                                   {evd.evidence_file_name} ({formatFileSize(evd.evidence_file_size || 1500000)})
                                 </span>
@@ -1194,7 +1183,7 @@ export default function ReviewsRoute() {
           })}
 
           {displayedItems.length === 0 && (
-            <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center text-slate-500">
+            <div className="theme-card bg-white border border-slate-200 rounded-3xl p-12 text-center text-slate-500">
               <Info className="w-8 h-8 mx-auto text-slate-400 mb-2" />
               <p className="font-bold text-slate-800 text-sm">ไม่พบรายการประเด็นตรวจทานที่ตรงกับตัวกรอง</p>
               <p className="text-xs text-slate-500 mt-1">กรุณาเลือกตัวกรองทีมหรือสถานะอื่น</p>
@@ -1205,7 +1194,7 @@ export default function ReviewsRoute() {
         {/* Modal Form 1: Permanent Expert Audit Response Submission */}
         {activeModalItem && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden max-h-[90vh] flex flex-col font-sans">
+            <div className="theme-card bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden max-h-[90vh] flex flex-col font-sans">
               {/* Modal Header */}
               <div className="p-5 border-b border-slate-200 bg-gradient-to-r from-[#062B63] to-[#1356A3] text-white flex items-center justify-between">
                 <div>
@@ -1273,7 +1262,7 @@ export default function ReviewsRoute() {
                         onChange={(e) =>
                           setEvidenceForm({ ...evidenceForm, reviewer_team: e.target.value as AdvisorTeamGroup })
                         }
-                        className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold text-[#062B63] focus:ring-2 focus:ring-[#1356A3]"
+                        className="theme-card bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-bold text-[#062B63] focus:ring-2 focus:ring-[#1356A3]"
                       >
                         <option value="PUBLIC_SECTOR">🏛️ ภาครัฐ (Public Sector)</option>
                         <option value="PRIVATE_SECTOR">🏢 ภาคเอกชน (Private Sector)</option>
@@ -1505,7 +1494,7 @@ export default function ReviewsRoute() {
         {/* Modal Form 2: PM Disposition Modal */}
         {activePmModalItem && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden max-h-[90vh] flex flex-col font-sans">
+            <div className="theme-card bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden max-h-[90vh] flex flex-col font-sans">
               {/* PM Modal Header */}
               <div className="p-5 border-b border-purple-200 bg-gradient-to-r from-purple-900 to-indigo-900 text-white flex items-center justify-between">
                 <div>

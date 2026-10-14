@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { useState, useMemo, useEffect } from 'react';
 import { useLoaderData, Link, useSearchParams } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
@@ -79,28 +80,17 @@ export default function TasksRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
         
         {/* Header */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
+        <PageHero title="งานและความก้าวหน้า" description="ค้นหางาน ติดตามผู้รับผิดชอบ และดูความก้าวหน้าของแต่ละสายงานในพื้นที่เดียวกัน" references={<div className="flex items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63]/10 text-[#062B63] border border-[#062B63]/20 rounded-md">
                 MODULE 3: PROJECT TASKS & WBS
               </span>
               <span className="text-xs font-semibold text-slate-500">
                 ระบบจัดการแผนงานและกิจกรรมโครงการ
               </span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-              แผนงานและกิจกรรมโครงการ (Task Management)
-            </h1>
-            <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-              ติดตามกิจกรรมย่อย การมอบหมายงานตาม WBS (WS01–WS05) และสถานะการตรวจสอบ Review Package (WORK-WS05-001A)
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
+            </div>}><div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
             <div className="text-center px-3 border-r border-slate-200">
               <div className="text-[11px] text-slate-500 font-medium">งานทั้งหมด</div>
               <div className="text-lg font-bold font-mono text-[#062B63]">{tasks.length}</div>
@@ -117,11 +107,10 @@ export default function TasksRoute() {
                 {tasks.filter((t) => t.status === 'IN_REVIEW' || t.status === 'IN_PROGRESS').length}
               </div>
             </div>
-          </div>
-        </div>
+          </div></PageHero>
 
         {/* Filters */}
-        <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-2xs flex flex-wrap items-center justify-between gap-4">
+        <div className="theme-card bg-white border border-slate-200 p-4 rounded-xl shadow-2xs flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3 flex-1">
             <div className="relative min-w-[240px] flex-1 sm:flex-initial">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -177,7 +166,7 @@ export default function TasksRoute() {
             return (
               <div
                 key={task.id}
-                className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition"
+                className="theme-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5">
