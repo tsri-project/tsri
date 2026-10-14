@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { useState } from 'react';
 import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
@@ -72,28 +73,17 @@ export default function TorRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
         
         {/* Top Header Card */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
+        <PageHero title="ขอบเขตและผลส่งมอบ" description="ติดตามขอบเขตตามสัญญา ความก้าวหน้า และผลผลิตที่ต้องส่งมอบให้ สกสว." references={<div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63]/10 text-[#062B63] border border-[#062B63]/20 rounded-md">
                 TOR-PROJ-001-2569
               </span>
               <span className="text-xs font-semibold text-slate-500">
                 สัญญางานวิเคราะห์กฎหมายและพัฒนาระบบความรู้ สกสว.
               </span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-              ข้อกำหนด TOR และรายการส่งมอบผลผลิต (Deliverables)
-            </h1>
-            <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-              กำกับติดตามความก้าวหน้าขอบเขตงานสัญญา ข้อ 4.3.1 – 4.3.5, การจัดเตรียม Review Package ตาม WORK-WS05-001A, และการเชื่อมโยง Gate Milestones (G0–G6)
-            </p>
-          </div>
-
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 shrink-0">
+            </div>}><div className="flex flex-wrap sm:flex-nowrap items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 shrink-0">
             <div className="text-center px-3 border-r border-slate-200">
               <div className="text-xs text-slate-500 font-medium">ความก้าวหน้า TOR รวม</div>
               <div className="text-xl font-bold font-mono text-[#062B63]">25%</div>
@@ -106,8 +96,7 @@ export default function TorRoute() {
               <div className="text-xs text-slate-500 font-medium">น้ำหนักสัญญารวม</div>
               <div className="text-xl font-bold font-mono text-slate-900">100%</div>
             </div>
-          </div>
-        </div>
+          </div></PageHero>
 
         {/* Featured Banner: Current Cadence & Expert Review Package */}
         <div className="bg-gradient-to-r from-blue-50 via-indigo-50/60 to-orange-50/50 border border-blue-200/80 rounded-2xl p-6 shadow-sm relative overflow-hidden">
@@ -123,7 +112,7 @@ export default function TorRoute() {
                   CURRENT CADENCE: EXPERT REVIEW PACKAGE (WORK-WS05-001A v0.1)
                 </span>
               </div>
-              <span className="text-xs font-medium text-slate-600 bg-white/80 px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+              <span className="theme-card text-xs font-medium text-slate-600 bg-white/80 px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
                 ช่วงการดำเนินงาน: 18 – 25 กันยายน 2569
               </span>
             </div>
@@ -152,7 +141,7 @@ export default function TorRoute() {
                 </Link>
                 <Link
                   to="/meetings"
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-xl border border-slate-300 shadow-2xs transition"
+                  className="theme-card flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-xl border border-slate-300 shadow-2xs transition"
                 >
                   <Calendar className="w-4 h-4 text-slate-600" />
                   ดูวาระการประชุมครั้งที่ 2 (25 ก.ย. 69)
@@ -351,7 +340,7 @@ export default function TorRoute() {
               return (
                 <div
                   key={del.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
+                  className="theme-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-3">
@@ -419,7 +408,7 @@ export default function TorRoute() {
             {workstreams.map((ws) => (
               <div
                 key={ws.code}
-                className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
+                className="theme-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">

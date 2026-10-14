@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { useState } from 'react';
 import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
@@ -123,28 +124,17 @@ export default function CalendarRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
         
         {/* Header */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
+        <PageHero title="ปฏิทินโครงการ" description="ดูวันนัดหมาย กำหนดส่ง และเหตุการณ์สำคัญ เพื่อวางแผนดำเนินงานร่วมกัน" references={<div className="flex items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md">
                 MODULE 7: PROJECT CALENDAR & CADENCE
               </span>
               <span className="text-xs font-semibold text-slate-500">
                 ปฏิทินนัดหมายและไทม์ไลน์โครงการ
               </span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-              ปฏิทินนัดหมายและเหตุการณ์สำคัญ (Project Timeline)
-            </h1>
-            <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-              ติดตามรอบการประชุม (Meeting Cadence), กำหนดการตรวจสอบ Expert Review Package, และหมุดหมาย Gate Milestones
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
+            </div>}><div className="flex items-center gap-2">
             <Link
               to="/meetings"
               className="flex items-center gap-2 px-4 py-2.5 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-xl shadow-sm transition"
@@ -152,11 +142,10 @@ export default function CalendarRoute() {
               <FileText className="w-4 h-4" />
               ดูรายการบันทึก MOM
             </Link>
-          </div>
-        </div>
+          </div></PageHero>
 
         {/* Timeline View */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="theme-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <CalendarDays className="w-5 h-5 text-[#062B63]" />

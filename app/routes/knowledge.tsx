@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { Sparkles, Video, FileText, CheckCircle2, BookOpen, Layers, Award } from 'lucide-react';
 import { Link } from '@remix-run/react';
@@ -36,29 +37,21 @@ export default function KnowledgeRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+        <PageHero title="องค์ความรู้และการเรียนรู้" description="เข้าถึงสื่อและเครื่องมือที่แปลงผลการศึกษาสู่การเรียนรู้และการนำไปใช้" references={<div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63]/10 text-[#062B63] border border-[#062B63]/20 rounded-md">
               MODULE 11: KNOWLEDGE MANAGEMENT & LEARNING ARCHITECTURE
             </span>
             <span className="text-xs font-semibold text-slate-500">
               ระบบจัดการความรู้และสื่อการเรียนรู้ตาม TOR ข้อ 4.3.5
             </span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            ระบบจัดการความรู้และสถาปัตยกรรมการเรียนรู้ (KM & Learning Architecture)
-          </h1>
-          <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-            แปลงบทบัญญัติทางกฎหมายและระเบียบ ววน. สู่สื่อการเรียนรู้สมัยใหม่ (วิดีโอ 15 คลิป, อินโฟกราฟิก 8 ชิ้น, แบบทดสอบ 12 ชุด) และ KM Platform
-          </p>
-        </div>
+          </div>}></PageHero>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {kmAssets.map((asset, idx) => (
             <div
               key={idx}
-              className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
+              className="theme-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">

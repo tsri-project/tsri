@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { GitFork, ArrowRight, ShieldCheck, CheckCircle2, Layers, Search, Sparkles } from 'lucide-react';
 import { Link } from '@remix-run/react';
@@ -20,26 +21,18 @@ export default function TraceabilityRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+        <PageHero title="เชื่อมโยงหลักฐาน" description="ติดตามความเชื่อมโยงจากข้อกำหนดทางกฎหมายสู่งาน ผู้รับผิดชอบ และหลักฐานประกอบ" references={<div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63]/10 text-[#062B63] border border-[#062B63]/20 rounded-md">
               MODULE 6: LEGAL TRACEABILITY EXPLORER
             </span>
             <span className="text-xs font-semibold text-slate-500">
               ระบบตรวจสอบสายธารความเชื่อมโยง 12 Nodes
             </span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            เครื่องมือสืบค้นความเชื่อมโยงทางกฎหมายและการปฏิบัติ (Traceability Explorer)
-          </h1>
-          <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-            สำรวจสายธารความเชื่อมโยงตั้งแต่ตัวบทกฎหมายต้นทาง ➔ ข้อกำหนดอำนาจหน้าที่ ➔ งานวิจัยตาม TOR ➔ หลักฐานการตรวจรับรอง (Evidence Audit Trail) ➔ ช่องว่าง (Gap) ➔ สถาปัตยกรรมความรู้ KM
-          </p>
-        </div>
+          </div>}></PageHero>
 
         {/* Traceability Chain Diagram Visual */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="theme-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">

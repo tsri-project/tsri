@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { useState, useEffect, useCallback } from 'react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { mockTeamMembers } from '~/lib/mock-data';
@@ -306,11 +307,9 @@ export default function TeamRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
         {/* Header Banner */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
+        <PageHero title="ทีมงานและสิทธิ์" description="รู้จักคณะทำงาน บทบาท และผู้รับผิดชอบ พร้อมจัดการสิทธิ์ตามหน้าที่" references={<div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63]/10 text-[#062B63] border border-[#062B63]/20 rounded-md">
                 MODULE 13: PROJECT TEAM & ACCESS CONTROL
               </span>
@@ -323,15 +322,7 @@ export default function TeamRoute() {
                   สิทธิ์ผู้ดูแลระบบ PM Admin: dencapvision@gmail.com
                 </span>
               )}
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-              รายชื่อคณะทำงานและทีมที่ปรึกษาโครงการ (3 ทีมหลัก)
-            </h1>
-            <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-              โครงสร้างการทำงานแบบบูรณาการตามมติการประชุม Kick-off: ทีมบริหารโครงการ (เจ้าภาพขับเคลื่อน) ➔ ทีมที่ปรึกษา (ผู้ตรวจสอบและรับรองความถูกต้องตาม WORK-WS05-001A) ➔ ทีม HRD (ผู้แปลงองค์ความรู้สู่การเรียนรู้)
-            </p>
-          </div>
-          <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 p-3 rounded-xl self-start md:self-auto shrink-0">
+            </div>}><div className="flex items-center gap-3 bg-slate-50 border border-slate-200 p-3 rounded-xl self-start md:self-auto shrink-0">
             <div className="w-10 h-10 rounded-lg bg-[#062B63] text-white flex items-center justify-center font-bold font-mono text-base">
               {mockTeamMembers.length}
             </div>
@@ -339,8 +330,7 @@ export default function TeamRoute() {
               <div className="text-xs font-bold text-slate-800">ผู้เชี่ยวชาญ & ทีมงาน</div>
               <div className="text-[11px] text-slate-500">3 คณะทำงานหลัก</div>
             </div>
-          </div>
-        </div>
+          </div></PageHero>
 
         {/* Global Feedback Banner */}
         {actionMessage && (
@@ -395,7 +385,7 @@ export default function TeamRoute() {
         {activeTab === 'ADMIN_APPROVAL' && isAdminOrPm && (
           <div className="space-y-6">
             {/* Section 1: Pending Applications */}
-            <div className="bg-white border border-amber-200 rounded-3xl p-6 shadow-sm">
+            <div className="theme-card bg-white border border-amber-200 rounded-3xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-amber-100 text-amber-800 rounded-xl">
@@ -438,7 +428,7 @@ export default function TeamRoute() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-sm text-slate-900">{req.full_name}</span>
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-white border border-amber-200 text-amber-800 font-bold">
+                          <span className="theme-card px-2 py-0.5 rounded-md text-[10px] font-mono bg-white border border-amber-200 text-amber-800 font-bold">
                             {req.email}
                           </span>
                         </div>
@@ -451,7 +441,7 @@ export default function TeamRoute() {
                           </span>
                         </div>
                         {req.reason && (
-                          <div className="text-[11px] text-slate-500 bg-white/80 p-2 rounded-xl border border-amber-100 max-w-xl">
+                          <div className="theme-card text-[11px] text-slate-500 bg-white/80 p-2 rounded-xl border border-amber-100 max-w-xl">
                             <strong className="text-slate-700">เหตุผล/หน้าที่:</strong> {req.reason}
                           </div>
                         )}
@@ -466,7 +456,7 @@ export default function TeamRoute() {
                             onChange={(e) =>
                               setSelectedRoles({ ...selectedRoles, [req.id]: e.target.value as UserRole })
                             }
-                            className="bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 font-medium focus:outline-none focus:border-[#062B63]"
+                            className="theme-card bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 font-medium focus:outline-none focus:border-[#062B63]"
                           >
                             <option value="legal_advisor">ที่ปรึกษากฎหมาย (Legal Advisor)</option>
                             <option value="researcher">ทีมวิจัย (Researcher)</option>
@@ -507,7 +497,7 @@ export default function TeamRoute() {
             </div>
 
             {/* Section 2: Active System Members from Supabase Database */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+            <div className="theme-card bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
               <div className="flex items-center gap-2.5 mb-4">
                 <div className="p-2 bg-blue-100 text-[#062B63] rounded-xl">
                   <Shield className="w-5 h-5" />
@@ -593,7 +583,7 @@ export default function TeamRoute() {
             {filteredMembers.map((member) => (
               <div
                 key={member.id}
-                className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
+                className="theme-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
               >
                 <div>
                   <div className="flex items-start gap-3 mb-4">
