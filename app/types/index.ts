@@ -517,9 +517,10 @@ export interface TorClauseItem {
     code: string;
     name: string;
     version: string;
-    status: 'COMPLETED' | 'IN_REVIEW' | 'DRAFTING' | 'PLANNED';
+    status: 'COMPLETED' | 'IN_REVIEW' | 'DRAFTING' | 'PLANNED' | 'IN_PROGRESS';
     period?: string;
     output_file?: string;
+    drive_url?: string;
   }[];
   related_deliverable_code: string;
   gate_target: ProjectGate;

@@ -1,55 +1,17 @@
 import { NavLink } from '@remix-run/react';
-import {
-  LayoutDashboard,
-  FileCheck2,
-  ListTodo,
-  FolderKanban,
-  Scale,
-  GitFork,
-  Calendar,
-  Users2,
-  CheckCircle2,
-  AlertTriangle,
-  BookOpen,
-  FileBarChart,
-  Building2,
-  Search,
-  Settings,
-  MessagesSquare,
-  LogOut,
-  ListPlus,
-  ShieldCheck,
-} from 'lucide-react';
+import { Building2, Search, Settings, LogOut } from 'lucide-react';
 import { cn } from '~/lib/utils';
-import { mockCurrentUser } from '~/lib/mock-data';
+import { navigationGroups } from './navigation';
 import { useAuth } from '~/lib/use-auth';
 
 interface SidebarProps {
   onOpenSearch?: () => void;
 }
 
-const mainNavigationItems = [
-  { id: '01', name: '01 ภาพรวม & ความคืบหน้า', path: '/dashboard', icon: LayoutDashboard },
-  { id: '02', name: '02 สถานะการทำงาน & กิจกรรม', path: '/tasks', icon: ListTodo },
-  { id: '03', name: '03 ผลส่งมอบตาม TOR', path: '/tor', icon: FileCheck2 },
-  { id: '04', name: '04 ศูนย์เอกสารโครงการ', path: '/documents', icon: FolderKanban },
-  { id: '05', name: '05 รายงานความคืบหน้า', path: '/reports', icon: FileBarChart },
-  { id: '06', name: '06 การประชุม & มติ', path: '/meetings', icon: MessagesSquare },
-  { id: '07', name: '07 ปฏิทินและการดำเนินงาน', path: '/calendar', icon: Calendar },
-  { id: '08', name: '08 กฎหมายและระเบียบ', path: '/legal-inventory', icon: Scale },
-  { id: '09', name: '09 ผังความเชื่อมโยง (Traceability)', path: '/traceability', icon: GitFork },
-  { id: '10', name: '10 ความเสี่ยง & การตัดสินใจ (RAID)', path: '/raid', icon: AlertTriangle },
-  { id: '11', name: '11 องค์ความรู้ & สื่อการเรียนรู้', path: '/knowledge', icon: BookOpen },
-  { id: '12', name: '12 ทีมงานและผู้รับผิดชอบ', path: '/team', icon: Users2 },
-  { id: '13', name: '13 บันทึกงานรายวัน (Daily)', path: '/daily', icon: ListPlus },
-  { id: '14', name: '14 จัดการหลังบ้าน (Admin)', path: '/admin', icon: ShieldCheck },
-];
-
 export function Sidebar({ onOpenSearch }: SidebarProps) {
-  const { session, user, signOut } = useAuth();
+  const { session, user, profile, signOut } = useAuth();
 
   return (
-
     <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 text-slate-700 select-none shrink-0 h-full font-sans shadow-xs">
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-100 flex items-center gap-3 bg-gradient-to-r from-[#062B63] to-[#1356A3] text-white">
@@ -61,42 +23,51 @@ export function Sidebar({ onOpenSearch }: SidebarProps) {
             TSRI ONE LINK
           </div>
           <div className="text-[10px] text-blue-100 font-medium truncate">
-            PM & Legal Research Control
+            พื้นที่ทำงานโครงการกฎหมาย สกสว.
           </div>
         </div>
       </div>
 
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-        {mainNavigationItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 group',
-                  isActive
-                    ? 'bg-[#062B63] text-white shadow-xs border-l-4 border-[#F36C21]'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <Icon
-                    className={cn(
-                      'w-4 h-4 shrink-0 transition-transform group-hover:scale-110',
-                      isActive ? 'text-[#F36C21]' : 'text-slate-400 group-hover:text-[#1356A3]'
-                    )}
-                  />
-                  <span className="truncate">{item.name}</span>
-                </>
-              )}
-            </NavLink>
-          );
-        })}
+        {navigationGroups.map((group) => (
+          <section key={group.title} className="pb-3">
+            <h2 className="px-3 py-2 text-xs font-medium text-slate-400">
+              {group.title}
+            </h2>
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-150 group',
+                      isActive
+                        ? 'bg-[#062B63] text-white shadow-xs border-l-4 border-[#F36C21]'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <Icon
+                        className={cn(
+                          'w-4 h-4 shrink-0 transition-transform group-hover:scale-110',
+                          isActive
+                            ? 'text-[#F36C21]'
+                            : 'text-slate-400 group-hover:text-[#1356A3]'
+                        )}
+                      />
+                      <span className="truncate">{item.name}</span>
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+          </section>
+        ))}
 
         {/* Divider */}
         <div className="pt-2 pb-1 border-t border-slate-100 my-2"></div>
@@ -109,7 +80,7 @@ export function Sidebar({ onOpenSearch }: SidebarProps) {
           >
             <span className="flex items-center gap-2.5">
               <Search className="w-4 h-4 text-[#F36C21] group-hover:scale-110 transition-transform" />
-              <span>ค้นหาทั้งระบบ 🔍</span>
+              <span>ค้นหาข้อมูล</span>
             </span>
             <kbd className="px-1.5 py-0.2 bg-white text-[10px] text-slate-500 rounded border border-slate-200 font-mono shadow-xs">
               ⌘K
@@ -138,18 +109,21 @@ export function Sidebar({ onOpenSearch }: SidebarProps) {
       <div className="p-3 border-t border-slate-100 bg-slate-50/80">
         <div className="flex items-center justify-between gap-2 p-2 rounded-2xl bg-white border border-slate-200 shadow-xs">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <img
-              src={mockCurrentUser.avatar_url}
-              alt={mockCurrentUser.full_name}
-              className="w-9 h-9 rounded-full object-cover border-2 border-[#F36C21] shrink-0"
-            />
+            <div
+              aria-hidden="true"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 font-bold text-blue-900"
+            >
+              {(profile?.full_name || user?.email || 'ผ').slice(0, 1)}
+            </div>
             <div className="flex-1 min-w-0">
               <div className="text-xs font-extrabold text-slate-900 truncate">
-                {user?.email ? user.email.split('@')[0] : mockCurrentUser.full_name}
+                {profile?.full_name ||
+                  user?.email?.split('@')[0] ||
+                  'ผู้ใช้งาน'}
               </div>
               <div className="text-[10px] text-[#F36C21] font-mono font-bold flex items-center gap-1 truncate">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                {session ? 'Supabase Auth' : 'Guest'}
+                {session ? 'เข้าสู่ระบบแล้ว' : 'ผู้เยี่ยมชม'}
               </div>
             </div>
           </div>
@@ -166,4 +140,3 @@ export function Sidebar({ onOpenSearch }: SidebarProps) {
     </aside>
   );
 }
-

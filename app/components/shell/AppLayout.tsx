@@ -1,42 +1,20 @@
 import { useState } from 'react';
+import { navigationGroups } from './navigation';
+import { useLocation } from '@remix-run/react';
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
 import { GlobalSearch } from './GlobalSearch';
-import { GateStatusBadge } from './GateStatusBadge';
-import { mockProject, mockCurrentUser } from '~/lib/mock-data';
 import { useRequireAuth } from '~/lib/use-auth';
-import {
-  Search,
-  Bell,
-  Menu,
-  X,
-  ExternalLink,
-  ChevronDown,
-  ShieldCheck,
-  Building2,
-  Settings,
-  Loader2,
-} from 'lucide-react';
+import { Search, Menu, X, Building2, Loader2 } from 'lucide-react';
 import { Link } from '@remix-run/react';
 
-const mobileMenuItems = [
-  { id: '01', name: '01 ภาพรวม & ความคืบหน้า', path: '/dashboard' },
-  { id: '02', name: '02 สถานะการทำงาน & กิจกรรม', path: '/tasks' },
-  { id: '03', name: '03 ผลส่งมอบตาม TOR', path: '/tor' },
-  { id: '04', name: '04 ศูนย์เอกสารโครงการ', path: '/documents' },
-  { id: '05', name: '05 รายงานความคืบหน้า', path: '/reports' },
-  { id: '06', name: '06 การประชุม & มติ', path: '/meetings' },
-  { id: '07', name: '07 ปฏิทินและการดำเนินงาน', path: '/calendar' },
-  { id: '08', name: '08 กฎหมายและระเบียบ', path: '/legal-inventory' },
-  { id: '09', name: '09 ผังความเชื่อมโยง (Traceability)', path: '/traceability' },
-  { id: '10', name: '10 ความเสี่ยง & การตัดสินใจ (RAID)', path: '/raid' },
-  { id: '11', name: '11 องค์ความรู้ & สื่อการเรียนรู้', path: '/knowledge' },
-  { id: '12', name: '12 ทีมงานและผู้รับผิดชอบ', path: '/team' },
-  { id: '13', name: '13 บันทึกงานรายวัน (Daily)', path: '/daily' },
-  { id: '14', name: '14 จัดการหลังบ้าน (Admin)', path: '/admin' },
-];
-
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const currentPage =
+    navigationGroups
+      .flatMap((group) => group.items)
+      .find((item) => item.path === location.pathname)?.name ||
+    'โครงการกฎหมาย สกสว.';
   const { isLoading, isAuthenticated } = useRequireAuth('/login');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -50,8 +28,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Building2 className="w-7 h-7 text-orange-400 animate-pulse" />
           </div>
           <div>
-            <div className="text-sm font-extrabold text-slate-900">TSRI One Link for All</div>
-            <div className="text-xs text-slate-500 mt-0.5">PM & Legal Research Control</div>
+            <div className="text-sm font-extrabold text-slate-900">
+              TSRI One Link for All
+            </div>
+            <div className="text-xs text-slate-500 mt-0.5">
+              PM & Legal Research Control
+            </div>
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold text-[#062B63] mt-2">
             <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
@@ -68,7 +50,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
+    <div className="app-shell flex h-dvh w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
+      <a href="#main-content" className="skip-link">
+        ข้ามไปเนื้อหาหลัก
+      </a>
       {/* Desktop Sidebar */}
       <Sidebar onOpenSearch={() => setIsSearchOpen(true)} />
 
@@ -80,6 +65,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setIsMobileDrawerOpen(true)}
+              aria-label="เปิดเมนูทั้งหมด"
               className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100"
             >
               <Menu className="w-5 h-5" />
@@ -88,46 +74,39 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm md:text-base font-extrabold text-slate-900 truncate max-w-[220px] sm:max-w-md lg:max-w-lg">
-                  {mockProject.title}
+                  {currentPage}
                 </h1>
-                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-bold bg-blue-50 text-[#1356A3] border border-blue-200 rounded-md">
-                  {mockProject.code}
-                </span>
               </div>
               <div className="text-[11px] text-slate-500 truncate hidden sm:block">
-                {mockProject.organization} • One Project One Link
+                โครงการศึกษาและพัฒนาองค์ความรู้ด้านกฎหมาย สกสว.
               </div>
             </div>
           </div>
 
           {/* Center / Right: Gate Status & Global Actions */}
           <div className="flex items-center gap-2 md:gap-3">
-            {/* Gate Status Pill */}
-            <GateStatusBadge currentGate={mockProject.current_gate} showDetails={true} />
-
             {/* Global Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
               className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl text-xs text-slate-700 transition shadow-2xs"
+              aria-label="ค้นหาข้อมูลทั้งระบบ"
               title="ค้นหาทั้งระบบ (Ctrl+K)"
             >
               <Search className="w-3.5 h-3.5 text-[#1356A3]" />
-              <span className="hidden md:inline font-medium">ค้นหาทั้งระบบ 🔍</span>
+              <span className="hidden md:inline font-medium">ค้นหาข้อมูล</span>
               <kbd className="hidden md:inline px-1.5 py-0.2 bg-white text-[10px] text-slate-500 rounded border border-slate-200 font-mono shadow-xs">
                 ⌘K
               </kbd>
-            </button>
-
-            {/* Notifications */}
-            <button className="relative p-2 text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#F36C21] rounded-full ring-2 ring-white"></span>
             </button>
           </div>
         </header>
 
         {/* Dynamic Page Content */}
-        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 bg-slate-50">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 overflow-y-auto pb-24 md:pb-6 bg-slate-50"
+        >
           {children}
         </main>
 
@@ -136,7 +115,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Global Search Overlay Modal */}
-      <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <GlobalSearch
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
 
       {/* Mobile Full Menu Drawer */}
       {isMobileDrawerOpen && (
@@ -144,9 +126,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between p-4 border-b border-slate-200">
             <div className="flex items-center gap-2">
               <Building2 className="w-6 h-6 text-[#1356A3]" />
-              <div className="font-extrabold text-slate-900 text-base font-mono">TSRI ONE LINK</div>
+              <div className="font-extrabold text-slate-900 text-base font-mono">
+                TSRI ONE LINK
+              </div>
             </div>
             <button
+              aria-label="ปิดเมนู"
               onClick={() => setIsMobileDrawerOpen(false)}
               className="p-2 text-slate-500 hover:text-slate-900 rounded-lg"
             >
@@ -154,15 +139,22 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
-            {mobileMenuItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsMobileDrawerOpen(false)}
-                className="block p-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 hover:text-slate-900 font-bold text-xs hover:bg-slate-100 transition"
-              >
-                {item.name}
-              </Link>
+            {navigationGroups.map((group) => (
+              <section key={group.title} className="pb-3">
+                <h2 className="px-3 py-2 text-sm text-slate-500">
+                  {group.title}
+                </h2>
+                {group.items.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsMobileDrawerOpen(false)}
+                    className="block p-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 hover:text-slate-900 font-medium text-sm hover:bg-slate-100 transition"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </section>
             ))}
 
             <div className="pt-3 border-t border-slate-200 my-2 space-y-2">
@@ -174,7 +166,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 className="w-full text-left p-3 rounded-2xl bg-blue-50 border border-blue-200 text-[#1356A3] font-bold text-xs flex items-center gap-2"
               >
                 <Search className="w-4 h-4" />
-                ค้นหาทั้งระบบ 🔍
+                ค้นหาข้อมูล
               </button>
               <Link
                 to="/settings"

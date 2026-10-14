@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { Settings, Shield, Key, Bell, Database, Cloud, CheckCircle2, Server } from 'lucide-react';
 import { mockCurrentUser, mockProject } from '~/lib/mock-data';
@@ -5,28 +6,20 @@ import { mockCurrentUser, mockProject } from '~/lib/mock-data';
 export default function SettingsRoute() {
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
         {/* Header */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
+        <PageHero title="ตั้งค่าโครงการ" description="ดูข้อมูลโครงการ การเชื่อมต่อ และการตั้งค่าสิทธิ์การใช้งานระบบ" references={<div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63]/10 text-[#062B63] border border-[#062B63]/20 rounded-md">
               SYSTEM SETTINGS & SUPER ADMIN CONTROL
             </span>
             <span className="text-xs font-semibold text-slate-500">
               การกำหนดค่าและสถานะระบบความปลอดภัย
             </span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            ตั้งค่าระบบและสภาพแวดล้อมโครงการ
-          </h1>
-          <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-            จัดการการเชื่อมต่อ Supabase Database, Cloudflare R2 Vault (`tsri-documents-vault`), และสิทธิ์การเข้าถึงระบบ
-          </p>
-        </div>
+          </div>}></PageHero>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Project Baseline Card */}
-          <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
+          <div className="theme-card p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Database className="w-4 h-4 text-[#062B63]" />
               ข้อมูลโครงการหลัก (Project Information)
@@ -54,7 +47,7 @@ export default function SettingsRoute() {
           </div>
 
           {/* Super Admin Status Card */}
-          <div className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
+          <div className="theme-card p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Shield className="w-4 h-4 text-emerald-600" />
               บัญชีผู้ดูแลระบบสูงสุด (Super Admin Control)

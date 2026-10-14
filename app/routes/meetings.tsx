@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { useState } from 'react';
 import { useLoaderData, Link } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
@@ -30,28 +31,17 @@ export default function MeetingsRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
         
         {/* Header */}
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
+        <PageHero title="การประชุม" description="ติดตามการประชุม เปิดเอกสารประกอบ และดูข้อสรุปกับงานที่ต้องดำเนินการต่อ" references={<div className="flex items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md">
                 MODULE 08: MEETING CENTER & MOM
               </span>
               <span className="text-xs font-semibold text-slate-500">
                 ระบบจัดการประชุมและบันทึกข้อตกลง
               </span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-              ศูนย์การประชุมและบันทึกรายงานการประชุม (MOM)
-            </h1>
-            <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-              ติดตามวาระการประชุม มติที่ประชุมคณะทำงานและที่ปรึกษา และการกลั่นกรอง Gate Milestones (G0 ➔ G1 ➔ G2)
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
+            </div>}><div className="flex items-center gap-2">
             <Link
               to="/calendar"
               className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border border-slate-300 transition"
@@ -59,8 +49,7 @@ export default function MeetingsRoute() {
               <CalendarDays className="w-4 h-4 text-slate-600" />
               ดูมุมมองปฏิทิน
             </Link>
-          </div>
-        </div>
+          </div></PageHero>
 
         {/* Featured Card: Next Meeting */}
         <div className="bg-gradient-to-r from-purple-50 via-indigo-50/50 to-blue-50/40 border border-purple-200/80 rounded-2xl p-6 shadow-sm">
@@ -107,7 +96,7 @@ export default function MeetingsRoute() {
           {meetings.map((mtg) => (
             <div
               key={mtg.id}
-              className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
+              className="theme-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
@@ -179,6 +168,11 @@ export default function MeetingsRoute() {
                   <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg font-bold">
                     <Clock className="w-3.5 h-3.5 text-amber-600" />
                     อยู่ระหว่างดำเนินงาน
+                  </span>
+                ) : mtg.status === 'CANCELLED' ? (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-lg font-bold">
+                    <Clock className="w-3.5 h-3.5 text-rose-600" />
+                    ยกเลิกการประชุม
                   </span>
                 ) : (
                   <span className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg font-bold">

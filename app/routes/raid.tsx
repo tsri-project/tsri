@@ -1,3 +1,4 @@
+import { PageHero } from '~/components/shell/PageHero';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { AlertTriangle, ShieldAlert, CheckCircle2, Clock, Plus, HelpCircle } from 'lucide-react';
 
@@ -34,29 +35,21 @@ export default function RaidRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
-        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
+        <PageHero title="ความเสี่ยงและข้อพิจารณา" description="ติดตามความเสี่ยง ประเด็นที่ต้องแก้ไข และการตัดสินใจที่มีผลต่อโครงการ" references={<div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200 rounded-md">
               MODULE 10: RAID LOG (RISKS, ASSUMPTIONS, ISSUES, DECISIONS)
             </span>
             <span className="text-xs font-semibold text-slate-500">
               ทะเบียนบริหารความเสี่ยงและข้อตัดสินใจ
             </span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-            ทะเบียนบริหารความเสี่ยงและข้อติดขัด (RAID Log)
-          </h1>
-          <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-            ติดตามประเด็นความเสี่ยงทางกฎหมาย (Legal Risks), ข้อติดขัดเชิงปฏิบัติการ (Operational Friction), และมติการตัดสินใจเพื่อปลดล็อก Gate
-          </p>
-        </div>
+          </div>}></PageHero>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {raidItems.map((item) => (
             <div
               key={item.id}
-              className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
+              className="theme-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">

@@ -258,7 +258,7 @@ export default function LoginRoute() {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4">
+      <div className="auth-page min-h-screen w-full bg-slate-50 flex items-center justify-center p-4">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-[#062B63] animate-spin" />
           <div className="text-xs font-semibold text-slate-500">
@@ -270,12 +270,12 @@ export default function LoginRoute() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans text-slate-800">
+    <div className="auth-page min-h-screen w-full bg-slate-50 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans text-slate-800">
       {/* Background Gradients */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-blue-100/50 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-10 right-10 w-[450px] h-[450px] bg-indigo-100/40 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xl relative z-10">
+      <div className="auth-card w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xl relative z-10">
         {/* Brand Logo & Title */}
         <div className="text-center mb-5">
           <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-[#062B63] flex items-center justify-center text-white shadow-lg shadow-[#062B63]/20">
@@ -285,7 +285,7 @@ export default function LoginRoute() {
             TSRI One Link for All
           </h1>
           <p className="text-xs text-slate-500 mt-1 font-medium">
-            PM & Legal Research Control Center (สกสว.)
+            พื้นที่ทำงานร่วมกันของทีมวิจัยและ สกสว.
           </p>
         </div>
 

@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
-import { useLoaderData, Link } from '@remix-run/react';
+import { PageHero } from '~/components/shell/PageHero';
+import { useState, useMemo, useEffect } from 'react';
+import { useLoaderData, Link, useSearchParams } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { DocumentVersionModal } from '~/components/documents/DocumentVersionModal';
 import { mockDocuments } from '~/lib/mock-data';
@@ -53,6 +54,14 @@ export default function DocumentsRoute() {
   const [selectedOrg, setSelectedOrg] = useState<string>('ALL');
   const [selectedDocForVersion, setSelectedDocForVersion] = useState<DocumentItem | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const [searchParams] = useSearchParams();
+  const requestedDocumentId = searchParams.get('id');
+  useEffect(() => {
+    if (requestedDocumentId) {
+      setSelectedDocForVersion(initialDocuments.find(doc => doc.id === requestedDocumentId) || null);
+    }
+  }, [requestedDocumentId, initialDocuments]);
 
   // New Document Generator State
   const [formType, setFormType] = useState<DocumentTypeCode>('LAW');
@@ -166,27 +175,16 @@ export default function DocumentsRoute() {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans">
+      <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in font-sans">
         {/* Top Header Banner in Light Theme */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
+        <PageHero title="ศูนย์เอกสาร" description="ค้นหาเอกสารโครงการ เปิดรายละเอียด และตรวจสอบฉบับเอกสารที่ต้องใช้" references={<div className="flex items-center gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63] text-white rounded-lg">
                 MODULE 04
               </span>
               <span className="text-xs font-bold text-[#F36C21] uppercase tracking-wider font-mono">
                 CENTRAL DOCUMENT VAULT & R2 STORAGE
               </span>
-            </div>
-            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
-              ศูนย์รวบรวมเอกสารและคลังข้อมูลกฎหมาย (Document Vault)
-            </h1>
-            <p className="text-xs md:text-sm text-slate-600 mt-1 max-w-3xl">
-              จัดเก็บเอกสารอย่างเป็นระบบ 13 โฟลเดอร์วงจรวิจัย พร้อมระบบตั้งชื่อมาตรฐาน (Standardized Filing Convention) และจัดเก็บบน Cloudflare R2
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
+            </div>}><div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
             {/* Google Drive Master Folder Link */}
             <a
               href="https://drive.google.com/drive/folders/1OZQaNmTQmaWFJfdcMwkatS8RP7Wuc9d8?usp=drive_link"
@@ -224,8 +222,7 @@ export default function DocumentsRoute() {
               <Plus className="w-4 h-4 text-[#F36C21]" />
               ลงทะเบียนเอกสารใหม่
             </button>
-          </div>
-        </div>
+          </div></PageHero>
 
         {/* Featured Documents of Today (Oct 8, 2026) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -320,7 +317,7 @@ export default function DocumentsRoute() {
         {/* Main Grid: Left Folder Explorer Tree vs Right Document List */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Column: 13 Lifecycle Folders Tree */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
+          <div className="theme-card bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                 <FolderOpen className="w-4 h-4 text-[#1356A3]" />
@@ -375,7 +372,7 @@ export default function DocumentsRoute() {
           {/* Right Column: Filters & Documents Table */}
           <div className="lg:col-span-3 space-y-4">
             {/* Filter Bar */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div className="theme-card bg-white border border-slate-200 rounded-3xl p-4 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
               <div className="relative w-full md:w-80">
                 <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
                 <input
@@ -426,7 +423,7 @@ export default function DocumentsRoute() {
             </div>
 
             {/* Document Table in Light Theme */}
-            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+            <div className="theme-card bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs text-slate-700">
                   <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[11px]">
@@ -520,7 +517,7 @@ export default function DocumentsRoute() {
         {/* Modal: Create Document Generator */}
         {showCreateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
-            <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="theme-card bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
               <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-[#062B63] to-[#1356A3] text-white flex items-center justify-between">
                 <div>
                   <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F36C21]">
