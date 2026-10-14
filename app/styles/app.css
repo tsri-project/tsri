@@ -41,3 +41,23 @@
 .tsri-gradient-card {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
+
+/* Shared readability, keyboard focus and safe mobile viewport. */
+@layer base {
+  :where(a, button, input, select, textarea, summary):focus-visible {
+    outline: 3px solid #1356a3;
+    outline-offset: 3px;
+  }
+}
+.overview-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 24px; box-shadow: 0 3px 16px #0f172a03; }
+.project-overview { overflow-wrap: anywhere; }
+.overview-progress { display: block; height: 6px; appearance: none; border: none; border-radius: 99px; overflow: hidden; background: #edf1f7; }
+.overview-progress::-webkit-progress-bar { background: #edf1f7; }
+.overview-progress::-webkit-progress-value { background: #1356a3; border-radius: 99px; }
+.overview-progress::-moz-progress-bar { background: #1356a3; border-radius: 99px; }
+.safe-area-pb { padding-bottom: max(.5rem, env(safe-area-inset-bottom)); }
+.skip-link { position: fixed; top: 8px; left: 8px; z-index: 100; transform: translateY(-150%); background: white; color: #062b63; padding: 12px 18px; border-radius: 12px; }
+.skip-link:focus { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
