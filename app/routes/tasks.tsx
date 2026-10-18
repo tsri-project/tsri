@@ -19,9 +19,12 @@ import {
   Search,
   Edit3,
   Check,
+  X,
+  Sliders,
+  Percent,
 } from 'lucide-react';
 import { formatThaiDate } from '~/lib/utils';
-import { getStoredTasks, toggleStoredTaskStatus } from '~/lib/app-state';
+import { getStoredTasks, toggleStoredTaskStatus, updateStoredTaskProgress } from '~/lib/app-state';
 import { useAuth } from '~/lib/use-auth';
 
 export const clientLoader = async () => {
@@ -38,6 +41,50 @@ export default function TasksRoute() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
 
+  // Progress Modal State for Admin
+  const [editingTask, setEditingTask] = useState<ProjectTaskItem | null>(null);
+  const [modalPct, setModalPct] = useState<number>(0);
+  const [modalStatus, setModalStatus] = useState<ProjectTaskItem['status']>('IN_PROGRESS');
+
+  const handleOpenProgressModal = (task: ProjectTaskItem) => {
+    if (!isAdminOrPm) {
+      setToastMessage('เฉพาะ Admin หรือ PM เท่านั้นที่มีสิทธิ์ปรับเปอร์เซ็นต์งาน');
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
+    setEditingTask(task);
+    setModalPct(task.progress_pct);
+    setModalStatus(task.status);
+  };
+
+  const handlePctChange = (newPct: number) => {
+    const clamped = Math.max(0, Math.min(100, newPct));
+    setModalPct(clamped);
+    if (clamped === 100) {
+      setModalStatus('DONE');
+    } else if (modalStatus === 'DONE' && clamped < 100) {
+      setModalStatus('IN_PROGRESS');
+    }
+  };
+
+  const handleSaveProgress = () => {
+    if (!editingTask) return;
+    const { tasks: updatedTasks, updatedTask } = updateStoredTaskProgress(
+      editingTask.id,
+      modalPct,
+      modalStatus
+    );
+    setTasks(updatedTasks);
+    setEditingTask(null);
+
+    if (updatedTask) {
+      setToastMessage(
+        `✅ อัปเดตความก้าวหน้า [${updatedTask.code}] เป็น ${updatedTask.progress_pct}% เรียบร้อยแล้ว`
+      );
+      setTimeout(() => setToastMessage(null), 3000);
+    }
+  };
+
   const handleToggleTask = (taskId: string) => {
     if (!isAdminOrPm) {
       setToastMessage('เฉพาะ Admin หรือ PM เท่านั้นที่มีสิทธิ์อัปเดตสถานะงาน');
@@ -49,7 +96,7 @@ export default function TasksRoute() {
     if (updatedTask) {
       setToastMessage(
         updatedTask.status === 'DONE'
-          ? `✅ ปรับงาน [${updatedTask.code}] เป็น เสร็จสมบูรณ์ แล้ว`
+          ? `✅ ปรับงาน [${updatedTask.code}] เป็น เสร็จสมบูรณ์ (100%) แล้ว`
           : `🔄 ปรับงาน [${updatedTask.code}] เป็น กำลังดำเนินการ แล้ว`
       );
       setTimeout(() => setToastMessage(null), 3000);
@@ -286,11 +333,33 @@ export default function TasksRoute() {
                       <ShieldCheck className="w-3 h-3 text-indigo-600" />
                       {task.gate_milestone}: {gateInfo.name}
                     </span>
-                    <span className="font-mono font-bold text-slate-800">{task.progress_pct}%</span>
+                    
+                    {/* Interactive Percentage Badge for Admin */}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenProgressModal(task)}
+                      title={isAdminOrPm ? "คลิกเพื่อปรับความก้าวหน้า (%) สิทธิ์แอดมิน" : undefined}
+                      className={`font-mono font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 transition-all ${
+                        isAdminOrPm
+                          ? 'bg-blue-50 hover:bg-blue-100 text-[#062B63] border-blue-200 cursor-pointer shadow-2xs hover:scale-105 active:scale-95'
+                          : 'bg-slate-50 text-slate-800 border-slate-200 cursor-default'
+                      }`}
+                    >
+                      <span>{task.progress_pct}%</span>
+                      {isAdminOrPm && <Edit3 className="w-3 h-3 text-[#1356A3]" />}
+                    </button>
                   </div>
-                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  
+                  {/* Clickable Progress Bar for Admin */}
+                  <div
+                    onClick={() => isAdminOrPm && handleOpenProgressModal(task)}
+                    title={isAdminOrPm ? "คลิกเพื่อปรับระดับความคืบหน้า" : undefined}
+                    className={`w-full h-2 bg-slate-100 rounded-full overflow-hidden ${
+                      isAdminOrPm ? 'cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all' : ''
+                    }`}
+                  >
                     <div
-                      className={`h-full rounded-full ${
+                      className={`h-full rounded-full transition-all duration-300 ${
                         task.progress_pct === 100 ? 'bg-emerald-500' : 'bg-[#062B63]'
                       }`}
                       style={{ width: `${task.progress_pct}%` }}
@@ -301,6 +370,175 @@ export default function TasksRoute() {
             );
           })}
         </div>
+
+        {/* Task Progress Adjustment Modal for Admin */}
+        {editingTask && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl relative space-y-6">
+              {/* Modal Header */}
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63] text-white rounded-md">
+                      {editingTask.code}
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      ปรับระดับความก้าวหน้าโครงการ
+                    </span>
+                  </div>
+                  <h3 className="text-base font-extrabold text-slate-900 mt-1 leading-snug">
+                    {editingTask.title}
+                  </h3>
+                  <div className="text-xs text-slate-500 mt-1">
+                    ผู้รับผิดชอบ: <span className="font-semibold text-slate-700">{editingTask.assigned_to}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingTask(null)}
+                  className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Big Progress Counter & Gauge */}
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 text-center space-y-3">
+                <div className="flex items-center justify-center gap-2">
+                  <span className={`text-4xl sm:text-5xl font-black font-mono tracking-tight ${
+                    modalPct === 100
+                      ? 'text-emerald-600'
+                      : modalPct >= 50
+                      ? 'text-[#062B63]'
+                      : 'text-slate-700'
+                  }`}>
+                    {modalPct}%
+                  </span>
+                </div>
+                
+                {/* Progress bar preview */}
+                <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden p-0.5">
+                  <div
+                    className={`h-full rounded-full transition-all duration-200 ${
+                      modalPct === 100 ? 'bg-emerald-500 shadow-xs' : 'bg-[#062B63]'
+                    }`}
+                    style={{ width: `${modalPct}%` }}
+                  />
+                </div>
+
+                <div className="text-xs font-semibold text-slate-500">
+                  {modalPct === 100
+                    ? '🎉 เสร็จสิ้นสมบูรณ์ 100% พร้อมส่งมอบ / ตรวจรับ'
+                    : modalPct > 0
+                    ? '⚡ อยู่ระหว่างดำเนินงานตามแผน Cadence'
+                    : '⏳ ยังไม่เริ่มดำเนินงาน (0%)'}
+                </div>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700">
+                  ปุ่มลัดระบุเปอร์เซ็นต์ (Quick Presets):
+                </label>
+                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+                  {[0, 25, 50, 75, 80, 90, 100].map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => handlePctChange(val)}
+                      className={`py-1.5 text-xs font-bold rounded-xl border transition-all ${
+                        modalPct === val
+                          ? 'bg-[#062B63] text-white border-[#062B63] shadow-xs scale-105'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      {val}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Slider & Direct Numeric Input */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <label className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5 text-[#1356A3]" />
+                    <span>เลื่อนปรับระดับความคืบหน้า (0 - 100%):</span>
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={modalPct}
+                      onChange={(e) => handlePctChange(Number(e.target.value) || 0)}
+                      className="w-16 px-2 py-1 text-center font-mono font-bold text-sm bg-white border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="font-bold text-slate-600">%</span>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={modalPct}
+                  onChange={(e) => handlePctChange(Number(e.target.value))}
+                  className="w-full accent-[#062B63] cursor-pointer h-2 bg-slate-200 rounded-lg"
+                />
+              </div>
+
+              {/* Status Selector */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700">
+                  สถานะของงาน (Task Status):
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(
+                    [
+                      { id: 'TODO', label: 'รอดำเนินการ', color: 'border-slate-300' },
+                      { id: 'IN_PROGRESS', label: 'กำลังทำ', color: 'border-blue-400' },
+                      { id: 'IN_REVIEW', label: 'ตรวจทาน', color: 'border-amber-400' },
+                      { id: 'DONE', label: 'เสร็จสิ้น', color: 'border-emerald-500' },
+                    ] as const
+                  ).map((st) => (
+                    <button
+                      key={st.id}
+                      type="button"
+                      onClick={() => setModalStatus(st.id)}
+                      className={`px-2.5 py-2 rounded-xl text-xs font-bold border transition-all text-center ${
+                        modalStatus === st.id
+                          ? 'bg-[#062B63] text-white border-[#062B63] shadow-xs'
+                          : 'bg-white text-slate-700 hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      {st.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer Modal Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingTask(null)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveProgress}
+                  className="px-5 py-2 text-xs font-bold text-white bg-[#062B63] hover:bg-[#1356A3] rounded-xl shadow-xs transition flex items-center gap-1.5"
+                >
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  <span>บันทึกความคืบหน้า</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Toast Notification */}
         {toastMessage && (

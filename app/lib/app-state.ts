@@ -252,9 +252,12 @@ export function updateStoredTaskStatus(
     const index = current.findIndex((t) => t.id === id);
     if (index === -1) return { tasks: current, updatedTask: null };
 
+    const task = current[index];
+    const newProgress = status === 'DONE' ? 100 : task.progress_pct === 100 ? 80 : task.progress_pct;
     const updatedTask: ProjectTaskItem = {
-      ...current[index],
+      ...task,
       status,
+      progress_pct: newProgress,
     };
     const next = [...current];
     next[index] = updatedTask;
@@ -264,6 +267,48 @@ export function updateStoredTaskStatus(
     return { tasks: next, updatedTask };
   } catch (e) {
     console.error('Failed to update task status', e);
+    return { tasks: getStoredTasks(), updatedTask: null };
+  }
+}
+
+export function updateStoredTaskProgress(
+  id: string,
+  progress_pct: number,
+  statusOverride?: ProjectTaskItem['status']
+): { tasks: ProjectTaskItem[]; updatedTask: ProjectTaskItem | null } {
+  if (typeof window === 'undefined') return { tasks: mockProjectTasks, updatedTask: null };
+  try {
+    const current = getStoredTasks();
+    const index = current.findIndex((t) => t.id === id);
+    if (index === -1) return { tasks: current, updatedTask: null };
+
+    const task = current[index];
+    const clampedPct = Math.max(0, Math.min(100, Math.round(progress_pct)));
+
+    let newStatus: ProjectTaskItem['status'] = statusOverride || task.status;
+    if (!statusOverride) {
+      if (clampedPct === 100) {
+        newStatus = 'DONE';
+      } else if (task.status === 'DONE' && clampedPct < 100) {
+        newStatus = 'IN_PROGRESS';
+      } else if (task.status === 'TODO' && clampedPct > 0) {
+        newStatus = 'IN_PROGRESS';
+      }
+    }
+
+    const updatedTask: ProjectTaskItem = {
+      ...task,
+      progress_pct: clampedPct,
+      status: newStatus,
+    };
+    const next = [...current];
+    next[index] = updatedTask;
+
+    localStorage.setItem(STORAGE_KEYS.PROJECT_TASKS, JSON.stringify(next));
+    notifyStateChange(STORAGE_KEYS.PROJECT_TASKS);
+    return { tasks: next, updatedTask };
+  } catch (e) {
+    console.error('Failed to update task progress', e);
     return { tasks: getStoredTasks(), updatedTask: null };
   }
 }
