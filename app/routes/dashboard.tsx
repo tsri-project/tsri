@@ -8,10 +8,18 @@ import {
   FileCheck2,
   Users,
   Search,
-  Info,
   Scale,
-  BookOpen,
+  Calendar,
   CheckCircle2,
+  Clock,
+  Plus,
+  Sparkles,
+  ListPlus,
+  FolderKanban,
+  Check,
+  ChevronRight,
+  TrendingUp,
+  AlertCircle,
 } from 'lucide-react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { TodayActiveFocusBanner } from '~/components/dashboard/TodayActiveFocusBanner';
@@ -19,397 +27,560 @@ import {
   mockDashboardData,
   mockTorClauses,
   mockProjectTasks,
+  mockCurrentUser,
 } from '~/lib/mock-data';
 import { DOCUMENT_STATUS_BADGES, type ExecutiveDashboardData } from '~/types';
 import { formatThaiDate } from '~/lib/utils';
 
 export const clientLoader = async () => mockDashboardData;
-const taskLabels = {
-  TODO: 'รอดำเนินการ',
-  IN_PROGRESS: 'กำลังดำเนินการ',
-  IN_REVIEW: 'รอตรวจสอบ',
-  DONE: 'ดำเนินการแล้ว',
-};
-const scopeLabels = {
-  NOT_STARTED: 'ยังไม่เริ่ม',
-  IN_PROGRESS: 'กำลังดำเนินการ',
-  PENDING_REVIEW: 'รอตรวจสอบ',
-  COMPLETED: 'ดำเนินการแล้ว',
-};
-const shortcuts = [
-  {
-    title: 'ขอบเขตและผลส่งมอบ',
-    description: 'ดูสิ่งที่ต้องทำและผลผลิตตามสัญญา',
-    path: '/tor',
-    icon: FileCheck2,
-    tone: 'bg-blue-50 text-blue-800',
-  },
-  {
-    title: 'งานของทีมวิจัย',
-    description: 'ติดตามผู้รับผิดชอบและกำหนดส่งงาน',
-    path: '/tasks',
-    icon: ListTodo,
-    tone: 'bg-teal-50 text-teal-800',
-  },
-  {
-    title: 'ชุดเอกสารโครงการ',
-    description: 'เปิดเอกสารและตรวจสอบฉบับที่ใช้',
-    path: '/documents',
-    icon: FileText,
-    tone: 'bg-violet-50 text-violet-800',
-  },
-  {
-    title: 'รายงานสำหรับ สกสว.',
-    description: 'ดูรายงานและชุดผลส่งมอบ',
-    path: '/reports',
-    icon: BookOpen,
-    tone: 'bg-orange-50 text-orange-800',
-  },
-];
+
+type TaskFilter = 'ALL' | 'TODAY' | 'IN_PROGRESS' | 'DONE';
 
 export default function DashboardRoute() {
   const data = useLoaderData<ExecutiveDashboardData>();
-  const [view, setView] = useState<'overview' | 'research'>('overview');
-  const [query, setQuery] = useState('');
-  const pendingTasks = mockProjectTasks
-    .filter((task) => task.status !== 'DONE')
-    .sort((a, b) => a.due_date.localeCompare(b.due_date))
-    .slice(0, 4);
-  const documents = data.recentDocuments.filter((doc) =>
+  const [taskFilter, setTaskFilter] = useState<TaskFilter>('ALL');
+  const [docSearchQuery, setDocSearchQuery] = useState('');
+
+  // Calculate task statistics
+  const totalTasks = mockProjectTasks.length;
+  const inProgressTasks = mockProjectTasks.filter(
+    (t) => t.status === 'IN_PROGRESS' || t.status === 'IN_REVIEW'
+  ).length;
+  const doneTasks = mockProjectTasks.filter((t) => t.status === 'DONE').length;
+  const pendingReviewTasks = mockProjectTasks.filter(
+    (t) => t.status === 'IN_REVIEW'
+  ).length;
+
+  // Filter tasks based on selected tab
+  const filteredTasks = mockProjectTasks
+    .filter((task) => {
+      if (taskFilter === 'TODAY') {
+        return task.status !== 'DONE';
+      }
+      if (taskFilter === 'IN_PROGRESS') {
+        return task.status === 'IN_PROGRESS' || task.status === 'IN_REVIEW';
+      }
+      if (taskFilter === 'DONE') {
+        return task.status === 'DONE';
+      }
+      return true; // ALL
+    })
+    .slice(0, 6);
+
+  // Filter recent documents
+  const filteredDocuments = data.recentDocuments.filter((doc) =>
     `${doc.title} ${doc.document_code}`
       .toLowerCase()
-      .includes(query.trim().toLowerCase())
+      .includes(docSearchQuery.trim().toLowerCase())
   );
-  const metrics = [
-    {
-      label: 'ดำเนินการตามขอบเขต',
-      value: `${data.torCoveragePercentage}%`,
-      detail: 'ค่าจากชุดข้อมูลตัวอย่าง',
-      path: '/tor',
-      tone: 'bg-[#e9efff]',
-      icon: FileCheck2,
-    },
-    {
-      label: 'ผลส่งมอบที่ดำเนินการแล้ว',
-      value: `${data.deliverablesProgress.completed}/${data.deliverablesProgress.total}`,
-      detail: 'ดูรายการและสถานะแต่ละชิ้น',
-      path: '/tor',
-      tone: 'bg-[#e5f3ed]',
-      icon: CheckCircle2,
-    },
-    {
-      label: 'รายการรอตรวจสอบ',
-      value: String(data.pendingReviewsCount),
-      detail: 'เปิดศูนย์ตรวจสอบโดยผู้เชี่ยวชาญ',
-      path: '/reviews',
-      tone: 'bg-[#fff1dd]',
-      icon: Scale,
-    },
-    {
-      label: 'ข้อพิจารณาที่ยังเปิดอยู่',
-      value: String(data.openDecisionsCount),
-      detail: 'ดูประเด็นที่ต้องติดตามต่อ',
-      path: '/raid',
-      tone: 'bg-[#f0eafb]',
-      icon: Users,
-    },
-  ];
+
+  // Circular progress math (circumference for r=46 is ~289)
+  const radius = 46;
+  const circumference = 2 * Math.PI * radius;
+  const progressPercent = data.torCoveragePercentage || 78;
+  const strokeDashoffset =
+    circumference - (progressPercent / 100) * circumference;
 
   return (
     <AppLayout>
-      <div className="project-overview mx-auto max-w-7xl p-4 md:p-8 space-y-7">
-        {/* Live Project Focus Status for Today (Oct 8 2026) */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-7">
+        {/* 1. Header Greeting & Status Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                สวัสดีครับ คณะทำงานวิจัย สกสว. 👋
+              </h1>
+            </div>
+            <p className="text-sm text-slate-500 mt-1">
+              ยินดีต้อนรับสู่ศูนย์ติดตามความก้าวหน้าโครงการวิจัยและผลการส่งมอบสัญญา
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-semibold text-[#1356A3]">
+              <Calendar className="w-3.5 h-3.5 text-[#F36C21]" />
+              <span>วันนี้ 18 ต.ค. 2569</span>
+            </span>
+
+            <Link
+              to="/daily"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold shadow-sm transition active:scale-95"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>บันทึกงาน</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* 2. Live Project Focus Banner */}
         <TodayActiveFocusBanner />
 
-        <div
-          className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
-          role="note"
-        >
-          <Info className="mt-0.5 h-5 w-5 shrink-0" />
-          <p>
-            <strong>หน้าภาพรวมใช้ข้อมูลตัวอย่าง</strong> ตัวเลข สถานะ
-            และกำหนดส่งยังไม่ได้เชื่อมทะเบียนโครงการที่รับรองแล้ว
-            จึงต้องตรวจสอบกับทีม PM ก่อนใช้อ้างอิง
-          </p>
-        </div>
-        <section
-          className="relative overflow-hidden rounded-[28px] bg-[#092f60] p-6 text-white md:p-9"
-          aria-labelledby="overview-title"
-        >
-          <div className="pointer-events-none absolute -right-16 -top-24 h-80 w-80 rounded-full border-[45px] border-white/5" />
-          <div className="relative max-w-3xl">
-            <p className="mb-3 text-sm font-medium text-blue-200">
-              โครงการกฎหมาย สกสว. <span className="mx-2 text-blue-300">/</span>{' '}
-              พื้นที่ติดตามโครงการร่วมกัน
-            </p>
-            <h1
-              id="overview-title"
-              className="text-3xl font-bold leading-tight md:text-4xl"
-            >
-              เห็นภาพรวมเดียวกัน
-              <br />
-              <span className="text-[#b9ded9]">
-                ขับเคลื่อนงานวิจัยไปด้วยกัน
-              </span>
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-blue-100 md:text-base">
-              ศึกษาและวิเคราะห์กฎหมายที่เกี่ยวข้องกับการดำเนินงานของ สกสว.
-              เพื่อพัฒนาองค์ความรู้ แนวปฏิบัติ และศักยภาพบุคลากร
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+        {/* 3. Executive Hero Progress Card & 2x2 KPI Grid (Matching Modern Clean Reference) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Left: Overall Milestone Circular Progress Widget (5 cols) */}
+          <div className="lg:col-span-5 bg-white border border-slate-100/90 rounded-3xl p-6 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.04)] flex flex-col justify-between hover:shadow-md transition">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
+                  MILESTONE PROGRESS
+                </span>
+                <h2 className="text-lg font-extrabold text-slate-900 mt-0.5">
+                  ความก้าวหน้าโครงการภาพรวม
+                </h2>
+              </div>
               <Link
                 to="/tor"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#092f60]"
+                className="text-slate-400 hover:text-[#1356A3] transition p-1 rounded-full hover:bg-slate-50"
+                title="ดูผลส่งมอบทั้งหมด"
               >
-                ดูขอบเขตโครงการ <ArrowRight className="h-4 w-4" />
+                <ChevronRight className="w-5 h-5" />
               </Link>
-              <Link
-                to="/team"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
-              >
-                <Users className="h-4 w-4" /> รู้จักคณะทำงาน
+            </div>
+
+            {/* Circular Progress Ring & Summary */}
+            <div className="flex items-center gap-6 my-5">
+              {/* Radial Progress SVG */}
+              <div className="relative w-28 h-28 shrink-0 flex items-center justify-center">
+                <svg className="w-full h-full radial-progress-ring" viewBox="0 0 110 110">
+                  <circle
+                    cx="55"
+                    cy="55"
+                    r={radius}
+                    className="stroke-slate-100"
+                    strokeWidth="10"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="55"
+                    cy="55"
+                    r={radius}
+                    stroke="url(#progressGradient)"
+                    strokeWidth="10"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    fill="transparent"
+                    className="transition-all duration-1000 ease-out"
+                  />
+                  <defs>
+                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#1356A3" />
+                      <stop offset="100%" stopColor="#2C73C7" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                  <span className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+                    {progressPercent}%
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    เสร็จสิ้น
+                  </span>
+                </div>
+              </div>
+
+              {/* Text Description */}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-slate-800">
+                  {data.deliverablesProgress.completed} จาก {data.deliverablesProgress.total} ผลผลิตส่งมอบแล้ว
+                </div>
+                <p className="text-xs text-slate-500 mt-1 leading-5">
+                  ดำเนินงานได้ตามกำหนดเวลา อยู่ระหว่างการจัดเตรียมเอกสารสำหรับ Gate G2 และ G3
+                </p>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                    <CheckCircle2 className="w-3 h-3" /> Gate G1 ผ่านแล้ว
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#F36C21] bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+                    <Clock className="w-3 h-3" /> Gate G2 กำลังสรุป
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Progress Footnote */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>งวดส่งมอบปัจจุบัน: งวดที่ 1</span>
+              <Link to="/tor" className="font-semibold text-[#1356A3] hover:underline flex items-center gap-1">
+                ดูแผนส่งมอบ <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
-        </section>
-        <section
-          aria-label="สรุปสถานะตัวอย่าง"
-          className="grid grid-cols-2 gap-3 lg:grid-cols-4"
-        >
-          {metrics.map((metric) => (
+
+          {/* Right: 2x2 KPI Cards Grid (7 cols) - Inspired by Image 2 Screen 2 */}
+          <div className="lg:col-span-7 grid grid-cols-2 gap-4">
+            {/* KPI 1: ขอบเขตงาน TOR */}
             <Link
-              key={metric.path + metric.label}
-              to={metric.path}
-              className={`${metric.tone} rounded-3xl p-4 text-slate-900 transition hover:-translate-y-1 md:p-5`}
+              to="/tor"
+              className="bg-white border border-slate-100 rounded-3xl p-5 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.04)] hover:shadow-md hover:-translate-y-0.5 transition flex flex-col justify-between group"
             >
               <div className="flex items-center justify-between">
-                <metric.icon className="h-5 w-5 text-[#1356a3]" />
-                <ArrowUpRight className="h-4 w-4 text-slate-500" />
-              </div>
-              <p className="mt-4 text-sm font-medium">{metric.label}</p>
-              <p className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">
-                {metric.value}
-              </p>
-              <p className="mt-3 text-xs leading-5 text-slate-600">
-                {metric.detail}
-              </p>
-            </Link>
-          ))}
-        </section>
-        <section aria-labelledby="start-title">
-          <div className="mb-4">
-            <h2 id="start-title" className="text-xl font-bold text-slate-900">
-              ต้องการดูอะไรต่อ?
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              เลือกเข้าถึงข้อมูลที่ต้องการได้โดยตรง
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {shortcuts.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className="overview-card group p-5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`rounded-xl p-3 ${item.tone}`}>
-                    <item.icon className="h-5 w-5" />
-                  </span>
-                  <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-blue-700" />
+                <span className="text-xs font-bold text-slate-500">ขอบเขตงาน TOR</span>
+                <div className="w-9 h-9 rounded-2xl bg-blue-50 text-[#1356A3] flex items-center justify-center transition-transform group-hover:scale-105">
+                  <FileCheck2 className="w-5 h-5" />
                 </div>
-                <h3 className="mt-4 font-semibold text-slate-900">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                  {item.description}
-                </p>
-              </Link>
-            ))}
+              </div>
+              <div className="mt-4">
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
+                  {data.torCoveragePercentage}%
+                </div>
+                <div className="flex items-center justify-between mt-1 text-xs text-slate-500">
+                  <span>ครอบคลุม 6 หมวด</span>
+                  <span className="text-emerald-600 font-bold flex items-center gap-0.5">
+                    <TrendingUp className="w-3 h-3" /> +15%
+                  </span>
+                </div>
+              </div>
+            </Link>
+
+            {/* KPI 2: งานที่กำลังดำเนินการ */}
+            <Link
+              to="/tasks"
+              className="bg-white border border-slate-100 rounded-3xl p-5 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.04)] hover:shadow-md hover:-translate-y-0.5 transition flex flex-col justify-between group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">งานที่กำลังทำ</span>
+                <div className="w-9 h-9 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center transition-transform group-hover:scale-105">
+                  <Clock className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
+                  {inProgressTasks} งาน
+                </div>
+                <div className="flex items-center justify-between mt-1 text-xs text-slate-500">
+                  <span>ทีมวิจัยกำลังจัดทำร่าง</span>
+                  <span className="text-indigo-600 font-semibold">WS01 - WS04</span>
+                </div>
+              </div>
+            </Link>
+
+            {/* KPI 3: ตรวจสอบและรับรองสมบูรณ์ */}
+            <Link
+              to="/reviews"
+              className="bg-white border border-slate-100 rounded-3xl p-5 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.04)] hover:shadow-md hover:-translate-y-0.5 transition flex flex-col justify-between group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">รับรองสมบูรณ์แล้ว</span>
+                <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center transition-transform group-hover:scale-105">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
+                  {data.deliverablesProgress.completed} ชิ้น
+                </div>
+                <div className="flex items-center justify-between mt-1 text-xs text-slate-500">
+                  <span>เอกสารรับรองแล้ว</span>
+                  <span className="text-emerald-600 font-semibold">VALIDATED</span>
+                </div>
+              </div>
+            </Link>
+
+            {/* KPI 4: รายการรอตรวจทาน & ประเด็นเปิด */}
+            <Link
+              to="/raid"
+              className="bg-white border border-slate-100 rounded-3xl p-5 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.04)] hover:shadow-md hover:-translate-y-0.5 transition flex flex-col justify-between group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">รอตรวจทาน / ข้อพิจารณา</span>
+                <div className="w-9 h-9 rounded-2xl bg-amber-50 text-[#F36C21] flex items-center justify-center transition-transform group-hover:scale-105">
+                  <Scale className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#F36C21] font-mono">
+                  {data.pendingReviewsCount}
+                </div>
+                <div className="flex items-center justify-between mt-1 text-xs text-slate-500">
+                  <span>รอผู้ทรงคุณวุฒิตรวจ</span>
+                  <span className="text-amber-600 font-semibold">Gate G2 Review</span>
+                </div>
+              </div>
+            </Link>
           </div>
-        </section>
-        <section
-          className="overview-card p-5 md:p-6"
-          aria-labelledby="progress-title"
-        >
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        </div>
+
+        {/* 4. Quick Actions Row (Exactly matching Image 2 Screen 2) */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
+              การดำเนินการด่วน (Quick Actions)
+            </h2>
+            <span className="text-xs text-slate-400">เลือกเข้าถึงระบบงาน</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            {/* Quick Action 1 */}
+            <Link
+              to="/daily"
+              className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex items-center gap-3.5 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-amber-50 text-[#F36C21] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <ListPlus className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-slate-900 truncate">
+                  บันทึกงานรายวัน
+                </div>
+                <div className="text-xs text-slate-500 truncate">
+                  อัปเดตกิจกรรมโครงการ
+                </div>
+              </div>
+            </Link>
+
+            {/* Quick Action 2 */}
+            <Link
+              to="/calendar"
+              className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex items-center gap-3.5 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-blue-50 text-[#1356A3] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-slate-900 truncate">
+                  ปฏิทินนัดหมาย
+                </div>
+                <div className="text-xs text-slate-500 truncate">
+                  การประชุมและสัมภาษณ์
+                </div>
+              </div>
+            </Link>
+
+            {/* Quick Action 3 */}
+            <Link
+              to="/legal-inventory"
+              className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex items-center gap-3.5 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <Scale className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-slate-900 truncate">
+                  คลังกฎหมาย & TOR
+                </div>
+                <div className="text-xs text-slate-500 truncate">
+                  มาตรา ระเบียบ และสัญญา
+                </div>
+              </div>
+            </Link>
+
+            {/* Quick Action 4 */}
+            <Link
+              to="/reviews"
+              className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition flex items-center gap-3.5 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-slate-900 truncate">
+                  ตรวจทาน Gate
+                </div>
+                <div className="text-xs text-slate-500 truncate">
+                  ศูนย์รับรองหลักฐาน
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* 5. Today's Tasks Section with Segmented Filters (Directly matching Image 2 Screen 4) */}
+        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
-              <h2
-                id="progress-title"
-                className="text-xl font-bold text-slate-900"
-              >
-                เส้นทางดำเนินงานโครงการ
+              <h2 className="text-lg font-extrabold text-slate-900">
+                แผนงานวิจัยและกิจกรรมสำคัญ (Research Tasks)
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                จากฐานกฎหมายสู่ผลการศึกษาและการนำไปใช้
+              <p className="text-xs text-slate-500 mt-0.5">
+                ติดตามการดำเนินงานรายหมวดและผู้รับผิดชอบ
               </p>
             </div>
-            <div
-              className="flex rounded-xl bg-slate-100 p-1"
-              aria-label="เลือกมุมมอง"
-            >
-              {[
-                { id: 'overview' as const, label: 'ภาพรวมสำหรับ สกสว.' },
-                { id: 'research' as const, label: 'งานทีมวิจัย' },
-              ].map((item) => (
+
+            {/* Segmented Filter Pills (Matching Image 2 Screen 4) */}
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-full shrink-0">
+              {(
+                [
+                  { id: 'ALL', label: 'ทั้งหมด' },
+                  { id: 'TODAY', label: 'สำคัญ' },
+                  { id: 'IN_PROGRESS', label: 'กำลังทำ' },
+                  { id: 'DONE', label: 'เสร็จแล้ว' },
+                ] as const
+              ).map((tab) => (
                 <button
-                  key={item.id}
-                  type="button"
-                  aria-pressed={view === item.id}
-                  onClick={() => setView(item.id)}
-                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium ${
-                    view === item.id
-                      ? 'bg-white text-blue-900 shadow-sm'
+                  key={tab.id}
+                  onClick={() => setTaskFilter(tab.id)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    taskFilter === tab.id
+                      ? 'bg-[#062B63] text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  {item.label}
+                  {tab.label}
                 </button>
               ))}
             </div>
           </div>
-          {view === 'overview' ? (
-            <div className="mt-6 space-y-3">
-              {mockTorClauses.map((clause, index) => (
-                <Link
-                  key={clause.clause_id}
-                  to="/tor"
-                  className="flex items-start gap-4 rounded-2xl border border-slate-200 p-4 hover:bg-slate-50"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-800">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-sm font-semibold text-slate-900">
-                        {clause.title}
-                      </h3>
-                      <span className="text-xs text-slate-600">
-                        {scopeLabels[clause.status]} ·{' '}
-                        {clause.completion_percentage}%
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs leading-6 text-slate-500">
-                      TOR ข้อ {clause.clause_number}
-                    </p>
-                    <progress
-                      className="overview-progress mt-2 w-full"
-                      value={clause.completion_percentage}
-                      max={100}
-                      aria-label={`ความก้าวหน้า ${clause.title}`}
-                    />
-                  </div>
-                  <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-6 space-y-3">
-              {pendingTasks.map((task) => (
+
+          {/* Task List Items (Matching Image 2 Task Row Styling) */}
+          <div className="divide-y divide-slate-100 mt-2">
+            {filteredTasks.map((task) => {
+              const isDone = task.status === 'DONE';
+              const isHigh = task.priority === 'CRITICAL' || task.priority === 'HIGH';
+              const isMedium = task.priority === 'MEDIUM';
+
+              return (
                 <Link
                   key={task.id}
-                  to={`/tasks?workstream=${
-                    task.workstream
-                  }&q=${encodeURIComponent(task.code)}`}
-                  className="block rounded-2xl border border-slate-200 p-4 hover:bg-slate-50"
+                  to={`/tasks?q=${encodeURIComponent(task.code)}`}
+                  className="flex items-center justify-between gap-4 py-3.5 hover:bg-slate-50/80 px-2 rounded-2xl transition group"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-sm font-semibold text-slate-900">
-                      {task.title.replace(/^\d+\s+/, '')}
-                    </h3>
-                    <ArrowUpRight className="h-4 w-4 shrink-0 text-slate-400" />
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    {/* Status Circle Indicator */}
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border transition ${
+                        isDone
+                          ? 'bg-emerald-500 border-emerald-500 text-white'
+                          : 'border-slate-300 group-hover:border-[#1356A3]'
+                      }`}
+                    >
+                      {isDone && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-slate-400">
+                          {task.code}
+                        </span>
+                        <h3 className="text-sm font-bold text-slate-900 truncate">
+                          {task.title.replace(/^\d+\s+/, '')}
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                        <span className="truncate">{task.assigned_to}</span>
+                        <span>·</span>
+                        <span>กำหนด: {formatThaiDate(task.due_date)}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="mt-2 text-xs leading-6 text-slate-500">
-                    {task.assigned_to} · กำหนดส่ง{' '}
-                    {formatThaiDate(task.due_date)}
-                  </p>
-                  <span className="mt-2 inline-block rounded-lg bg-blue-50 px-2 py-1 text-xs text-blue-800">
-                    {taskLabels[task.status]}
-                  </span>
+
+                  {/* Priority Badge Pill (Matching Image 2) */}
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    {isHigh && (
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        ด่วนสูง (High)
+                      </span>
+                    )}
+                    {isMedium && (
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        ปานกลาง (Medium)
+                      </span>
+                    )}
+                    {!isHigh && !isMedium && (
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">
+                        ปกติ (Normal)
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+                  </div>
                 </Link>
-              ))}
-              {pendingTasks.length === 0 && (
-                <p className="py-6 text-sm text-slate-500">
-                  ไม่มีงานค้างในชุดข้อมูลนี้
-                </p>
-              )}
-              <Link
-                to="/tasks"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-blue-800"
-              >
-                ดูงานทั้งหมด <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          )}
-        </section>
-        <section
-          className="overview-card p-5 md:p-6"
-          aria-labelledby="documents-title"
-        >
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-            <div>
-              <h2
-                id="documents-title"
-                className="text-xl font-bold text-slate-900"
-              >
-                เอกสารที่เกี่ยวข้อง
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                เปิดรายละเอียด ฉบับเอกสาร และแหล่งอ้างอิง
-              </p>
-            </div>
-            <Link
-              to="/documents"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-blue-800"
-            >
-              เอกสารทั้งหมด <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <label className="mt-5 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <Search className="h-4 w-4 shrink-0 text-slate-400" />
-            <span className="sr-only">ค้นหาเอกสารในหน้าภาพรวม</span>
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="ค้นหาชื่อหรือรหัสเอกสารในรายการนี้"
-              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none"
-            />
-          </label>
-          <div className="mt-3 divide-y divide-slate-100">
-            {documents.map((doc) => (
-              <Link
-                key={doc.id}
-                to={`/documents?id=${encodeURIComponent(doc.id)}`}
-                className="flex items-start gap-3 rounded-xl py-4 hover:bg-slate-50"
-              >
-                <span className="rounded-xl bg-slate-100 p-2.5">
-                  <FileText className="h-5 w-5 text-blue-800" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-medium leading-6 text-slate-900">
-                    {doc.title}
-                  </h3>
-                  <p className="mt-1 break-all text-xs text-slate-500">
-                    {doc.document_code} · ฉบับ {doc.latest_version_number}
-                  </p>
-                  <span className="mt-2 inline-block rounded-lg bg-slate-100 px-2 py-1 text-xs text-slate-600">
-                    สถานะในข้อมูลตัวอย่าง:{' '}
-                    {DOCUMENT_STATUS_BADGES[doc.status].label}
-                  </span>
-                </div>
-                <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
-              </Link>
-            ))}
-            {documents.length === 0 && (
-              <p
-                role="status"
-                className="py-8 text-center text-sm text-slate-500"
-              >
-                ไม่พบเอกสาร ลองค้นด้วยคำอื่น หรือเปิดศูนย์เอกสาร
-              </p>
+              );
+            })}
+
+            {filteredTasks.length === 0 && (
+              <div className="py-8 text-center text-sm text-slate-400">
+                ไม่มีรายการงานในหมวดหมู่นี้
+              </div>
             )}
           </div>
-        </section>
+
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span className="text-slate-500">
+              แสดง {filteredTasks.length} จากทั้งหมด {totalTasks} งาน
+            </span>
+            <Link
+              to="/tasks"
+              className="font-bold text-[#1356A3] hover:underline flex items-center gap-1"
+            >
+              ดูตารางงานทั้งหมด <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* 6. Recent Documents Section */}
+        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.04)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-900">
+                เอกสารและผลงานวิจัยล่าสุด (Recent Documents)
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                ทะเบียนเอกสารหลักฐานที่ผ่านการตรวจทานและรับรอง
+              </p>
+            </div>
+
+            {/* Pill Search Input */}
+            <div className="relative max-w-xs w-full">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={docSearchQuery}
+                onChange={(e) => setDocSearchQuery(e.target.value)}
+                placeholder="ค้นหาชื่อหรือรหัสเอกสาร..."
+                className="w-full pl-9 pr-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1356A3]/30"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mt-4">
+            {filteredDocuments.slice(0, 4).map((doc) => {
+              const statusBadge = DOCUMENT_STATUS_BADGES[doc.status];
+              return (
+                <Link
+                  key={doc.id}
+                  to={`/documents?id=${encodeURIComponent(doc.id)}`}
+                  className="p-4 rounded-2xl border border-slate-100 hover:border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition flex items-start gap-3.5 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1356A3] flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-mono font-bold text-slate-400 truncate">
+                        {doc.document_code}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusBadge.class}`}
+                      >
+                        {statusBadge.label}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 mt-1 truncate group-hover:text-[#1356A3] transition-colors">
+                      {doc.title}
+                    </h3>
+                    <div className="text-xs text-slate-500 mt-1">
+                      ฉบับ {doc.latest_version_number} · อัปเดตล่าสุด
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between text-xs">
+            <span className="text-slate-500">
+              ทะเบียนเอกสารทั้งหมด {data.recentDocuments.length} รายการ
+            </span>
+            <Link
+              to="/documents"
+              className="font-bold text-[#1356A3] hover:underline flex items-center gap-1"
+            >
+              เปิดศูนย์เอกสารทั้งหมด <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

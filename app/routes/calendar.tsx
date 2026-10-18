@@ -161,16 +161,16 @@ export default function CalendarRoute() {
   return (
     <AppLayout>
       <div className="themed-page p-4 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
-        
+
         {/* Header */}
         <PageHero title="ปฏิทินโครงการ" description="ดูวันนัดหมาย กำหนดส่ง และเหตุการณ์สำคัญ เพื่อวางแผนดำเนินงานร่วมกัน" references={<div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md">
-                MODULE 7: PROJECT CALENDAR & CADENCE
-              </span>
-              <span className="text-xs font-semibold text-slate-500">
-                ปฏิทินนัดหมายและไทม์ไลน์โครงการ
-              </span>
-            </div>}><div className="flex items-center gap-2">
+          <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md">
+            MODULE 7: PROJECT CALENDAR & CADENCE
+          </span>
+          <span className="text-xs font-semibold text-slate-500">
+            ปฏิทินนัดหมายและไทม์ไลน์โครงการ
+          </span>
+        </div>}><div className="flex items-center gap-2">
             <Link
               to="/meetings"
               className="flex items-center gap-2 px-4 py-2.5 bg-[#062B63] hover:bg-[#1356A3] text-white text-xs font-bold rounded-xl shadow-sm transition"
@@ -353,23 +353,21 @@ export default function CalendarRoute() {
             {timelineEvents.map((evt, idx) => (
               <div key={idx} className="relative flex items-start gap-4 pl-10">
                 <div
-                  className={`absolute left-2.5 top-1.5 -translate-x-1/2 w-4 h-4 rounded-full border-2 ${
-                    evt.status === 'COMPLETED'
+                  className={`absolute left-2.5 top-1.5 -translate-x-1/2 w-4 h-4 rounded-full border-2 ${evt.status === 'COMPLETED'
                       ? 'bg-emerald-500 border-white ring-2 ring-emerald-200'
                       : evt.status === 'IN_PROGRESS'
-                      ? 'bg-[#F36C21] border-white ring-4 ring-orange-100 animate-pulse'
-                      : 'bg-slate-300 border-white'
-                  }`}
+                        ? 'bg-[#F36C21] border-white ring-4 ring-orange-100 animate-pulse'
+                        : 'bg-slate-300 border-white'
+                    }`}
                 />
 
                 <div
-                  className={`flex-1 p-5 rounded-2xl border transition ${
-                    evt.status === 'IN_PROGRESS'
+                  className={`flex-1 p-5 rounded-2xl border transition ${evt.status === 'IN_PROGRESS'
                       ? 'bg-orange-50/40 border-orange-200 shadow-sm'
                       : evt.status === 'COMPLETED'
-                      ? 'bg-slate-50/80 border-slate-200'
-                      : 'bg-white border-slate-200'
-                  }`}
+                        ? 'bg-slate-50/80 border-slate-200'
+                        : 'bg-white border-slate-200'
+                    }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2">
@@ -386,19 +384,18 @@ export default function CalendarRoute() {
                         Gate {evt.gate}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                          evt.status === 'COMPLETED'
+                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${evt.status === 'COMPLETED'
                             ? 'bg-emerald-100 text-emerald-800'
                             : evt.status === 'IN_PROGRESS'
-                            ? 'bg-amber-100 text-amber-800 font-extrabold'
-                            : 'bg-slate-100 text-slate-700'
-                        }`}
+                              ? 'bg-amber-100 text-amber-800 font-extrabold'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}
                       >
                         {evt.status === 'COMPLETED'
                           ? 'เสร็จสิ้น'
                           : evt.status === 'IN_PROGRESS'
-                          ? 'กำลังดำเนินการ (Active)'
-                          : 'ตามแผน'}
+                            ? 'กำลังดำเนินการ (Active)'
+                            : 'ตามแผน'}
                       </span>
                     </div>
                   </div>

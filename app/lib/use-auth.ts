@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from '@remix-run/react';
 import { supabase } from '~/lib/supabase.client';
 import type { Session, User } from '@supabase/supabase-js';
+import { TEAM_AVATAR_MAP } from '~/lib/avatar-helper';
 
 export type UserRole =
   | 'project_admin'
@@ -45,7 +46,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'project_admin',
     roleTitle: 'Super Admin / ผู้จัดการโครงการ (PM & Learning Architect Lead)',
     organization: 'สำนักงานคณะกรรมการส่งเสริมวิทยาศาสตร์ วิจัยและนวัตกรรม (สกสว.)',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['pm-01'].avatarUrl,
     groupName: '1. ฝ่ายบริหารโครงการ',
   },
   {
@@ -56,7 +57,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'pm',
     roleTitle: 'ผู้ช่วยผู้จัดการโครงการ (Co-Project Manager & Coordination Lead)',
     organization: 'ทีมบริหารโครงการ สกสว.',
-    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['pm-02'].avatarUrl,
     groupName: '1. ฝ่ายบริหารโครงการ',
   },
   {
@@ -67,7 +68,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'pm',
     roleTitle: 'ผู้อำนวยการโครงการอาวุโส (Senior Project Director)',
     organization: 'ทีมบริหารโครงการ สกสว.',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['pm-03'].avatarUrl,
     groupName: '1. ฝ่ายบริหารโครงการ',
   },
   {
@@ -78,7 +79,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'researcher',
     roleTitle: 'ผู้ประสานงานโครงการและการสื่อสารองค์กร (Project Coordinator)',
     organization: 'ทีมบริหารโครงการ สกสว.',
-    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['pm-04'].avatarUrl,
     groupName: '1. ฝ่ายบริหารโครงการ',
   },
 
@@ -91,7 +92,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'legal_advisor',
     roleTitle: 'หัวหน้าทีมวิชาการและผู้เชี่ยวชาญด้านกฎหมายมหาชนและการบริหาร ววน.',
     organization: 'มหาวิทยาลัยแม่ฟ้าหลวง',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-01'].avatarUrl,
     groupName: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย',
   },
   {
@@ -102,7 +103,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'legal_advisor',
     roleTitle: 'ผู้เชี่ยวชาญด้านการออกแบบหลักสูตร การวัดประเมินผล และการเรียนรู้ตลอดชีวิต',
     organization: 'ผู้เชี่ยวชาญอิสระ / มหาวิทยาลัยศรีนครินทรวิโรฒ',
-    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-02'].avatarUrl,
     groupName: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย',
   },
   {
@@ -113,7 +114,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'legal_advisor',
     roleTitle: 'ผู้เชี่ยวชาญด้านกฎหมายปกครองและการจัดทำระเบียบภาครัฐ',
     organization: 'มหาวิทยาลัยแม่ฟ้าหลวง',
-    avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-03'].avatarUrl,
     groupName: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย',
   },
   {
@@ -124,7 +125,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'legal_advisor',
     roleTitle: 'ผู้เชี่ยวชาญด้านการบริหารจัดการนวัตกรรมและทรัพย์สินทางปัญญา',
     organization: 'มหาวิทยาลัยบูรพา',
-    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-04'].avatarUrl,
     groupName: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย',
   },
 
@@ -137,7 +138,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'hrd',
     roleTitle: 'ที่ปรึกษาอาวุโสด้านการออกแบบสถาปัตยกรรมการเรียนรู้และระบบ HRD',
     organization: 'ที่ปรึกษาองค์กรอิสระ',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-05'].avatarUrl,
     groupName: '3. ฝ่ายที่ปรึกษา HR & Learning',
   },
   {
@@ -148,7 +149,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'hrd',
     roleTitle: 'ที่ปรึกษาด้านการออกแบบโมดูลพัฒนาผู้บริหารทุกระดับ (Executive Development Advisor)',
     organization: 'ที่ปรึกษาพัฒนาภาวะผู้นำอิสระ',
-    avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-06'].avatarUrl,
     groupName: '3. ฝ่ายที่ปรึกษา HR & Learning',
   },
   {
@@ -159,7 +160,7 @@ export const AUTHORIZED_TEAM_MEMBERS: AuthorizedMemberInfo[] = [
     role: 'hrd',
     roleTitle: 'ที่ปรึกษาด้านการออกแบบสื่อการเรียนรู้และ Infographic (Learning Media Specialist)',
     organization: 'ทีมออกแบบสื่อการเรียนรู้ ววน.',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-07'].avatarUrl,
     groupName: '3. ฝ่ายที่ปรึกษา HR & Learning',
   },
 ];

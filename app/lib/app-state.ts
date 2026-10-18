@@ -41,127 +41,8 @@ export const initialLiveFocus: LiveProjectFocus = {
   updated_at: '2026-10-08T09:30:00.000Z',
 };
 
-// Initial Seed Daily Updates
-export const initialDailyUpdates: DailyUpdateItem[] = [
-  {
-    id: 'daily-001',
-    date: '2026-10-08',
-    team_category: 'CORE_PM',
-    team_name: 'ฝ่ายบริหารโครงการ (Project Management Core Team)',
-    author_id: 'pm-01',
-    author_name: 'นายอนุสรณ์ หนองนา (เด่น)',
-    author_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-    author_role: 'Super Admin / ผู้จัดการโครงการ (PM & Learning Architect Lead)',
-    workstream_code: 'WS01',
-    gate_milestone: 'G2',
-    completed_today: [
-      'จัดทำโครงสร้างระบบ Admin Backoffice & Daily Activity Tracker บน TSRI ONE LINK',
-      'ประสานงานนัดหมายสัมภาษณ์ผู้บริหาร สกสว. และผู้แทน PMU ประจำสัปดาห์หน้า',
-      'สรุปบันทึกการประชุมเตรียมความพร้อมเก็บข้อมูลภาคสนามร่วมกับ ดร.หนึ่งนิดา',
-    ],
-    in_progress_today: [
-      'ตรวจทานแบบสัมภาษณ์ 10 ประเด็น (FORM-INT-001) ฉบับปรับปรุง',
-      'ปรับปรุงผังความเชื่อมโยง Traceability Matrix กับขอบเขตงาน TOR',
-    ],
-    planned_tomorrow: [
-      'ประชุมประสานงานกับทีมกฎหมายภาครัฐ (อ.กฤษฎา) เรื่องขอบเขตมาตรา 41 พ.ร.บ. สภานโยบายฯ',
-      'เปิดทดสอบระบบบันทึกงานรายวันแก่คณะทำงานทั้ง 4 ฝ่าย',
-    ],
-    blockers: [],
-    attachments: [
-      {
-        title: 'Google Drive ประเด็นสัมภาษณ์ 10 ข้อ',
-        url: 'https://drive.google.com/drive/folders/1Y4uCfXDbjjm3fe63wmDSi29neiYbOwaF?usp=drive_link',
-        type: 'GDRIVE',
-      },
-    ],
-    mood: 'EXCELLENT',
-    progress_percentage: 45,
-    created_at: '2026-10-08T17:30:00.000Z',
-  },
-  {
-    id: 'daily-002',
-    date: '2026-10-08',
-    team_category: 'ADVISORY_LEGAL',
-    team_name: 'คณะที่ปรึกษาด้านกฎหมายและระเบียบภาครัฐ (Public Legal Advisory Team)',
-    author_id: 'leg-01',
-    author_name: 'นายกฤษฎา แก้วสองสี',
-    author_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    author_role: 'ผู้เชี่ยวชาญด้านกฎหมายมหาชนและการคลังภาครัฐ',
-    workstream_code: 'WS02',
-    gate_milestone: 'G2',
-    completed_today: [
-      'ตรวจทานตารางวิเคราะห์ความเกี่ยวพันของ พ.ร.บ. ส่งเสริม ววน. กับระเบียบ กสว. ว่าด้วยการจัดสรรเงินกองทุน',
-      'บันทึกข้อสังเกตเรื่องการเบิกจ่ายงบประมาณ Multi-year Block Grant เทียบกับ พ.ร.บ. วินัยการเงินการคลัง ม.20',
-    ],
-    in_progress_today: [
-      'จัดทำร่างคำอธิบายกฎหมาย 20 ฉบับ สำหรับประกอบคู่มือ SOP ภารกิจที่ 2',
-    ],
-    planned_tomorrow: [
-      'ร่วมทบทวนประเด็นทางกฎหมายสำหรับการสัมภาษณ์ผู้อำนวยการกลุ่มกฎหมาย สกสว.',
-    ],
-    blockers: ['รอเอกสารระเบียบ กสว. ฉบับแก้ไขเพิ่มเติมปี 2567 เพิ่มเติม 1 ฉบับ'],
-    attachments: [
-      {
-        title: 'DOC-LEGAL-MAPPING-001 (Google Drive)',
-        url: 'https://drive.google.com/drive/folders/1hfMPYkzRQlfuFq9ARDwS0_kFfMNk76Cq?usp=drive_link',
-        type: 'GDRIVE',
-      },
-    ],
-    mood: 'GOOD',
-    progress_percentage: 40,
-    created_at: '2026-10-08T16:45:00.000Z',
-  },
-  {
-    id: 'daily-003',
-    date: '2026-10-08',
-    team_category: 'ADVISORY_PRIVATE',
-    team_name: 'คณะที่ปรึกษาด้านกฎหมายเอกชน นวัตกรรม และ IP (Private & Innovation Legal Team)',
-    author_id: 'pvt-01',
-    author_name: 'ดร.อัครวิทย์ กาญจนโอภาษ',
-    author_avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-    author_role: 'ผู้เชี่ยวชาญด้านการบริหารจัดการนวัตกรรมและทรัพย์สินทางปัญญา (TRIUP Act)',
-    workstream_code: 'WS03',
-    gate_milestone: 'G2',
-    completed_today: [
-      'วิเคราะห์แนวทางการบังคับใช้ พ.ร.บ. ส่งเสริมการใช้ประโยชน์ผลงานวิจัยฯ (TRIUP Act) เทียบกับภารกิจ สกสว.',
-      'รวบรวม Best Practice การจัดสรรผลประโยชน์ในทรัพย์สินทางปัญญาจากกองทุนวิจัยต่างประเทศ',
-    ],
-    planned_tomorrow: [
-      'ร่างแนวคำถาม Focus Group สำหรับกลุ่ม PMU ด้านนวัตกรรม (NIA, บพข.)',
-    ],
-    blockers: [],
-    attachments: [],
-    mood: 'GOOD',
-    progress_percentage: 35,
-    created_at: '2026-10-08T15:20:00.000Z',
-  },
-  {
-    id: 'daily-004',
-    date: '2026-10-08',
-    team_category: 'ADVISORY_HRD',
-    team_name: 'คณะที่ปรึกษาด้านการพัฒนาองค์กรและทรัพยากรบุคคล (Organization & HRD Advisory Team)',
-    author_id: 'hrd-01',
-    author_name: 'รศ.ดร.รัชนีพร สุนทรส',
-    author_avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
-    author_role: 'ผู้เชี่ยวชาญด้านการพัฒนาบุคลากรและการออกแบบหลักสูตรฝึกอบรม',
-    workstream_code: 'WS04',
-    gate_milestone: 'G2',
-    completed_today: [
-      'ออกแบบกรอบสมรรถนะทางกฎหมาย (Legal Competency Matrix) 4 ระดับ สำหรับเจ้าหน้าที่ สกสว.',
-      'จัดเตรียมโครงสร้างหลักสูตร E-learning และ Microlearning 5 โมดูล',
-    ],
-    planned_tomorrow: [
-      'ประชุมประสานงานกับทีม PM เพื่อนำผล Gap Analysis ไปผูกกับ Learning Needs',
-    ],
-    blockers: [],
-    attachments: [],
-    mood: 'EXCELLENT',
-    progress_percentage: 30,
-    created_at: '2026-10-08T14:10:00.000Z',
-  },
-];
-
+// Initial Seed Daily Updates (Clean / No Mock Data)
+export const initialDailyUpdates: DailyUpdateItem[] = [];
 // Storage Keys
 const STORAGE_KEYS = {
   LIVE_FOCUS: 'tsri_live_project_focus',
@@ -210,23 +91,33 @@ export function saveStoredLiveFocus(focus: LiveProjectFocus): void {
 // -----------------------------------------------------------------------------
 
 export function getStoredDailyUpdates(): DailyUpdateItem[] {
-  if (typeof window === 'undefined') return initialDailyUpdates;
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.DAILY_UPDATES);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEYS.DAILY_UPDATES, JSON.stringify(initialDailyUpdates));
-      return initialDailyUpdates;
+      return [];
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : initialDailyUpdates;
+    if (Array.isArray(parsed)) {
+      // Purge any mock seed items (e.g. daily-001, daily-002, daily-003, daily-004)
+      const cleaned = parsed.filter(
+        (item: DailyUpdateItem) =>
+          item && typeof item.id === 'string' && !item.id.startsWith('daily-00')
+      );
+      if (cleaned.length !== parsed.length) {
+        localStorage.setItem(STORAGE_KEYS.DAILY_UPDATES, JSON.stringify(cleaned));
+      }
+      return cleaned;
+    }
+    return [];
   } catch (e) {
     console.error('Failed to parse daily updates from storage', e);
-    return initialDailyUpdates;
+    return [];
   }
 }
 
 export function saveStoredDailyUpdate(update: DailyUpdateItem): DailyUpdateItem[] {
-  if (typeof window === 'undefined') return initialDailyUpdates;
+  if (typeof window === 'undefined') return [];
   try {
     const current = getStoredDailyUpdates();
     const index = current.findIndex((item) => item.id === update.id);
@@ -247,7 +138,7 @@ export function saveStoredDailyUpdate(update: DailyUpdateItem): DailyUpdateItem[
 }
 
 export function deleteStoredDailyUpdate(id: string): DailyUpdateItem[] {
-  if (typeof window === 'undefined') return initialDailyUpdates;
+  if (typeof window === 'undefined') return [];
   try {
     const current = getStoredDailyUpdates();
     const next = current.filter((item) => item.id !== id);
@@ -257,6 +148,18 @@ export function deleteStoredDailyUpdate(id: string): DailyUpdateItem[] {
   } catch (e) {
     console.error('Failed to delete daily update', e);
     return getStoredDailyUpdates();
+  }
+}
+
+export function clearStoredDailyUpdates(): DailyUpdateItem[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    localStorage.setItem(STORAGE_KEYS.DAILY_UPDATES, JSON.stringify([]));
+    notifyStateChange(STORAGE_KEYS.DAILY_UPDATES);
+    return [];
+  } catch (e) {
+    console.error('Failed to clear daily updates', e);
+    return [];
   }
 }
 

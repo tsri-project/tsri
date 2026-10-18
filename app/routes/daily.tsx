@@ -28,10 +28,12 @@ import {
   getStoredDailyUpdates,
   saveStoredDailyUpdate,
   deleteStoredDailyUpdate,
+  clearStoredDailyUpdates,
   getStoredLiveFocus,
 } from '~/lib/app-state';
 import { DailyUpdateItem, TeamCategory } from '~/types';
 import { mockCurrentUser, mockTeamMembers } from '~/lib/mock-data';
+import { TEAM_AVATAR_MAP } from '~/lib/avatar-helper';
 
 const TEAM_CATEGORY_TABS: { id: TeamCategory | 'ALL'; name: string; color: string }[] = [
   { id: 'ALL', name: 'ทุกคณะทำงาน (All Teams)', color: 'bg-slate-800 text-white' },
@@ -327,6 +329,28 @@ export default function DailyRoute() {
                 <span>{copiedDigest ? 'คัดลอกแล้ว!' : 'คัดลอกสรุปประจำวัน (LINE)'}</span>
               </button>
 
+              {updates.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        'คุณต้องการลบข้อมูลบันทึกรายวันทั้งหมดออกจากระบบใช่หรือไม่?'
+                      )
+                    ) {
+                      clearStoredDailyUpdates();
+                      setUpdates([]);
+                      setToastMessage('ลบข้อมูลจำลองและบันทึกทั้งหมดเรียบร้อยแล้ว');
+                      setTimeout(() => setToastMessage(null), 3000);
+                    }
+                  }}
+                  className="px-3.5 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 hover:text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 border border-rose-500/30 shadow-xs cursor-pointer"
+                  title="ล้างข้อมูลบันทึกทั้งหมด"
+                >
+                  <Trash2 className="w-4 h-4 text-rose-300" />
+                  <span>ล้างข้อมูล</span>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   setEditingItem(null);
@@ -371,7 +395,7 @@ export default function DailyRoute() {
               คณะทำงานที่อัพเดท
             </div>
             <div className="text-xl md:text-2xl font-mono font-extrabold text-emerald-600 mt-1">
-              4 / 4 ทีม
+              {new Set(updates.map((u) => u.team_category)).size} / 4 ทีม
             </div>
           </div>
 
@@ -452,7 +476,7 @@ export default function DailyRoute() {
                     <img
                       src={
                         item.author_avatar ||
-                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
+                        TEAM_AVATAR_MAP['pm-01'].avatarUrl
                       }
                       alt={item.author_name}
                       className="w-10 h-10 rounded-full object-cover border-2 border-orange-400 shrink-0"

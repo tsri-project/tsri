@@ -16,6 +16,7 @@ import {
   WorkstreamItem,
   ProjectTaskItem,
 } from '~/types';
+import { TEAM_AVATAR_MAP } from '~/lib/avatar-helper';
 
 
 export const mockCurrentUser: Profile = {
@@ -25,7 +26,7 @@ export const mockCurrentUser: Profile = {
   nickname: 'เด่น',
   role_title: 'Super Admin / ผู้จัดการโครงการ (PM & Learning Architect Lead)',
   organization: 'สำนักงานคณะกรรมการส่งเสริมวิทยาศาสตร์ วิจัยและนวัตกรรม (สกสว.)',
-  avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+  avatar_url: TEAM_AVATAR_MAP['pm-01'].avatarUrl,
 };
 
 export const mockTeamMembers: TeamMemberDetails[] = [
@@ -39,7 +40,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '1. ฝ่ายบริหารโครงการ (Project Management Core Team)',
     organization: 'ทีมบริหารโครงการ สกสว.',
     email: 'dencapvision@gmail.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['pm-01'].avatarUrl,
     expertise: 'Super Admin, Project Cadence, Knowledge Translation, Learning Architecture, Master Facilitation',
     strategicFit: 'Super Admin และผู้นำการขับเคลื่อนกระบวนการทำงาน การแปลงองค์ความรู้กฎหมายสู่สื่อการเรียนรู้ และกระบวนการประชุมแบบมีส่วนร่วม',
     mainResponsibilities: [
@@ -64,7 +65,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '1. ฝ่ายบริหารโครงการ (Project Management Core Team)',
     organization: 'ทีมบริหารโครงการ สกสว.',
     email: 'taleiw1717@gmail.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['pm-02'].avatarUrl,
     expertise: 'ระเบียบวิธีวิจัยเชิงคุณภาพ, In-depth Interview, Focus Group, การวิเคราะห์ข้อมูลเชิงประจักษ์',
     strategicFit: 'ผู้เชี่ยวชาญกระบวนการวิจัยเชิงคุณภาพ ควบคุมมาตรฐานทางวิชาการและเครื่องมือเก็บข้อมูลภาคสนาม',
     mainResponsibilities: [
@@ -88,7 +89,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '1. ฝ่ายบริหารโครงการ (Project Management Core Team)',
     organization: 'ทีมบริหารโครงการ สกสว.',
     email: 'kraiput.in@gmail.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['pm-03'].avatarUrl,
     expertise: 'ยุทธศาสตร์โครงการ, การบริหารความเสี่ยงเชิงกลยุทธ์, การบริหารสัญญางานวิจัย',
     strategicFit: 'ผู้นำเชิงยุทธศาสตร์ กำกับภาพรวมโครงการและประสานนโยบายระดับสูงกับ สกสว.',
     mainResponsibilities: [
@@ -111,7 +112,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '1. ฝ่ายบริหารโครงการ (Project Management Core Team)',
     organization: 'ทีมบริหารโครงการ สกสว.',
     email: 'pimpasphitcha@gmail.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['pm-04'].avatarUrl,
     expertise: 'การประสานงานโครงการ, Deliverables Tracking, งานธุรการและการนัดหมาย',
     strategicFit: 'ศูนย์กลางการติดต่อสื่อสารและการประสานงานระหว่างคณะที่ปรึกษากับ สกสว.',
     mainResponsibilities: [
@@ -137,7 +138,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย ด้านกฎหมาย ระเบียบกองทุน ววน. และการกำกับดูแลภาครัฐ',
     organization: 'มหาวิทยาลัยแม่ฟ้าหลวง',
     email: 'napawat.sue@mfu.ac.th',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-01'].avatarUrl,
     expertise: 'กฎหมายกองทุนการวิจัยฯ, กฎหมายหลักประกันทางธุรกิจ, นิติศาสตร์มหาชน',
     strategicFit: 'นักวิชาการนิติศาสตร์ผู้เชี่ยวชาญโครงสร้าง พ.ร.บ. ววน. และกฎหมายลำดับรอง',
     mainResponsibilities: [
@@ -161,7 +162,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย ด้านกฎหมาย ระเบียบกองทุน ววน. และการกำกับดูแลภาครัฐ',
     organization: 'มหาวิทยาลัยบูรพา',
     email: 'tp.marut@gmail.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-02'].avatarUrl,
     expertise: 'ระเบียบ ข้อกำหนด กองทุนการวิจัย และการบริหารองค์กร / การเรียนรู้ตลอดชีวิต',
     strategicFit: 'ผู้นำระดับสูงในสถาบันอุดมศึกษา เข้าใจทั้งมิติการบริหารองค์กรภาครัฐ นโยบาย ววน. และมุมมองของบอร์ด/ผู้บริหารระดับสูง',
     mainResponsibilities: [
@@ -188,7 +189,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย ด้านกฎหมาย ระเบียบกองทุน ววน. และการกำกับดูแลภาครัฐ',
     organization: 'มหาวิทยาลัยแม่ฟ้าหลวง',
     email: 'karnkul.bum@mfu.ac.th',
-    avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-03'].avatarUrl,
     expertise: 'ระเบียบกองทุนวิจัยฯ การดำเนินงานร่วมกับ สกสว. ทรัพย์สินทางปัญญาและนวัตกรรม',
     strategicFit: 'ผู้ปฏิบัติงานจริงในด่านหน้า เข้าใจกระบวนงานขอรับจัดสรรงบประมาณ FF/SF สัญญา การเบิกจ่าย และการนำผลงานวิจัยไปใช้ประโยชน์',
     mainResponsibilities: [
@@ -212,7 +213,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '2. ฝ่ายที่ปรึกษาวิชาการ/กฎหมาย ด้านกฎหมาย ระเบียบกองทุน ววน. และการกำกับดูแลภาครัฐ',
     organization: 'มหาวิทยาลัยบูรพา',
     email: 'kanokporns@go.buu.ac.th',
-    avatarUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-04'].avatarUrl,
     expertise: 'การบริหารทรัพยากร การเงิน และการพัฒนาบุคลากร (Financial, Resource & Workforce Management)',
     strategicFit: 'ผู้บริหารระดับคณะที่มีความเชี่ยวชาญการบริหารงบประมาณ การเงินพัสดุ และการจัดการกำลังคน',
     mainResponsibilities: [
@@ -236,7 +237,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '3. ฝ่ายที่ปรึกษา HR ด้านการออกแบบระบบการเรียนรู้และการพัฒนาบุคลากร',
     organization: 'KBTG (Kasikorn Business-Technology Group)',
     email: 'b.phalapong@gmail.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-05'].avatarUrl,
     expertise: 'Learning Architecture, HRD, Competency Matrix, Corporate Academy Design',
     strategicFit: 'ผู้นำด้านการสร้างระบบพัฒนาบุคลากรในองค์กรเทคโนโลยีชั้นนำระดับประเทศ',
     mainResponsibilities: [
@@ -260,7 +261,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '3. ฝ่ายที่ปรึกษา HR ด้านการออกแบบระบบการเรียนรู้และการพัฒนาบุคลากร',
     organization: 'ที่ปรึกษาพัฒนาภาวะผู้นำอิสระ',
     email: 'atichart.sri@gmail.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-06'].avatarUrl,
     expertise: 'Executive Development, Leadership Learning Modules, Scenario-based Learning',
     strategicFit: 'ผู้เชี่ยวชาญด้านการพัฒนาผู้บริหารระดับสูง กลาง และต้น',
     mainResponsibilities: [
@@ -282,7 +283,7 @@ export const mockTeamMembers: TeamMemberDetails[] = [
     teamCategoryName: '3. ฝ่ายที่ปรึกษา HR ด้านการออกแบบระบบการเรียนรู้และการพัฒนาบุคลากร',
     organization: 'ทีมออกแบบสื่อการเรียนรู้ ววน.',
     email: 'c.benrabbit@gmail.com',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    avatarUrl: TEAM_AVATAR_MAP['adv-07'].avatarUrl,
     expertise: 'Infographic Design, Visual Communication, Learning Media Production',
     strategicFit: 'ผู้เชี่ยวชาญการแปลงเนื้อหากฎหมายและระเบียบที่ซับซ้อนให้เป็น Infographic เข้าใจง่ายและสวยงาม',
     mainResponsibilities: [
@@ -616,6 +617,49 @@ export const mockDocuments: DocumentItem[] = [
   },
 
   // 02.03 ประกาศ กสว. (ตัวอย่างชุดประกาศสำคัญ)
+  {
+    id: 'doc-ann-014',
+    project_id: mockProject.id,
+    prefix_code: 'ANN',
+    document_code: 'ANN-PMH-014-2569',
+    title: 'ประกาศ กสว. เรื่อง หลักเกณฑ์การจัดทำคำของบประมาณและการจัดสรรงบประมาณด้านการวิจัยและนวัตกรรมของหน่วยงานในระบบวิจัยและนวัตกรรม (ฉบับที่ 3) พ.ศ. 2569',
+    category: '02_กฎหมายลำดับรอง / 02.03_ประกาศ-กสว',
+    issuing_body: 'คณะกรรมการส่งเสริมวิทยาศาสตร์ วิจัยและนวัตกรรม (กสว.)',
+    effective_date: '2026-08-19',
+    status: 'VALIDATED',
+    latest_version_number: '1.0',
+    tags: [
+      'ประกาศ กสว.',
+      'ฉบับที่ 3',
+      '2569',
+      'คำของบประมาณ',
+      'จัดสรรงบประมาณ',
+      'SF',
+      'FF',
+      'PMU',
+      'OKRs',
+    ],
+    is_confidential: false,
+    created_at: '2026-08-19T09:00:00Z',
+    updated_at: '2026-08-19T09:00:00Z',
+    versions: [
+      {
+        id: 'ver-ann-014-1',
+        document_id: 'doc-ann-014',
+        project_id: mockProject.id,
+        version_number: '1.0',
+        file_name: 'ANN-PMH-014-2569_ประกาศ-กสว-หลักเกณฑ์คำของบประมาณ-ฉบับที่-3-พศ-2569.pdf',
+        file_size_bytes: 485120,
+        file_mime_type: 'application/pdf',
+        storage_r2_key: '02_กฎหมายลำดับรอง/02.03_ประกาศ-กสว/ANN-PMH-014-2569_ประกาศ-กสว-หลักเกณฑ์คำของบประมาณ-ฉบับที่-3-พศ-2569.pdf',
+        storage_url: '/documents/02_กฎหมายลำดับรอง/02.03_ประกาศ-กสว/ANN-PMH-014-2569_ประกาศ-กสว-หลักเกณฑ์คำของบประมาณ-ฉบับที่-3-พศ-2569.md',
+        change_summary: 'ฉบับที่ 3 พ.ศ. 2569 ปรับปรุงนิยาม PMU, เกณฑ์งบประมาณ SF/FF, ตัวชี้วัด OKRs, งบเสริมสร้างธรรมาภิบาล (ไม่เกิน 5% ไม่เกิน 5 ล้านบาท), อัตราค่าตอบแทนวิทยากร (1,200 บ./ชม.), OT, ค่าใช้จ่ายเดินทาง และเกณฑ์การโอน/ปรับงบประมาณ',
+        status: 'VALIDATED',
+        validated_at: '2026-08-19T10:00:00Z',
+        created_at: '2026-08-19T09:00:00Z',
+      },
+    ],
+  },
   {
     id: 'doc-ann-002',
     project_id: mockProject.id,

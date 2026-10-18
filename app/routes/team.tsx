@@ -27,8 +27,48 @@ import {
   Loader2,
   ShieldAlert,
   Crown,
+  Scale,
 } from 'lucide-react';
 import { cn } from '~/lib/utils';
+import { getMemberAvatar } from '~/lib/avatar-helper';
+import type { TeamMemberDetails } from '~/types';
+
+function TeamMemberAvatar({ member }: { member: TeamMemberDetails }) {
+  const meta = getMemberAvatar(member.id);
+
+  return (
+    <div className="relative shrink-0 w-12 h-12 rounded-2xl p-0.5 shadow-sm group-hover:scale-105 transition-transform duration-200">
+      <div
+        className="w-full h-full rounded-[14px] flex items-center justify-center text-white font-bold text-base shadow-inner relative overflow-hidden select-none"
+        style={{
+          background: `linear-gradient(135deg, ${meta.bgStart} 0%, ${meta.bgEnd} 100%)`,
+        }}
+      >
+        <div className="absolute inset-0 bg-white/10 opacity-40 rounded-[14px]" />
+        <span className="relative z-10 tracking-wide font-sans">{meta.initials}</span>
+      </div>
+
+      <div
+        className={cn(
+          'absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[10px] shadow-sm',
+          meta.badgeBg,
+          'text-white'
+        )}
+        title={member.roleTitle}
+      >
+        {meta.badgeIcon === 'crown' && <Crown className="w-2.5 h-2.5 text-white" />}
+        {meta.badgeIcon === 'sparkles' && <Sparkles className="w-2.5 h-2.5 text-white" />}
+        {meta.badgeIcon === 'target' && <Target className="w-2.5 h-2.5 text-white" />}
+        {meta.badgeIcon === 'check' && <CheckCircle2 className="w-2.5 h-2.5 text-white" />}
+        {meta.badgeIcon === 'scale' && <Scale className="w-2.5 h-2.5 text-white" />}
+        {meta.badgeIcon === 'award' && <Award className="w-2.5 h-2.5 text-white" />}
+        {meta.badgeIcon === 'layers' && <Layers className="w-2.5 h-2.5 text-white" />}
+        {meta.badgeIcon === 'building' && <Building className="w-2.5 h-2.5 text-white" />}
+        {meta.badgeIcon === 'users' && <Users2 className="w-2.5 h-2.5 text-white" />}
+      </div>
+    </div>
+  );
+}
 
 interface AccessRequest {
   id: string;
@@ -587,11 +627,7 @@ export default function TeamRoute() {
               >
                 <div>
                   <div className="flex items-start gap-3 mb-4">
-                    <img
-                      src={member.avatarUrl}
-                      alt={member.name}
-                      className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0"
-                    />
+                    <TeamMemberAvatar member={member} />
                     <div>
                       <h3 className="text-base font-bold text-slate-900 leading-snug">
                         {member.name}{' '}
