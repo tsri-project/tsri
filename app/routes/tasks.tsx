@@ -3,7 +3,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { useLoaderData, Link, useSearchParams } from '@remix-run/react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { mockProjectTasks, mockWorkstreams } from '~/lib/mock-data';
-import { getStoredTasks } from '~/lib/app-state';
 import { ProjectTaskItem, ProjectGate, GATE_DETAILS } from '~/types';
 import {
   ListTodo,
@@ -19,8 +18,11 @@ import {
   TrendingUp,
   Search,
   Edit3,
+  Check,
 } from 'lucide-react';
 import { formatThaiDate } from '~/lib/utils';
+import { getStoredTasks, toggleStoredTaskStatus } from '~/lib/app-state';
+import { useAuth } from '~/lib/use-auth';
 
 export const clientLoader = async () => {
   return { tasks: mockProjectTasks };
@@ -28,11 +30,31 @@ export const clientLoader = async () => {
 
 export default function TasksRoute() {
   const { tasks: initialTasks } = useLoaderData<{ tasks: ProjectTaskItem[] }>();
+  const { isAdminOrPm } = useAuth();
   const [tasks, setTasks] = useState<ProjectTaskItem[]>(initialTasks);
   const [selectedWorkstream, setSelectedWorkstream] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
+
+  const handleToggleTask = (taskId: string) => {
+    if (!isAdminOrPm) {
+      setToastMessage('เฉพาะ Admin หรือ PM เท่านั้นที่มีสิทธิ์อัปเดตสถานะงาน');
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
+    const { tasks: updatedTasks, updatedTask } = toggleStoredTaskStatus(taskId);
+    setTasks(updatedTasks);
+    if (updatedTask) {
+      setToastMessage(
+        updatedTask.status === 'DONE'
+          ? `✅ ปรับงาน [${updatedTask.code}] เป็น เสร็จสมบูรณ์ แล้ว`
+          : `🔄 ปรับงาน [${updatedTask.code}] เป็น กำลังดำเนินการ แล้ว`
+      );
+      setTimeout(() => setToastMessage(null), 3000);
+    }
+  };
   useEffect(() => {
     const workstream = searchParams.get('workstream');
     setSelectedWorkstream(mockWorkstreams.some(ws => ws.code === workstream) ? workstream! : 'ALL');
@@ -203,9 +225,29 @@ export default function TasksRoute() {
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5">
-                    <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63] text-white rounded">
-                      {task.code}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleTask(task.id)}
+                        title={
+                          isAdminOrPm
+                            ? task.status === 'DONE'
+                              ? 'คลิกเพื่อสลับเป็นกำลังดำเนินการ (สิทธิ์ Admin)'
+                              : 'คลิกเพื่อติ๊กเสร็จสมบูรณ์ (สิทธิ์ Admin)'
+                            : 'เฉพาะ Admin หรือ PM ที่มีสิทธิ์อัปเดตงาน'
+                        }
+                        className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${
+                          task.status === 'DONE'
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-2xs hover:bg-emerald-600'
+                            : 'border-slate-300 bg-white hover:border-emerald-500 hover:bg-emerald-50'
+                        } ${!isAdminOrPm ? 'opacity-80 cursor-default' : 'cursor-pointer hover:scale-105 active:scale-95'}`}
+                      >
+                        {task.status === 'DONE' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </button>
+                      <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-[#062B63] text-white rounded">
+                        {task.code}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1.5">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${priorityClass}`}>
                         {task.priority}
@@ -259,6 +301,14 @@ export default function TasksRoute() {
             );
           })}
         </div>
+
+        {/* Toast Notification */}
+        {toastMessage && (
+          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border bg-white border-slate-200 text-sm font-bold text-slate-800 animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
       </div>
     </AppLayout>
   );

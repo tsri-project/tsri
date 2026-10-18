@@ -217,6 +217,57 @@ export function deleteStoredTask(id: string): ProjectTaskItem[] {
   }
 }
 
+export function toggleStoredTaskStatus(id: string): { tasks: ProjectTaskItem[]; updatedTask: ProjectTaskItem | null } {
+  if (typeof window === 'undefined') return { tasks: mockProjectTasks, updatedTask: null };
+  try {
+    const current = getStoredTasks();
+    const index = current.findIndex((t) => t.id === id);
+    if (index === -1) return { tasks: current, updatedTask: null };
+
+    const task = current[index];
+    const newStatus: ProjectTaskItem['status'] = task.status === 'DONE' ? 'IN_PROGRESS' : 'DONE';
+    const updatedTask: ProjectTaskItem = {
+      ...task,
+      status: newStatus,
+    };
+    const next = [...current];
+    next[index] = updatedTask;
+
+    localStorage.setItem(STORAGE_KEYS.PROJECT_TASKS, JSON.stringify(next));
+    notifyStateChange(STORAGE_KEYS.PROJECT_TASKS);
+    return { tasks: next, updatedTask };
+  } catch (e) {
+    console.error('Failed to toggle task status', e);
+    return { tasks: getStoredTasks(), updatedTask: null };
+  }
+}
+
+export function updateStoredTaskStatus(
+  id: string,
+  status: ProjectTaskItem['status']
+): { tasks: ProjectTaskItem[]; updatedTask: ProjectTaskItem | null } {
+  if (typeof window === 'undefined') return { tasks: mockProjectTasks, updatedTask: null };
+  try {
+    const current = getStoredTasks();
+    const index = current.findIndex((t) => t.id === id);
+    if (index === -1) return { tasks: current, updatedTask: null };
+
+    const updatedTask: ProjectTaskItem = {
+      ...current[index],
+      status,
+    };
+    const next = [...current];
+    next[index] = updatedTask;
+
+    localStorage.setItem(STORAGE_KEYS.PROJECT_TASKS, JSON.stringify(next));
+    notifyStateChange(STORAGE_KEYS.PROJECT_TASKS);
+    return { tasks: next, updatedTask };
+  } catch (e) {
+    console.error('Failed to update task status', e);
+    return { tasks: getStoredTasks(), updatedTask: null };
+  }
+}
+
 // -----------------------------------------------------------------------------
 // DELIVERABLES OPERATIONS
 // -----------------------------------------------------------------------------

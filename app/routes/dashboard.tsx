@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLoaderData } from '@remix-run/react';
 import {
   ArrowUpRight,
@@ -20,6 +20,7 @@ import {
   ChevronRight,
   TrendingUp,
   AlertCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import { AppLayout } from '~/components/shell/AppLayout';
 import { TodayActiveFocusBanner } from '~/components/dashboard/TodayActiveFocusBanner';
@@ -29,7 +30,9 @@ import {
   mockProjectTasks,
   mockCurrentUser,
 } from '~/lib/mock-data';
-import { DOCUMENT_STATUS_BADGES, type ExecutiveDashboardData } from '~/types';
+import { getStoredTasks, toggleStoredTaskStatus } from '~/lib/app-state';
+import { useAuth } from '~/lib/use-auth';
+import { DOCUMENT_STATUS_BADGES, type ExecutiveDashboardData, type ProjectTaskItem } from '~/types';
 import { formatThaiDate } from '~/lib/utils';
 
 export const clientLoader = async () => mockDashboardData;
@@ -38,21 +41,69 @@ type TaskFilter = 'ALL' | 'TODAY' | 'IN_PROGRESS' | 'DONE';
 
 export default function DashboardRoute() {
   const data = useLoaderData<ExecutiveDashboardData>();
+  const { isAdminOrPm, role, profile } = useAuth();
   const [taskFilter, setTaskFilter] = useState<TaskFilter>('ALL');
   const [docSearchQuery, setDocSearchQuery] = useState('');
+  const [tasks, setTasks] = useState<ProjectTaskItem[]>(mockProjectTasks);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'warning' } | null>(null);
 
-  // Calculate task statistics
-  const totalTasks = mockProjectTasks.length;
-  const inProgressTasks = mockProjectTasks.filter(
+  // Sync tasks from localStorage / app-state
+  useEffect(() => {
+    setTasks(getStoredTasks());
+
+    const handleSync = () => {
+      setTasks(getStoredTasks());
+    };
+    window.addEventListener('tsri-state-change', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('tsri-state-change', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  // Admin toggle task status handler
+  const handleToggleTask = (e: React.MouseEvent, taskId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Verification check for Admin/PM authority
+    if (!isAdminOrPm) {
+      setToastMessage({
+        text: 'เฉพาะผู้ดูแลระบบ (Admin) หรือผู้จัดการโครงการ (PM) เท่านั้นที่มีสิทธิ์ติ๊กอัปเดตสถานะงาน',
+        type: 'warning',
+      });
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
+
+    const { tasks: updatedTasks, updatedTask } = toggleStoredTaskStatus(taskId);
+    setTasks(updatedTasks);
+
+    if (updatedTask) {
+      const isNowDone = updatedTask.status === 'DONE';
+      setToastMessage({
+        text: isNowDone
+          ? `✅ อัปเดตงาน [${updatedTask.code}] เป็น: เสร็จสมบูรณ์ (DONE) เรียบร้อยแล้ว`
+          : `🔄 ปรับสถานะงาน [${updatedTask.code}] เป็น: กำลังดำเนินการ (IN_PROGRESS)`,
+        type: isNowDone ? 'success' : 'info',
+      });
+      setTimeout(() => setToastMessage(null), 3000);
+    }
+  };
+
+  // Calculate task statistics dynamically
+  const totalTasks = tasks.length;
+  const inProgressTasks = tasks.filter(
     (t) => t.status === 'IN_PROGRESS' || t.status === 'IN_REVIEW'
   ).length;
-  const doneTasks = mockProjectTasks.filter((t) => t.status === 'DONE').length;
-  const pendingReviewTasks = mockProjectTasks.filter(
+  const doneTasks = tasks.filter((t) => t.status === 'DONE').length;
+  const pendingReviewTasks = tasks.filter(
     (t) => t.status === 'IN_REVIEW'
   ).length;
 
   // Filter tasks based on selected tab
-  const filteredTasks = mockProjectTasks
+  const filteredTasks = tasks
     .filter((task) => {
       if (taskFilter === 'TODAY') {
         return task.status !== 'DONE';
@@ -391,11 +442,19 @@ export default function DashboardRoute() {
         <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.04)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
-              <h2 className="text-lg font-extrabold text-slate-900">
-                แผนงานวิจัยและกิจกรรมสำคัญ (Research Tasks)
-              </h2>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h2 className="text-lg font-extrabold text-slate-900">
+                  แผนงานวิจัยและกิจกรรมสำคัญ (Research Tasks)
+                </h2>
+                {isAdminOrPm && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    Admin โหมด: คลิกวงกลมเพื่อติ๊กเสร็จงานได้ทันที
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                ติดตามการดำเนินงานรายหมวดและผู้รับผิดชอบ
+                ติดตามการดำเนินงานรายหมวดและผู้รับผิดชอบ {isAdminOrPm ? '(คลิกที่วงกลมเพื่ออัปเดตความสมบูรณ์ของงาน)' : ''}
               </p>
             </div>
 
@@ -438,16 +497,29 @@ export default function DashboardRoute() {
                   className="flex items-center justify-between gap-4 py-3.5 hover:bg-slate-50/80 px-2 rounded-2xl transition group"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    {/* Status Circle Indicator */}
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 border transition ${
+                    {/* Status Circle Indicator / Interactive Checkbox for Admin */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleTask(e, task.id)}
+                      title={
+                        isAdminOrPm
+                          ? isDone
+                            ? 'คลิกเพื่อเปลี่ยนเป็นรอดำเนินการ (สิทธิ์ Admin)'
+                            : 'คลิกเพื่อติ๊กเสร็จสมบูรณ์ (สิทธิ์ Admin)'
+                          : 'เข้าสู่ระบบในฐานะ Admin/PM เพื่อคลิกอัปเดตสถานะงาน'
+                      }
+                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2 transition-all duration-150 relative z-10 ${
                         isDone
-                          ? 'bg-emerald-500 border-emerald-500 text-white'
-                          : 'border-slate-300 group-hover:border-[#1356A3]'
-                      }`}
+                          ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs hover:bg-emerald-600 hover:scale-105 active:scale-95'
+                          : 'border-slate-300 bg-white hover:border-emerald-500 hover:bg-emerald-50/50 hover:scale-105 active:scale-95'
+                      } ${!isAdminOrPm ? 'opacity-80 cursor-default' : 'cursor-pointer'}`}
                     >
-                      {isDone && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                    </div>
+                      {isDone ? (
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      ) : (
+                        <Check className="w-3.5 h-3.5 stroke-[2.5] text-emerald-500 opacity-0 group-hover:opacity-60 transition-opacity" />
+                      )}
+                    </button>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -581,6 +653,16 @@ export default function DashboardRoute() {
             </Link>
           </div>
         </div>
+
+        {/* Floating Toast Notification for Admin Actions */}
+        {toastMessage && (
+          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border bg-white animate-bounce-in text-sm font-bold text-slate-800 transition-all border-slate-200">
+            {toastMessage.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />}
+            {toastMessage.type === 'info' && <Clock className="w-5 h-5 text-blue-600 shrink-0" />}
+            {toastMessage.type === 'warning' && <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />}
+            <span>{toastMessage.text}</span>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
