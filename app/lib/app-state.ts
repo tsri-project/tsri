@@ -15,30 +15,30 @@ import {
 
 // Initial Live Focus State
 export const initialLiveFocus: LiveProjectFocus = {
-  as_of_date: '8 ตุลาคม 2569',
+  as_of_date: '19 ตุลาคม 2569',
   current_gate: 'G2',
-  overall_progress_pct: 35,
-  card1_title: 'ตรวจทานประเด็นการสัมภาษณ์ / Focus Group',
-  card1_code: 'FORM-INT-001 (v0.1)',
-  card1_tag: '1. สิ่งที่กำลังดำเนินการอยู่',
+  overall_progress_pct: 45,
+  card1_title: 'เอกสารประกอบ ชุดเก็บข้อมูลภาคสนาม 4 ฉบับ',
+  card1_code: 'WS03-FIELDWORK-v0.1',
+  card1_tag: '1. ชุดเครื่องมือเก็บข้อมูลภาคสนามพร้อมใช้งาน',
   card1_description:
-    'แบบสัมภาษณ์กึ่งโครงสร้าง (Semi-Structured Interview) 10 ประเด็นหลัก เตรียมเก็บข้อมูลภาคสนามกับกลุ่มผู้บริหาร บอร์ด กสว. และระดับปฏิบัติการ สกสว./PMU',
+    'ชุดเครื่องมือ 4 ฉบับ (00 แผนเก็บข้อมูล, 01 แบบสัมภาษณ์ 4.2.1 บอร์ด/ผู้บริหาร, 02 แบบสัมภาษณ์ 4.2.2 สามระดับ P01–P27, 03 แบบบันทึก 5 มิติ & Validation)',
   card1_modal_type: 'INTERVIEW',
   card1_drive_link:
-    'https://drive.google.com/drive/folders/1Y4uCfXDbjjm3fe63wmDSi29neiYbOwaF?usp=drive_link',
+    'https://drive.google.com/drive/folders/1drqWYvYf-cSnaLxKx21kebRiuzozmPOt',
   card2_title:
-    'การศึกษาและวิเคราะห์ขอบเขต อำนาจหน้าที่ กสว. และ สกสว. ตาม พ.ร.บ. สภานโยบายฯ',
-  card2_code: 'DOC-LEGAL-MAPPING-001',
-  card2_tag: '2. ข้อมูลการศึกษาพร้อมเข้าดู',
+    'รายงานความก้าวหน้าและแผนดำเนินงาน v0.4 (Google Slides)',
+  card2_code: 'PRJ-TSRI-2569-001 (Slide 23)',
+  card2_tag: '2. ชุดนำเสนอและแผนดำเนินงานโครงการ',
   card2_description:
-    'รายงานผลการวิเคราะห์ความเกี่ยวพันของ พ.ร.บ. 3 ระดับศักดิ์ (20 ฉบับ 195 ข้อกำหนด) กับภารกิจ 5 ด้านของ สกสว. ตามขอบเขต TOR ข้อ 4.3.1',
+    'เตรียมความพร้อมก่อนสัมภาษณ์ตามกลุ่มเป้าหมาย และแนวทางจัดทำร่างรายงานข้อ 4.3.1–4.3.5 ประเด็นหารือตรงความต้องการของ สกสว.',
   card2_modal_type: 'LEGAL_MAPPING',
   card2_drive_link:
-    'https://drive.google.com/drive/folders/1hfMPYkzRQlfuFq9ARDwS0_kFfMNk76Cq?usp=drive_link',
+    'https://docs.google.com/presentation/d/1TxjaZVVb_adgSZICSa2hSmGoI2H-h6PMd9nTrfI7xkk/edit#slide=id.p23',
   announcement_text:
-    '📢 ประชุมคณะทำงานประจำสัปดาห์ ทุกวันพฤหัสบดี เวลา 13:30 น. ผ่านระบบ Zoom และรายงานความคืบหน้ารายวันผ่านระบบ TSRI ONE LINK',
+    '📢 อัปเดตข้อมูล 19 ต.ค. 2569: ชุดนำเสนอความก้าวหน้า v0.4 (Slide 23) และชุดเอกสารเก็บข้อมูลภาคสนาม 4 ฉบับ พร้อมเปิดใช้งานผ่าน Google Docs & Drive แล้ว',
   updated_by: 'นายอนุสรณ์ หนองนา (Super Admin / PM)',
-  updated_at: '2026-10-08T09:30:00.000Z',
+  updated_at: '2026-10-19T07:30:00.000Z',
 };
 
 // Initial Seed Daily Updates (Clean / No Mock Data)
@@ -68,8 +68,16 @@ export function getStoredLiveFocus(): LiveProjectFocus {
   if (typeof window === 'undefined') return initialLiveFocus;
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.LIVE_FOCUS);
-    if (!raw) return initialLiveFocus;
-    return { ...initialLiveFocus, ...JSON.parse(raw) };
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEYS.LIVE_FOCUS, JSON.stringify(initialLiveFocus));
+      return initialLiveFocus;
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || parsed.as_of_date === '8 ตุลาคม 2569') {
+      localStorage.setItem(STORAGE_KEYS.LIVE_FOCUS, JSON.stringify(initialLiveFocus));
+      return initialLiveFocus;
+    }
+    return { ...initialLiveFocus, ...parsed };
   } catch (e) {
     console.error('Failed to parse live focus from storage', e);
     return initialLiveFocus;

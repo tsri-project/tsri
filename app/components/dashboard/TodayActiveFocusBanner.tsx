@@ -177,10 +177,10 @@ export function TodayActiveFocusBanner() {
                   href={focusData.card2_drive_link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-200 hover:text-white font-medium flex items-center gap-1 transition"
+                  className="text-xs text-blue-200 hover:text-white font-medium flex items-center gap-1 transition bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg border border-white/10"
                 >
                   <ExternalLink className="w-3 h-3 text-orange-400" />
-                  <span>Google Drive 4.3.1</span>
+                  <span>Google Slides (Slide 23)</span>
                 </a>
               )}
             </div>
@@ -188,18 +188,22 @@ export function TodayActiveFocusBanner() {
         </div>
       </div>
 
-      {/* Modal 1: ดูแบบสัมภาษณ์ 10 ประเด็น (FORM-INT-001) */}
+      {/* Modal 1: ดูเอกสารประกอบ ชุดเก็บข้อมูลภาคสนาม 4 ฉบับ (Slide 23) */}
       {activeDocModal === 'INTERVIEW' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200">
             {/* Modal Header */}
             <div className="p-5 bg-gradient-to-r from-[#062B63] to-[#1356A3] text-white flex items-center justify-between">
               <div>
-                <div className="text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider">
-                  FORM-INT-001-2569 • TOR ข้อ 4.3.2
+                <div className="text-[10px] font-mono font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                  <span>PRJ-TSRI-2569-001</span>
+                  <span>•</span>
+                  <span>สไลด์ 23: เอกสารประกอบชุดเก็บข้อมูล 4 ฉบับ</span>
+                  <span>•</span>
+                  <span>v0.4 (19 ต.ค. 2569)</span>
                 </div>
                 <h3 className="text-base font-extrabold mt-0.5">
-                  แบบสัมภาษณ์กึ่งโครงสร้าง (Semi-Structured Interview) — 10 ประเด็นหลัก
+                  ชุดเครื่องมือเก็บข้อมูลภาคสนาม 4 ฉบับ (Field Research Instruments)
                 </h3>
               </div>
               <button
@@ -212,20 +216,170 @@ export function TodayActiveFocusBanner() {
 
             {/* Modal Content */}
             <div className="p-6 overflow-y-auto space-y-5 text-slate-800 text-xs leading-relaxed">
+              {/* 4 Official Fieldwork Instruments from Slide 23 */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-extrabold text-[#062B63] flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <span>เอกสารประกอบ ชุดเก็บข้อมูล 4 ฉบับ (ตามสไลด์ที่ 23)</span>
+                  </h4>
+                  <a
+                    href="https://docs.google.com/presentation/d/1TxjaZVVb_adgSZICSa2hSmGoI2H-h6PMd9nTrfI7xkk/edit#slide=id.p23"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-bold text-[#1356A3] hover:underline flex items-center gap-1"
+                  >
+                    <span>เปิดสไลด์ที่ 23</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Doc 00 */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#062B63]/40 transition group">
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <span className="font-mono font-bold text-[10px] px-2 py-0.5 bg-blue-100 text-[#062B63] rounded-md">
+                          GUIDE-WS03-001-2569
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400">00 แผน</span>
+                      </div>
+                      <div className="font-bold text-slate-900 text-xs group-hover:text-[#062B63] transition">
+                        00 แผนเก็บข้อมูล (Fieldwork Plan)
+                      </div>
+                      <p className="text-slate-600 text-[11px] mt-1 leading-relaxed">
+                        โควตา 13+67 คน รายหน่วย 31 หน่วย รายกระบวนงาน P01–P27 วิธีเก็บ และเกณฑ์ความครอบคลุม
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between">
+                      <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium">
+                        ร่าง v0.1
+                      </span>
+                      <a
+                        href="https://docs.google.com/document/d/1XIXeAPEqZnXDgKg8k4EimcBiuZj-azKsibPjSrrD1nA/edit"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 bg-[#062B63] hover:bg-[#1356A3] text-white font-bold text-[11px] rounded-lg transition flex items-center gap-1"
+                      >
+                        <span>เปิด Google Docs</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Doc 01 */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#062B63]/40 transition group">
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <span className="font-mono font-bold text-[10px] px-2 py-0.5 bg-amber-100 text-amber-900 rounded-md">
+                          FORM-WS03-001-2569
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400">01 แบบ</span>
+                      </div>
+                      <div className="font-bold text-slate-900 text-xs group-hover:text-[#062B63] transition">
+                        01 แบบสัมภาษณ์ 4.2.1 (ผู้บริหารระดับสูง)
+                      </div>
+                      <p className="text-slate-600 text-[11px] mt-1 leading-relaxed">
+                        คำถามคณะกรรมการ กสว., บอร์ดอำนวยการ, ผู้อำนวยการ และรอง ผอ. สกสว. ตามบทบาทการตัดสินใจ
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between">
+                      <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium">
+                        เป้าหมาย 13 คน
+                      </span>
+                      <a
+                        href="https://docs.google.com/document/d/1hn5jqso1u8JY4R7bsz3oAeyXsE-0MbjjaJN2IBcVBBU/edit"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 bg-[#062B63] hover:bg-[#1356A3] text-white font-bold text-[11px] rounded-lg transition flex items-center gap-1"
+                      >
+                        <span>เปิด Google Docs</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Doc 02 */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#062B63]/40 transition group">
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <span className="font-mono font-bold text-[10px] px-2 py-0.5 bg-blue-100 text-[#062B63] rounded-md">
+                          FORM-WS03-002-2569
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400">02 แบบ</span>
+                      </div>
+                      <div className="font-bold text-slate-900 text-xs group-hover:text-[#062B63] transition">
+                        02 แบบสัมภาษณ์ 4.2.2 (สามระดับ P01–P27)
+                      </div>
+                      <p className="text-slate-600 text-[11px] mt-1 leading-relaxed">
+                        แยก 3 ระดับ (ผู้บริหารระดับกลาง, หัวหน้าฝ่าย/ระดับต้น, ผู้ปฏิบัติการ) พร้อมคำถามเฉพาะ P01–P27
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between">
+                      <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium">
+                        เป้าหมาย 67 คน
+                      </span>
+                      <a
+                        href="https://docs.google.com/document/d/1hqez-Wui3D_QgAt8a1j4IdhqrcARAOEdDtpk-TqS1EE/edit"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 bg-[#062B63] hover:bg-[#1356A3] text-white font-bold text-[11px] rounded-lg transition flex items-center gap-1"
+                      >
+                        <span>เปิด Google Docs</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Doc 03 */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col justify-between hover:border-[#062B63]/40 transition group">
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <span className="font-mono font-bold text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded-md">
+                          FORM-WS03-003-2569
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400">03 บันทึก</span>
+                      </div>
+                      <div className="font-bold text-slate-900 text-xs group-hover:text-[#062B63] transition">
+                        03 แบบบันทึกและตรวจยืนยัน (5 มิติ & Validation)
+                      </div>
+                      <p className="text-slate-600 text-[11px] mt-1 leading-relaxed">
+                        ห้ามิติ (D1-D5) ฐานอำนาจ หลักฐาน Focus Group 6 กลุ่ม, Workshop 2 เวที และการตรวจรับรอง
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between">
+                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium">
+                        6 FG + 2 WS
+                      </span>
+                      <a
+                        href="https://docs.google.com/document/d/1G-ORN1SSHhyFi8NIdnXrOesrIHtzWCRH5ytBjh8f-2M/edit"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 bg-[#062B63] hover:bg-[#1356A3] text-white font-bold text-[11px] rounded-lg transition flex items-center gap-1"
+                      >
+                        <span>เปิด Google Docs</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notice Banner */}
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-900">
                 <div className="font-bold flex items-center gap-1.5 mb-1 text-sm text-amber-950">
                   <Sparkles className="w-4 h-4 text-amber-600" />
                   คำชี้แจงและวัตถุประสงค์การเก็บข้อมูลภาคสนาม
                 </div>
                 <p>
-                  ใช้เก็บรวบรวมข้อมูลเกี่ยวกับความเข้าใจ การตีความ และการนำกฎหมาย ระเบียบ ประกาศ หลักเกณฑ์ และมติไปใช้ในการปฏิบัติงานจริง เพื่อนำไปจัดทำ <strong>Legal-to-Work Alignment Matrix</strong> และ <strong>Gap & Risk Analysis</strong>
+                  ใช้เก็บรวบรวมข้อมูลเกี่ยวกับความเข้าใจ การตีความ และการนำกฎหมาย ระเบียบ ประกาศ หลักเกณฑ์ และมติไปใช้ในการปฏิบัติงานจริง เพื่อนำไปจัดทำ <strong>Legal-to-Work Alignment Matrix</strong> และ <strong>Gap & Risk Analysis</strong> (ขอบเขตข้อ 4.3.3 เน้นองค์ความรู้กฎหมาย ไม่มุ่งจัดทำหรือทบทวน SOP ที่มีอยู่แล้ว)
                 </p>
               </div>
 
               {/* 10 Key Topics Accordion / List */}
               <div className="space-y-3">
                 <h4 className="text-sm font-extrabold text-slate-900 border-b border-slate-200 pb-2 flex items-center gap-2">
-                  <span>10 ประเด็นคำถามหลักในการสัมภาษณ์</span>
+                  <span>10 ประเด็นคำถามหลักในการสัมภาษณ์เชิงลึก</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 bg-blue-50 text-[#062B63] rounded-md font-bold">
                     Draft v0.1
                   </span>
@@ -287,24 +441,25 @@ export function TodayActiveFocusBanner() {
 
             {/* Modal Footer */}
             <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <a
-                  href="https://drive.google.com/drive/folders/1Y4uCfXDbjjm3fe63wmDSi29neiYbOwaF?usp=drive_link"
+                  href="https://drive.google.com/drive/folders/1drqWYvYf-cSnaLxKx21kebRiuzozmPOt"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-300 transition flex items-center gap-1.5"
+                  className="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold rounded-xl border border-amber-300 transition flex items-center gap-1.5 shadow-2xs"
                 >
                   <FolderOpen className="w-3.5 h-3.5 text-amber-600" />
-                  <span>เปิด Google Drive ประเด็นสัมภาษณ์</span>
+                  <span>เปิด Google Drive โฟลเดอร์รวม 4 ฉบับ</span>
                 </a>
 
                 <a
-                  href="/documents/05_การเก็บข้อมูลภาคสนาม/05.02_Interview/FORM-INT-001_แบบสัมภาษณ์กึ่งโครงสร้าง_Semi-Structured-Interview_v0.1.md"
-                  download
-                  className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5"
+                  href="https://docs.google.com/presentation/d/1TxjaZVVb_adgSZICSa2hSmGoI2H-h6PMd9nTrfI7xkk/edit#slide=id.p23"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-[#062B63] text-xs font-bold rounded-xl border border-blue-200 transition flex items-center gap-1.5 shadow-2xs"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>ดาวน์โหลด Markdown</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-[#1356A3]" />
+                  <span>เปิด Google Slides (สไลด์ 23)</span>
                 </a>
               </div>
 
@@ -442,12 +597,13 @@ export function TodayActiveFocusBanner() {
                 </a>
 
                 <a
-                  href="/documents/06_งานวิเคราะห์และสังเคราะห์/06.02_Legal-Mapping/DOC-LEGAL-MAPPING-001_ผลการวิเคราะห์ความสัมพันธ์พรบกับภารกิจสกสว.md"
-                  download
-                  className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5"
+                  href="https://docs.google.com/presentation/d/1TxjaZVVb_adgSZICSa2hSmGoI2H-h6PMd9nTrfI7xkk/edit#slide=id.p23"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 bg-orange-50 hover:bg-orange-100 text-orange-900 text-xs font-bold rounded-xl border border-orange-200 transition flex items-center gap-1.5"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>ดาวน์โหลด Markdown</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-orange-600" />
+                  <span>เปิด Google Slides (สไลด์ 23)</span>
                 </a>
               </div>
 
